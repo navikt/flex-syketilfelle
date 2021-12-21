@@ -1,3 +1,4 @@
 {
-  "azureTenant": "nav.no"
+  "azureTenant": "nav.no",
+  "kafkaPool": "nav-prod"
 }
