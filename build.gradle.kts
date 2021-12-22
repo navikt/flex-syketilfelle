@@ -34,17 +34,22 @@ repositories {
 
 val tokenSupportVersion = "1.3.9"
 val logstashEncoderVersion = "7.0.1"
+val testContainersVersion = "1.16.2"
+val kluentVersion = "1.68"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
+    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("org.slf4j:slf4j-api")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.postgresql:postgresql")
     implementation("org.hibernate.validator:hibernate-validator")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-logging")
@@ -54,6 +59,11 @@ dependencies {
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.testcontainers:kafka:$testContainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainersVersion")
+    testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
+    testImplementation("org.awaitility:awaitility")
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
@@ -69,6 +79,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
     testLogging {
-        events("PASSED", "FAILED", "SKIPPED")
+        events("STARTED", "PASSED", "FAILED", "SKIPPED")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }

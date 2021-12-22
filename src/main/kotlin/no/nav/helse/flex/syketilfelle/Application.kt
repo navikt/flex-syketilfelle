@@ -1,4 +1,4 @@
-package no.nav.helse.flex.syketilfelle.proxy
+package no.nav.helse.flex.syketilfelle
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -20,7 +20,7 @@ inline fun <reified T> T.logger(): Logger {
     return LoggerFactory.getLogger(T::class.java)
 }
 
-val OBJECT_MAPPER = ObjectMapper()
+val objectMapper = ObjectMapper()
     .registerModule(JavaTimeModule())
     .registerModule(KotlinModule.Builder().build())
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
