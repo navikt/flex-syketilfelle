@@ -1,0 +1,23 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: syketilfellebit
+  namespace: flex
+  labels:
+    team: flex
+spec:
+  pool: {{kafkaPool}}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    partitions: 3
+    replication: 3
+    retentionBytes: -1  # Messages will never be deleted because of disk space
+    retentionHours: -1  # Messages will never be timed out
+  acl:
+    - team: flex
+      application: flex-syketilfelle
+      access: readwrite
+    - team: flex
+      application: syfosyketilfelle
+      access: readwrite
