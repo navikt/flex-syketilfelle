@@ -1,15 +1,20 @@
 package no.nav.helse.flex.syketilfelle.syketilfellebit
 
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
 import org.springframework.stereotype.Component
+
 @Component
-class SyketilfellebitMottak(val syketilfellebitRepository: SyketilfellebitRepository) {
+class SyketilfellebitMottak(val syketilfellebitRepository: SyketilfellebitRepository, registry: MeterRegistry) {
+
+    val mottattSyketilfellebit = registry.counter("mottatt_syketilfellebit_counter")
 
     fun mottaBit(kafkaSyketilfellebit: KafkaSyketilfellebit) {
         if (syketilfellebitRepository.existsBySyketilfellebitId(kafkaSyketilfellebit.id)) {
             return
         }
         syketilfellebitRepository.save(kafkaSyketilfellebit.tilSyketilfellebit())
+        mottattSyketilfellebit.increment()
     }
 }
 
