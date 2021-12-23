@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 interface SyketilfellebitRepository : CrudRepository<Syketilfellebit, String> {
     fun existsBySyketilfellebitId(syketilfellebitId: String): Boolean
     fun findBySyketilfellebitId(syketilfellebitId: String): Syketilfellebit?
+    fun findBySyketilfellebitIdIn(syketilfellebitIds: List<String>): List<Syketilfellebit>
 }

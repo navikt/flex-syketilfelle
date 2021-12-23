@@ -9,12 +9,18 @@ class SyketilfellebitMottak(val syketilfellebitRepository: SyketilfellebitReposi
 
     val mottattSyketilfellebit = registry.counter("mottatt_syketilfellebit_counter")
 
-    fun mottaBit(kafkaSyketilfellebit: KafkaSyketilfellebit) {
-        if (syketilfellebitRepository.existsBySyketilfellebitId(kafkaSyketilfellebit.id)) {
+    fun mottaBitListe(kafkaSyketilfellebiter: List<KafkaSyketilfellebit>) {
+        val unikeBiterInn = kafkaSyketilfellebiter.distinctBy { it.id }
+        if (unikeBiterInn.isEmpty()) {
             return
         }
-        syketilfellebitRepository.save(kafkaSyketilfellebit.tilSyketilfellebit())
-        mottattSyketilfellebit.increment()
+        val eksisterendeBiter = syketilfellebitRepository.findBySyketilfellebitIdIn(unikeBiterInn.map { it.id }).map { it.syketilfellebitId }.toSet()
+        val biterSomSkalOpprettes = unikeBiterInn.filter { !eksisterendeBiter.contains(it.id) }.map { it.tilSyketilfellebit() }
+        if (biterSomSkalOpprettes.isEmpty()) {
+            return
+        }
+        syketilfellebitRepository.saveAll(biterSomSkalOpprettes)
+        mottattSyketilfellebit.increment(biterSomSkalOpprettes.size.toDouble())
     }
 }
 

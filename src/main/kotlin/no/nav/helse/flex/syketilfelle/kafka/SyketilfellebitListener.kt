@@ -17,9 +17,7 @@ class SyketilfellebitListener(val syketilfellebitMottak: SyketilfellebitMottak) 
         batch = "true"
     )
     fun listen(records: List<ConsumerRecord<String, String>>, acknowledgment: Acknowledgment) {
-        records.forEach {
-            syketilfellebitMottak.mottaBit(it.value().tilKafkaSyketilfellebit())
-        }
+        syketilfellebitMottak.mottaBitListe(records.map { it.value().tilKafkaSyketilfellebit() })
         acknowledgment.acknowledge()
     }
 
