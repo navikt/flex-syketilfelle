@@ -1,8 +1,14 @@
 package no.nav.helse.flex.syketilfelle
 
+import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
+import no.nav.helse.flex.syketilfelle.kafka.SYKETILFELLEBIT_TOPIC
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.TestInstance
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.PostgreSQLContainer
@@ -14,6 +20,12 @@ private class PostgreSQLContainer12 : PostgreSQLContainer<PostgreSQLContainer12>
 @SpringBootTest
 @EnableMockOAuth2Server
 abstract class Testoppsett {
+
+    @Autowired
+    lateinit var kafkaProducer: KafkaProducer<String, String>
+
+    @Autowired
+    lateinit var syketilfellebitRepository: SyketilfellebitRepository
 
     companion object {
 
@@ -34,5 +46,22 @@ abstract class Testoppsett {
 
     @AfterAll
     fun `Vi tømmer databasen`() {
+        syketilfellebitRepository.deleteAll()
     }
+
+    fun sendKafkaMelding(key: String, value: String, topic: String) {
+        kafkaProducer.send(
+            ProducerRecord(
+                topic,
+                null,
+                key,
+                value,
+            )
+        ).get()
+    }
+
+    fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit) =
+        sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC)
 }
+
+fun Any.serialisertTilString(): String = objectMapper.writeValueAsString(this)

@@ -13,13 +13,13 @@ class SyketilfellebitListener(val syketilfellebitMottak: SyketilfellebitMottak) 
 
     @KafkaListener(
         topics = [SYKETILFELLEBIT_TOPIC],
-        containerFactory = "aivenKafkaListenerContainerFactory"
+        containerFactory = "aivenKafkaListenerContainerFactory",
+        batch = "true"
     )
     fun listen(records: List<ConsumerRecord<String, String>>, acknowledgment: Acknowledgment) {
         records.forEach {
             syketilfellebitMottak.mottaBit(it.value().tilKafkaSyketilfellebit())
         }
-
         acknowledgment.acknowledge()
     }
 

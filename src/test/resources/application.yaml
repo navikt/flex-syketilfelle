@@ -12,7 +12,7 @@ spring:
 logging.config: "classpath:logback-local.xml"
 
 aiven-kafka:
-  auto-offset-reset: earliest
+  auto-offset-reset: latest
   security-protocol: PLAINTEXT
 
 KAFKA_TRUSTSTORE_PATH: ""
