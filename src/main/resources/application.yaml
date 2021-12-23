@@ -14,6 +14,12 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 3
+  jpa:
+    properties:
+      hibernate:
+        order_inserts: true
+        jdbc:
+          batch_size: 100
 
 logging.config: "classpath:logback.xml"
 
