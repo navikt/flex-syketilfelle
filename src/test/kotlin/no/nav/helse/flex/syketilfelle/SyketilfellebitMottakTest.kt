@@ -85,7 +85,7 @@ class SyketilfellebitMottakTest : Testoppsett() {
                 ressursId = UUID.randomUUID().toString(),
                 tags = listOf("SENDT", "SYKEPENGESOKNAD"),
             )
-            sendSyketilfellebitPaKafka(bit)
+            repeat((1..10).random()) { sendSyketilfellebitPaKafka(bit) }
         }
 
         repeat(200) { sendBit() }
