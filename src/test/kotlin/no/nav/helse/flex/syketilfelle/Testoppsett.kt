@@ -32,7 +32,7 @@ abstract class Testoppsett {
         init {
             PostgreSQLContainer12().also {
                 it.start()
-                System.setProperty("spring.datasource.url", it.jdbcUrl)
+                System.setProperty("spring.datasource.url", "${it.jdbcUrl}&reWriteBatchedInserts=true")
                 System.setProperty("spring.datasource.username", it.username)
                 System.setProperty("spring.datasource.password", it.password)
             }
