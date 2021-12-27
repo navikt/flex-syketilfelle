@@ -36,8 +36,8 @@ class SyketilfellebitMottakTest : Testoppsett() {
             fom = LocalDate.now().minusDays(2),
             tom = LocalDate.now(),
             korrigererSendtSoknad = UUID.randomUUID().toString(),
-            inntruffet = OffsetDateTime.now(),
-            opprettet = OffsetDateTime.now(),
+            inntruffet = OffsetDateTime.now().plusMinutes(2),
+            opprettet = OffsetDateTime.now().plusHours(3),
             ressursId = UUID.randomUUID().toString(),
             tags = listOf("SENDT", "SYKEPENGESOKNAD"),
         )
