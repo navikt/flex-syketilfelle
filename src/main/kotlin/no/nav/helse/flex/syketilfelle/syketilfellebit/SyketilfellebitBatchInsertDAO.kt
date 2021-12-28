@@ -29,7 +29,7 @@ INSERT INTO  "syketilfellebit"
     "tags",
     "tom")
 VALUES
-  (?,?,?,?,?,?,?,?,?,?) """
+  (?,?,?,?,?,?,?,?,?,?) ON CONFLICT ON CONSTRAINT syketilfellebit_syketilfellebit_id_key DO NOTHING;"""
 
         return jdbcTemplate.batchUpdate(
             sql,
