@@ -2,6 +2,7 @@ package no.nav.helse.flex.syketilfelle.syketilfellebit
 
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
+import no.nav.helse.flex.syketilfelle.logger
 import org.springframework.stereotype.Component
 
 @Component
@@ -10,10 +11,13 @@ class SyketilfellebitMottak(
     val syketilfellebitBatchInsertDAO: SyketilfellebitBatchInsertDAO,
     registry: MeterRegistry,
 ) {
+    val log = logger()
 
     val mottattSyketilfellebit = registry.counter("mottatt_syketilfellebit_counter")
 
     fun mottaBitListe(kafkaSyketilfellebiter: List<KafkaSyketilfellebit>) {
+        log.info("Behandlet ${kafkaSyketilfellebiter.size} biter fra kafka")
+
         val unikeBiterInn = kafkaSyketilfellebiter.distinctBy { it.id }
         if (unikeBiterInn.isEmpty()) {
             return
