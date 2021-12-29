@@ -12,6 +12,18 @@ spring:
 logging.config: "classpath:logback-local.xml"
 elector.path: dont_look_for_leader
 
+no.nav.security.jwt:
+  client:
+    registration:
+      pdl-api-client-credentials:
+        token-endpoint-url: http://localhost:${mock-oauth2-server.port}/azureator/token
+        grant-type: client_credentials
+        scope: pdl-api
+        authentication:
+          client-id: client-id
+          client-secret: secretzz
+          client-auth-method: client_secret_basic
+
 aiven-kafka:
   auto-offset-reset: latest
   security-protocol: PLAINTEXT

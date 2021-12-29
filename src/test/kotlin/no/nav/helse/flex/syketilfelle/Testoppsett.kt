@@ -3,6 +3,7 @@ package no.nav.helse.flex.syketilfelle
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import okhttp3.mockwebserver.MockWebServer
 import org.amshove.kluent.shouldBeEmpty
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -32,6 +33,7 @@ abstract class Testoppsett {
     lateinit var syketilfellebitRepository: SyketilfellebitRepository
 
     companion object {
+        var pdlMockWebserver: MockWebServer
 
         init {
             PostgreSQLContainer12().also {
@@ -45,6 +47,12 @@ abstract class Testoppsett {
                 it.start()
                 System.setProperty("KAFKA_BROKERS", it.bootstrapServers)
             }
+
+            pdlMockWebserver = MockWebServer()
+                .also {
+                    System.setProperty("PDL_BASE_URL", "http://localhost:${it.port}")
+                }
+                .also { it.dispatcher = PdlMockDispatcher }
         }
     }
 

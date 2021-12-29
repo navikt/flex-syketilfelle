@@ -118,3 +118,8 @@ enum class Tag {
     REISETILSKUDD,
     AVVENTENDE
 }
+
+fun List<Syketilfellebit>.utenKorrigerteSoknader(): List<Syketilfellebit> {
+    val korrigerte = this.mapNotNull { it.korrigererSendtSoknad }.toSet()
+    return this.filterNot { korrigerte.contains(it.ressursId) }
+}

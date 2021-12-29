@@ -2,6 +2,8 @@
   "azureTenant": "trygdeetaten.no",
   "kafkaPool": "nav-dev",
   "env": {
-    "SPRING_PROFILES_ACTIVE": "default,testdatareset"
+    "SPRING_PROFILES_ACTIVE": "default,testdatareset",
+    "PDL_BASE_URL": "https://pdl-api.dev-fss-pub.nais.io",
+    "PDL_API_AAD_CLIENT_ID": "dev-fss.pdl.pdl-api"
   }
 }
