@@ -56,5 +56,14 @@ class OnConflictTest : Testoppsett() {
         dbBit.opprettet `should be equal to ignoring nano and zone` bit.opprettet
         dbBit.ressursId `should be equal to` bit.ressursId
         dbBit.tags `should be equal to` bit.tags
+
+        syketilfellebitBatchInsertDAO.batchInsert(
+            listOf(
+                bit,
+                bit.copy(syketilfellebitId = UUID.randomUUID().toString())
+            )
+        )
+
+        syketilfellebitRepository.count() `should be equal to` 2
     }
 }
