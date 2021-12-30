@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.logger
 import org.springframework.stereotype.Component
+import kotlin.system.measureTimeMillis
 
 @Component
 class SyketilfellebitMottak(
@@ -15,15 +16,16 @@ class SyketilfellebitMottak(
     val mottattSyketilfellebit = registry.counter("mottatt_syketilfellebit_counter")
 
     fun mottaBitListe(kafkaSyketilfellebiter: List<KafkaSyketilfellebit>) {
-        log.info("Behandlet ${kafkaSyketilfellebiter.size} biter fra kafka")
 
         val unikeBiterInn = kafkaSyketilfellebiter.distinctBy { it.id }
         if (unikeBiterInn.isEmpty()) {
             return
         }
-
-        syketilfellebitBatchInsertDAO.batchInsert(unikeBiterInn.map { it.tilSyketilfellebit() })
-        mottattSyketilfellebit.increment(unikeBiterInn.size.toDouble())
+        val elapsed = measureTimeMillis {
+            syketilfellebitBatchInsertDAO.batchInsert(unikeBiterInn.map { it.tilSyketilfellebit() })
+            mottattSyketilfellebit.increment(unikeBiterInn.size.toDouble())
+        }
+        log.info("Behandlet ${kafkaSyketilfellebiter.size} biter fra kafka i $elapsed millis")
     }
 }
 
