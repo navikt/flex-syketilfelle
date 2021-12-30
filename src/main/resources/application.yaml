@@ -25,5 +25,5 @@ management:
     path-mapping.prometheus: /prometheus
 
 aiven-kafka:
-  auto-offset-reset: earliest
+  auto-offset-reset: none
   security-protocol: SSL
