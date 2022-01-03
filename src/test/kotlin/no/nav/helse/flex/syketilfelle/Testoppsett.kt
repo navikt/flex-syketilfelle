@@ -6,6 +6,8 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.Headers
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,19 +51,21 @@ abstract class Testoppsett {
         syketilfellebitRepository.deleteAll()
     }
 
-    fun sendKafkaMelding(key: String, value: String, topic: String) {
+    fun sendKafkaMelding(key: String, value: String, topic: String, headers: Headers = RecordHeaders()) {
         kafkaProducer.send(
             ProducerRecord(
                 topic,
                 null,
+                null,
                 key,
                 value,
+                headers
             )
         ).get()
     }
 
-    fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit) =
-        sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC)
+    fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit, headers: Headers = RecordHeaders()) =
+        sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC, headers)
 }
 
 fun Any.serialisertTilString(): String = objectMapper.writeValueAsString(this)

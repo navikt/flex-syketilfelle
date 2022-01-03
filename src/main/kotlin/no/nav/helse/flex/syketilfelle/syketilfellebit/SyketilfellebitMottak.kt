@@ -43,6 +43,6 @@ private fun KafkaSyketilfellebit.tilSyketilfellebit(): Syketilfellebit = Syketil
     korrigererSendtSoknad = korrigererSendtSoknad
 )
 
-fun List<String>.asString() = this.joinToString(",")
+fun Set<String>.asString() = this.joinToString(",")
 
 fun String.tagsFromString() = split(',').map(String::trim)

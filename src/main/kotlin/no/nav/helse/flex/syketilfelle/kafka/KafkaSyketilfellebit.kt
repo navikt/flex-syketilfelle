@@ -9,7 +9,7 @@ data class KafkaSyketilfellebit(
     val orgnummer: String?,
     val opprettet: OffsetDateTime,
     val inntruffet: OffsetDateTime,
-    val tags: List<String>,
+    val tags: Set<String>,
     val ressursId: String,
     val fom: LocalDate,
     val tom: LocalDate,

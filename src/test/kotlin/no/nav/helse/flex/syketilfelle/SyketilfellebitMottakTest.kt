@@ -3,8 +3,10 @@ package no.nav.helse.flex.syketilfelle
 import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tagsFromString
 import org.amshove.kluent.`should be equal to`
+import org.apache.kafka.common.header.internals.RecordHeader
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.awaitility.Awaitility.await
-import org.junit.Before
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -15,10 +17,9 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-
 class SyketilfellebitMottakTest : Testoppsett() {
 
-    @Before
+    @AfterEach
     fun `clean`() {
         `Vi tømmer databasen`()
     }
@@ -26,7 +27,6 @@ class SyketilfellebitMottakTest : Testoppsett() {
     @Test
     @Order(1)
     fun `Mottar en bit`() {
-        syketilfellebitRepository.deleteAll()
         syketilfellebitRepository.count() `should be equal to` 0
 
         val bit = KafkaSyketilfellebit(
@@ -39,7 +39,7 @@ class SyketilfellebitMottakTest : Testoppsett() {
             inntruffet = OffsetDateTime.now().plusMinutes(2),
             opprettet = OffsetDateTime.now().plusHours(3),
             ressursId = UUID.randomUUID().toString(),
-            tags = listOf("SENDT", "SYKEPENGESOKNAD"),
+            tags = setOf("SENDT", "SYKEPENGESOKNAD"),
         )
 
         sendSyketilfellebitPaKafka(bit)
@@ -63,13 +63,12 @@ class SyketilfellebitMottakTest : Testoppsett() {
         dbBit.inntruffet `should be equal to ignoring nano and zone` bit.inntruffet
         dbBit.opprettet `should be equal to ignoring nano and zone` bit.opprettet
         dbBit.ressursId `should be equal to` bit.ressursId
-        dbBit.tags.tagsFromString() `should be equal to` bit.tags
+        dbBit.tags.tagsFromString().toSet() `should be equal to` bit.tags
     }
 
     @Test
-    @Order(1)
+    @Order(2)
     fun `Mottar 200 biter`() {
-        syketilfellebitRepository.deleteAll()
         syketilfellebitRepository.count() `should be equal to` 0
 
         fun sendBit() {
@@ -83,17 +82,45 @@ class SyketilfellebitMottakTest : Testoppsett() {
                 inntruffet = OffsetDateTime.now(),
                 opprettet = OffsetDateTime.now(),
                 ressursId = UUID.randomUUID().toString(),
-                tags = listOf("SENDT", "SYKEPENGESOKNAD"),
+                tags = setOf("SENDT", "SYKEPENGESOKNAD"),
             )
             repeat((1..10).random()) { sendSyketilfellebitPaKafka(bit) }
         }
 
-        repeat(200) { sendBit() }
+        repeat(20) { sendBit() }
 
-        await().atMost(10, TimeUnit.SECONDS).until {
-            syketilfellebitRepository.count() == 200L
+        await().atMost(4, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.count() == 20L
         }
 
-        syketilfellebitRepository.count() `should be equal to` 200L
+        syketilfellebitRepository.count() `should be equal to` 20L
+    }
+
+    @Test
+    @Order(3)
+    fun `Ignorerer bit fra flex-syketilfelle`() {
+        syketilfellebitRepository.count() `should be equal to` 0
+
+        val bit = KafkaSyketilfellebit(
+            id = UUID.randomUUID().toString(),
+            fnr = "12345678987",
+            orgnummer = "org",
+            fom = LocalDate.now().minusDays(2),
+            tom = LocalDate.now(),
+            korrigererSendtSoknad = UUID.randomUUID().toString(),
+            inntruffet = OffsetDateTime.now().plusMinutes(2),
+            opprettet = OffsetDateTime.now().plusHours(3),
+            ressursId = UUID.randomUUID().toString(),
+            tags = setOf("SENDT", "SYKEPENGESOKNAD"),
+        )
+
+        val header = RecordHeaders().also { it.add(RecordHeader("kilde", "flex-syketilfelle".toByteArray())) }
+
+        sendSyketilfellebitPaKafka(bit, header)
+
+        await().during(2, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.count() == 0L
+        }
+        syketilfellebitRepository.count() `should be equal to` 0
     }
 }
