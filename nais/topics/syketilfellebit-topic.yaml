@@ -21,3 +21,6 @@ spec:
     - team: flex
       application: syfosyketilfelle
       access: readwrite
+    - team: teamsykefravr
+      application: isoppfolgingstilfelle
+      access: read
