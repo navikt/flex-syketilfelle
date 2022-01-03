@@ -45,3 +45,8 @@ spec:
         diskAutoresize: true
         databases:
           - name: flex-syketilfelle-db
+  env:
+  {{#each env}}
+     - name: {{@key}}
+       value: {{this}}
+  {{/each}}

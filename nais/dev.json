@@ -1,4 +1,7 @@
 {
   "azureTenant": "trygdeetaten.no",
-  "kafkaPool": "nav-dev"
+  "kafkaPool": "nav-dev",
+  "env": {
+    "SPRING_PROFILES_ACTIVE": "default,testdatareset"
+  }
 }

@@ -1,4 +1,7 @@
 {
   "azureTenant": "nav.no",
-  "kafkaPool": "nav-prod"
+  "kafkaPool": "nav-prod",
+  "env": {
+    "SPRING_PROFILES_ACTIVE": "default"
+  }
 }
