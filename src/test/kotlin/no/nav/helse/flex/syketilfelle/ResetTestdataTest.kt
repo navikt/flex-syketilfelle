@@ -33,7 +33,7 @@ class ResetTestdataTest : Testoppsett() {
         syketilfellebitRepository.save(bit)
         syketilfellebitRepository.save(bit.copy(fnr = "annet", syketilfellebitId = UUID.randomUUID().toString()))
         syketilfellebitRepository.count() `should be equal to` 2
-        sendKafkaMelding(fnr, fnr, TESTDATA_RESET_TOPIC)
+        sendKafkaMelding(UUID.randomUUID().toString(), fnr, TESTDATA_RESET_TOPIC)
         await().atMost(4, TimeUnit.SECONDS).until {
             syketilfellebitRepository.count() == 1L
         }
