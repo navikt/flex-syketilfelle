@@ -1,4 +1,4 @@
-package no.nav.helse.flex.syketilfelle.kafka
+package no.nav.helse.flex.syketilfelle.syketilfellebit
 
 import java.time.LocalDate
 import java.time.OffsetDateTime

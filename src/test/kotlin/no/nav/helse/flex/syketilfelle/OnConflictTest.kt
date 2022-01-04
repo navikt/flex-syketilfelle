@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle
 
-import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitBatchInsertDAO
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import org.amshove.kluent.`should be equal to`
 import org.junit.Before
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ class OnConflictTest : Testoppsett() {
         syketilfellebitRepository.deleteAll()
         syketilfellebitRepository.count() `should be equal to` 0
 
-        val bit = Syketilfellebit(
+        val bit = SyketilfellebitDbRecord(
             id = null,
             syketilfellebitId = UUID.randomUUID().toString(),
             fnr = "12345678987",
@@ -37,6 +37,7 @@ class OnConflictTest : Testoppsett() {
             opprettet = OffsetDateTime.now().plusHours(3),
             ressursId = UUID.randomUUID().toString(),
             tags = "SENDT,HEI",
+            publisert = true,
         )
 
         syketilfellebitBatchInsertDAO.batchInsert(listOf(bit, bit, bit, bit, bit, bit, bit, bit, bit, bit))

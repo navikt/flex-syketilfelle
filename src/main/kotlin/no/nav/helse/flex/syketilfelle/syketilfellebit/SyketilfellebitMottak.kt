@@ -1,7 +1,6 @@
 package no.nav.helse.flex.syketilfelle.syketilfellebit
 
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.logger
 import org.springframework.stereotype.Component
 import kotlin.system.measureTimeMillis
@@ -29,7 +28,7 @@ class SyketilfellebitMottak(
     }
 }
 
-private fun KafkaSyketilfellebit.tilSyketilfellebit(): Syketilfellebit = Syketilfellebit(
+private fun KafkaSyketilfellebit.tilSyketilfellebit(): SyketilfellebitDbRecord = SyketilfellebitDbRecord(
     id = null,
     syketilfellebitId = id,
     fnr = fnr,
@@ -40,9 +39,6 @@ private fun KafkaSyketilfellebit.tilSyketilfellebit(): Syketilfellebit = Syketil
     ressursId = ressursId,
     fom = fom,
     tom = tom,
-    korrigererSendtSoknad = korrigererSendtSoknad
+    korrigererSendtSoknad = korrigererSendtSoknad,
+    publisert = true,
 )
-
-fun Set<String>.asString() = this.joinToString(",")
-
-fun String.tagsFromString() = split(',').map(String::trim)

@@ -1,14 +1,17 @@
 package no.nav.helse.flex.syketilfelle
 
-import no.nav.helse.flex.syketilfelle.kafka.KafkaSyketilfellebit
-import no.nav.helse.flex.syketilfelle.kafka.SYKETILFELLEBIT_TOPIC
+import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import org.amshove.kluent.shouldBeEmpty
+import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.Headers
 import org.apache.kafka.common.header.internals.RecordHeaders
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -46,6 +49,9 @@ abstract class Testoppsett {
         }
     }
 
+    @Autowired
+    lateinit var kafkaConsumer: Consumer<String, String>
+
     @AfterAll
     fun `Vi tømmer databasen`() {
         syketilfellebitRepository.deleteAll()
@@ -66,6 +72,16 @@ abstract class Testoppsett {
 
     fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit, headers: Headers = RecordHeaders()) =
         sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC, headers)
+
+    @BeforeAll
+    fun `Vi leser kafka topicet og feiler om noe eksisterer`() {
+        kafkaConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
+        kafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
+    @AfterAll
+    fun `Vi leser topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
+        kafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
 }
 
 fun Any.serialisertTilString(): String = objectMapper.writeValueAsString(this)
