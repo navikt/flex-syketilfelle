@@ -20,9 +20,9 @@ class TestdataResetListener(val syketilfellebitRepository: SyketilfellebitReposi
         properties = ["auto.offset.reset = latest"],
     )
     fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
-        val fnr = cr.key()
+        val fnr = cr.value()
         val antall = syketilfellebitRepository.deleteByFnr(fnr)
-        log.info("Slettet $antall biter på fnr $fnr")
+        log.info("Slettet $antall biter på fnr $fnr - Key ${cr.key()}")
         acknowledgment.acknowledge()
     }
 }

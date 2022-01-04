@@ -89,7 +89,7 @@ class SyketilfellebitMottakTest : Testoppsett() {
 
         repeat(20) { sendBit() }
 
-        await().atMost(4, TimeUnit.SECONDS).until {
+        await().during(4, TimeUnit.SECONDS).until {
             syketilfellebitRepository.count() == 20L
         }
 
