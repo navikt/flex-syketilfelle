@@ -23,6 +23,15 @@ no.nav.security.jwt:
           client-id: client-id
           client-secret: secretzz
           client-auth-method: client_secret_basic
+  issuer:
+    loginservice:
+      discoveryurl: http://localhost:${mock-oauth2-server.port}/loginservice/.well-known/openid-configuration
+      accepted_audience: loginservice-client-id
+    azureator:
+      discoveryurl: http://localhost:${mock-oauth2-server.port}/azureator/.well-known/openid-configuration
+      accepted_audience: flex-syketilfelle-client-id
+
+AZURE_APP_PRE_AUTHORIZED_APPS: "[{\"name\":\"dev-fss:flex:syfosoknad\",\"clientId\":\"syfosoknad-client-id\"}]"
 
 aiven-kafka:
   auto-offset-reset: latest
