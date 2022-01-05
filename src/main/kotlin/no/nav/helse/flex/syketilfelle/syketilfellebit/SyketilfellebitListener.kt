@@ -1,8 +1,7 @@
-package no.nav.helse.flex.syketilfelle.kafka
+package no.nav.helse.flex.syketilfelle.syketilfellebit
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.objectMapper
-import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitMottak
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.header.Headers
 import org.springframework.kafka.annotation.KafkaListener
@@ -30,8 +29,7 @@ class SyketilfellebitListener(val syketilfellebitMottak: SyketilfellebitMottak) 
         this?.lastHeader(key)
             ?.value()
             ?.let { String(it, StandardCharsets.UTF_8) }
-
-    fun String.tilKafkaSyketilfellebit(): KafkaSyketilfellebit = objectMapper.readValue(this)
 }
+fun String.tilKafkaSyketilfellebit(): KafkaSyketilfellebit = objectMapper.readValue(this)
 
 const val SYKETILFELLEBIT_TOPIC = "flex.syketilfellebiter"

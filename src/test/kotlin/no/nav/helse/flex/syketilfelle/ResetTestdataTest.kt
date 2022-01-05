@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle
 
-import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.testdata.TESTDATA_RESET_TOPIC
 import org.amshove.kluent.`should be equal to`
 import org.awaitility.Awaitility.await
@@ -17,7 +17,7 @@ class ResetTestdataTest : Testoppsett() {
         syketilfellebitRepository.count() `should be equal to` 0
 
         val fnr = "12345678987"
-        val bit = Syketilfellebit(
+        val bit = SyketilfellebitDbRecord(
             id = null,
             syketilfellebitId = UUID.randomUUID().toString(),
             fnr = fnr,
@@ -29,6 +29,7 @@ class ResetTestdataTest : Testoppsett() {
             opprettet = OffsetDateTime.now().plusHours(3),
             ressursId = UUID.randomUUID().toString(),
             tags = "SENDT",
+            publisert = true,
         )
         syketilfellebitRepository.save(bit)
         syketilfellebitRepository.save(bit.copy(fnr = "annet", syketilfellebitId = UUID.randomUUID().toString()))

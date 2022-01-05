@@ -6,9 +6,11 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface SyketilfellebitRepository : CrudRepository<Syketilfellebit, String> {
+interface SyketilfellebitRepository : CrudRepository<SyketilfellebitDbRecord, String> {
     fun existsBySyketilfellebitId(syketilfellebitId: String): Boolean
-    fun findBySyketilfellebitId(syketilfellebitId: String): Syketilfellebit?
+    fun findBySyketilfellebitId(syketilfellebitId: String): SyketilfellebitDbRecord?
+    fun findByFnr(fnr: String): List<SyketilfellebitDbRecord>
+    fun findFirst300ByPublisertOrderByOpprettetAsc(publisert: Boolean): List<SyketilfellebitDbRecord>
     @Modifying
     @Query("delete from Syketilfellebit s where s.fnr = :fnr")
     fun deleteByFnr(fnr: String): Long

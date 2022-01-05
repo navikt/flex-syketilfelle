@@ -2,6 +2,8 @@ name: Bygg, publish og deploy
 on: push
 env:
   APP: flex-syketilfelle
+  ORG_GRADLE_PROJECT_githubUser: x-access-token
+  ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   build-and-publish:
     name: Bygg, test og push Docker image

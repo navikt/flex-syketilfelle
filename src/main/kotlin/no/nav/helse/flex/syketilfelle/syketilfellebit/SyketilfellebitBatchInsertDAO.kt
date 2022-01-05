@@ -14,7 +14,7 @@ class SyketilfellebitBatchInsertDAO(
     private val jdbcTemplate: JdbcTemplate
 ) {
 
-    fun batchInsert(biter: List<Syketilfellebit>): IntArray {
+    fun batchInsert(biter: List<SyketilfellebitDbRecord>): IntArray {
 
         val sql = """
 INSERT INTO  "syketilfellebit" 

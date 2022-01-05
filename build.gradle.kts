@@ -1,4 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "2.6.2"
@@ -23,12 +25,19 @@ buildscript {
 
 ext["okhttp3.version"] = "4.9.0" // For at token support testen kjører
 
+val githubUser: String by project
+val githubPassword: String by project
+
 apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
 repositories {
     mavenCentral()
     maven {
         url = uri("https://maven.pkg.github.com/navikt/maven-release")
+        credentials {
+            username = githubUser
+            password = githubPassword
+        }
     }
 }
 
@@ -36,6 +45,8 @@ val tokenSupportVersion = "1.3.9"
 val logstashEncoderVersion = "7.0.1"
 val testContainersVersion = "1.16.2"
 val kluentVersion = "1.68"
+val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
+val syfoSmCommon = "1.88ca328"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -56,6 +67,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
+    implementation("no.nav.syfo.kafka:felles:$syfoKafkaVersion")
 
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
 
@@ -67,7 +80,7 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
 }
 
-tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+tasks.getByName<BootJar>("bootJar") {
     this.archiveFileName.set("app.jar")
 }
 
@@ -81,6 +94,6 @@ tasks.withType<Test> {
     useJUnitPlatform()
     testLogging {
         events("STARTED", "PASSED", "FAILED", "SKIPPED")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        exceptionFormat = TestExceptionFormat.FULL
     }
 }

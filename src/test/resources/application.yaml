@@ -10,6 +10,7 @@ spring:
 
 
 logging.config: "classpath:logback-local.xml"
+elector.path: dont_look_for_leader
 
 aiven-kafka:
   auto-offset-reset: latest
