@@ -2,6 +2,11 @@ package no.nav.helse.flex.syketilfelle
 
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import okhttp3.mockwebserver.MockWebServer
 import org.amshove.kluent.shouldBeEmpty
@@ -14,7 +19,9 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
@@ -24,7 +31,13 @@ private class PostgreSQLContainer12 : PostgreSQLContainer<PostgreSQLContainer12>
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 @EnableMockOAuth2Server
+@AutoConfigureMockMvc
 abstract class Testoppsett {
+    @Autowired
+    lateinit var mockMvc: MockMvc
+
+    @Autowired
+    lateinit var server: MockOAuth2Server
 
     @Autowired
     lateinit var kafkaProducer: KafkaProducer<String, String>
@@ -76,6 +89,15 @@ abstract class Testoppsett {
             )
         ).get()
     }
+
+    fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit, headers: Headers = RecordHeaders()) =
+        sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC, headers)
+
+    fun producerPåSendtBekreftetTopic(sykmeldingSendtBekreftet: SykmeldingKafkaMessage) =
+        sendKafkaMelding(sykmeldingSendtBekreftet.sykmelding.id, sykmeldingSendtBekreftet.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)
+
+    fun producerPåMottattTopic(sykmeldingMottatt: MottattSykmeldingKafkaMessage) =
+        sendKafkaMelding(sykmeldingMottatt.sykmelding.id, sykmeldingMottatt.serialisertTilString(), SYKMELDINGMOTTATT_TOPIC)
 
     @BeforeAll
     fun `Vi leser kafka topicet og feiler om noe eksisterer`() {
