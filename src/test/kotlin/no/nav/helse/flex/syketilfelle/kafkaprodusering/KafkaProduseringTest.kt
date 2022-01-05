@@ -1,11 +1,12 @@
 package no.nav.helse.flex.syketilfelle.kafkaprodusering
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SENDT
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SYKEPENGESOKNAD
-import no.nav.helse.flex.syketilfelle.syketilfellebit.tilKafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.ventPåRecords
 import org.amshove.kluent.`should be equal to`
@@ -131,3 +132,5 @@ class KafkaProduseringTest : Testoppsett() {
 
 fun ConsumerRecord<String, String>.deserialisert(): Pair<String, KafkaSyketilfellebit> =
     Pair(key(), value().tilKafkaSyketilfellebit())
+
+fun String.tilKafkaSyketilfellebit(): KafkaSyketilfellebit = objectMapper.readValue(this)
