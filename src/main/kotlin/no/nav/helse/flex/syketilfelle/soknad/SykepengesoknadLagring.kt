@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.soknad
 
+import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitLagring
 import no.nav.syfo.kafka.felles.ArbeidssituasjonDTO
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
@@ -12,10 +13,12 @@ class SykepengesoknadLagring(
     private val syketilfellebitLagring: SyketilfellebitLagring,
 ) {
 
+    val log = logger()
+
     fun lagreBiterFraSoknad(soknad: SykepengesoknadDTO) {
 
         if (soknad.skalBehandles()) {
-
+            log.info("Behandler soknad ${soknad.id}")
             if (soknad.status == SoknadsstatusDTO.SENDT) {
                 val biter = soknad.mapSoknadTilBiter()
                 syketilfellebitLagring.lagreBiter(biter)
