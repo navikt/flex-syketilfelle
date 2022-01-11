@@ -46,6 +46,8 @@ spec:
         diskAutoresize: true
         databases:
           - name: flex-syketilfelle-db
+  envFrom:
+    - configmap: loginservice-idporten
   env:
   {{#each env}}
      - name: {{@key}}
