@@ -59,3 +59,4 @@ spec:
         - application: syfosoknad
           namespace: flex
           cluster: {{environment}}-fss
+        - application: flex-gateway
