@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SyketilfellebitRepository : CrudRepository<SyketilfellebitDbRecord, String> {
     fun existsBySyketilfellebitId(syketilfellebitId: String): Boolean
+    fun findByFnrIn(fnrs: List<String>): List<SyketilfellebitDbRecord>
     fun findBySyketilfellebitId(syketilfellebitId: String): SyketilfellebitDbRecord?
     fun findByFnr(fnr: String): List<SyketilfellebitDbRecord>
     fun findFirst300ByPublisertOrderByOpprettetAsc(publisert: Boolean): List<SyketilfellebitDbRecord>

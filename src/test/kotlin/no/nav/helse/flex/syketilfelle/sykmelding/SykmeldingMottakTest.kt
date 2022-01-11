@@ -1,7 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
 import no.nav.helse.flex.syketilfelle.Testoppsett
-import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -302,10 +301,4 @@ class SykmeldingMottakTest : Testoppsett() {
         biter[0].inntruffet `should be equal to ignoring nano and zone` event.timestamp
         assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.REISETILSKUDD, Tag.UKJENT_AKTIVITET))
     }
-
-    private fun producerPåSendtBekreftetTopic(sykmeldingSendtBekreftet: SykmeldingKafkaMessage) =
-        sendKafkaMelding(sykmeldingSendtBekreftet.sykmelding.id, sykmeldingSendtBekreftet.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)
-
-    private fun producerPåMottattTopic(sykmeldingMottatt: MottattSykmeldingKafkaMessage) =
-        sendKafkaMelding(sykmeldingMottatt.sykmelding.id, sykmeldingMottatt.serialisertTilString(), SYKMELDINGMOTTATT_TOPIC)
 }
