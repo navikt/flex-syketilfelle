@@ -12,6 +12,8 @@ spec:
     max: 3
     cpuThresholdPercentage: 90
   port: 8080
+  ingresses:
+    - {{ingress}}
   liveness:
     path: /internal/health
     initialDelay: 10
