@@ -5,14 +5,27 @@ import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.util.*
 
-fun Testoppsett.hentSykeforloepMedLoginserviceToken(fnr: String): List<Sykeforloep> {
+fun Testoppsett.hentSykeforloepSomBruker(fnr: String): List<Sykeforloep> {
     val json = mockMvc.perform(
-        MockMvcRequestBuilders.get("/api/v1/sykeforloep")
+        get("/api/bruker/v1/sykeforloep")
             .header("Authorization", "Bearer ${server.loginserviceToken(subject = fnr)}")
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun Testoppsett.hentSykeforloep(fnr: List<String>, hentAndreIdenter: Boolean = true, token: String = server.azureToken(subject = "syfosoknad-client-id")): List<Sykeforloep> {
+
+    val json = mockMvc.perform(
+        get("/api/v1/sykeforloep")
+            .header("Authorization", "Bearer $token")
+            .header("fnr", fnr.joinToString(separator = ", "))
+            .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
             .contentType(MediaType.APPLICATION_JSON)
     ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 

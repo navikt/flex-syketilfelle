@@ -1,6 +1,7 @@
 {
   "azureTenant": "nav.no",
   "kafkaPool": "nav-prod",
+  "environment": "prod",
   "env": {
     "PDL_BASE_URL": "https://pdl-api.prod-fss-pub.nais.io",
     "PDL_API_AAD_CLIENT_ID": "prod-fss.pdl.pdl-api"

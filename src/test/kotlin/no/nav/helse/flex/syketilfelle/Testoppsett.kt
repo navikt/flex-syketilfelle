@@ -90,9 +90,6 @@ abstract class Testoppsett {
         ).get()
     }
 
-    fun sendSyketilfellebitPaKafka(bit: KafkaSyketilfellebit, headers: Headers = RecordHeaders()) =
-        sendKafkaMelding(bit.fnr, bit.serialisertTilString(), SYKETILFELLEBIT_TOPIC, headers)
-
     fun producerPåSendtBekreftetTopic(sykmeldingSendtBekreftet: SykmeldingKafkaMessage) =
         sendKafkaMelding(sykmeldingSendtBekreftet.sykmelding.id, sykmeldingSendtBekreftet.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)
 

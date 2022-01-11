@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
-import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
@@ -14,11 +13,9 @@ import java.util.ArrayList
 @Component
 class SykeforloepUtregner(
     private val syketilfellebitRepository: SyketilfellebitRepository,
-    private val pdlClient: PdlClient,
 ) {
 
-    fun hentSykeforloep(fnr: String, inkluderPapirsykmelding: Boolean): List<Sykeforloep> {
-        val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
+    fun hentSykeforloep(fnrs: List<String>, inkluderPapirsykmelding: Boolean): List<Sykeforloep> {
         return syketilfellebitRepository
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }

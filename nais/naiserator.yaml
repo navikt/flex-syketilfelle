@@ -51,3 +51,9 @@ spec:
      - name: {{@key}}
        value: {{this}}
   {{/each}}
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfosoknad
+          namespace: flex
+          cluster: {{environment}}-fss
