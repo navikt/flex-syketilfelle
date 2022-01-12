@@ -4,6 +4,9 @@ import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
 import no.nav.helse.flex.syketilfelle.hentSykeforloepSomBruker
+import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
+import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
+import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
@@ -207,6 +210,50 @@ class SykeforloepTest : Testoppsett() {
                 )
             )
         )
+    }
+
+    @Test
+    fun `kan inkludere papirsykmelding om konsument ønsker det`() {
+
+        syketilfellebitRepository.save(
+            Syketilfellebit(
+                fnr = fnr,
+                orgnummer = null,
+                tags = setOf(Tag.PAPIRSYKMELDING, Tag.SENDT, Tag.SYKEPENGESOKNAD),
+                inntruffet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
+                opprettet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
+                ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff151",
+                fom = LocalDate.of(2019, 1, 25),
+                tom = LocalDate.of(2019, 1, 31)
+            ).tilSyketilfellebitDbRecord()
+        )
+
+        syketilfellebitRepository.save(
+            Syketilfellebit(
+                fnr = fnr,
+                orgnummer = null,
+                tags = setOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                inntruffet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
+                opprettet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
+                ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
+                fom = LocalDate.of(2019, 2, 1),
+                tom = LocalDate.of(2019, 2, 20),
+            ).tilSyketilfellebitDbRecord()
+        )
+
+        val sykeforloepMedPapirsykmedling =
+            hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, inkluderPapirsykmelding = true, token = server.azureToken(subject = "sparenaproxy-client-id"))
+
+        assertThat(sykeforloepMedPapirsykmedling).hasSize(1)
+        assertThat(sykeforloepMedPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 1, 25))
+
+        val sykeforloepUtenPapirsykmedling =
+            hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, inkluderPapirsykmelding = false, token = server.azureToken(subject = "sparenaproxy-client-id"))
+
+        assertThat(sykeforloepUtenPapirsykmedling).hasSize(1)
+        assertThat(sykeforloepUtenPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 2, 1))
+
+        sykeforloepUtenPapirsykmedling `should not be equal to` sykeforloepMedPapirsykmedling
     }
 
     @Test

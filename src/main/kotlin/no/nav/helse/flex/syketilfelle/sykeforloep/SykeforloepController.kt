@@ -26,16 +26,31 @@ class SykeforloepController(
     fun hentVedtak(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false,
     ): List<Sykeforloep> {
         clientIdValidation.validateClientId(
-            NamespaceAndApp(
-                namespace = "flex",
-                app = "syfosoknad"
+            listOf(
+                NamespaceAndApp(
+                    namespace = "flex",
+                    app = "syfosoknad",
+                ),
+                NamespaceAndApp(
+                    namespace = "teamsykmelding",
+                    app = "sparenaproxy",
+                ),
+                NamespaceAndApp(
+                    namespace = "teamsykmelding",
+                    app = "syfosmregler",
+                ),
+                NamespaceAndApp(
+                    namespace = "teamsykmelding",
+                    app = "syfosmpapirregler",
+                )
             )
         )
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
-        return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = false)
+        return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding)
     }
 
     @GetMapping("/api/bruker/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE])

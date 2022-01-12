@@ -19,13 +19,14 @@ fun Testoppsett.hentSykeforloepSomBruker(fnr: String): List<Sykeforloep> {
     return objectMapper.readValue(json)
 }
 
-fun Testoppsett.hentSykeforloep(fnr: List<String>, hentAndreIdenter: Boolean = true, token: String = server.azureToken(subject = "syfosoknad-client-id")): List<Sykeforloep> {
+fun Testoppsett.hentSykeforloep(fnr: List<String>, hentAndreIdenter: Boolean = true, inkluderPapirsykmelding: Boolean = true, token: String = server.azureToken(subject = "syfosoknad-client-id")): List<Sykeforloep> {
 
     val json = mockMvc.perform(
         get("/api/v1/sykeforloep")
             .header("Authorization", "Bearer $token")
             .header("fnr", fnr.joinToString(separator = ", "))
             .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+            .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
             .contentType(MediaType.APPLICATION_JSON)
     ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 

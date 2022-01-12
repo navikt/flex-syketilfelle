@@ -62,3 +62,12 @@ spec:
           namespace: flex
           cluster: {{environment}}-fss
         - application: flex-gateway
+        - application: sparenaproxy
+          namespace: teamsykmelding
+          cluster: {{environment}}-fss
+        - application: syfosmregler
+          namespace: teamsykmelding
+          cluster: {{environment}}-fss
+        - application: syfosmpapirregler
+          namespace: teamsykmelding
+          cluster: {{environment}}-fss
