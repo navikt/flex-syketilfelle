@@ -3,12 +3,11 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
-import no.nav.syfo.model.sykmelding.model.*
-import no.nav.syfo.model.sykmeldingstatus.*
+import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
@@ -17,10 +16,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
-import java.time.OffsetDateTime
-import java.util.*
 
-class VentetidTest : Testoppsett() {
+class VentetidTest : VentetidFellesOppsett, Testoppsett() {
 
     private val mandag = LocalDate.of(2020, Month.JUNE, 1)
     private val søndag = mandag.minusDays(1)
@@ -29,9 +26,9 @@ class VentetidTest : Testoppsett() {
     private val onsdag = mandag.plusDays(2)
 
     @Autowired
-    private lateinit var sykmeldingLagring: SykmeldingLagring
+    override lateinit var sykmeldingLagring: SykmeldingLagring
 
-    final val fnr = "12345432123"
+    final override val fnr = "12345432123"
 
     @BeforeEach
     @AfterEach
@@ -45,7 +42,11 @@ class VentetidTest : Testoppsett() {
             fom = mandag,
             tom = mandag.plusDays(16)
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -54,7 +55,11 @@ class VentetidTest : Testoppsett() {
             fom = søndag,
             tom = søndag.plusDays(16)
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -63,7 +68,11 @@ class VentetidTest : Testoppsett() {
             fom = lørdag.minusDays(16),
             tom = lørdag
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -72,7 +81,11 @@ class VentetidTest : Testoppsett() {
             fom = fredag.minusDays(16),
             tom = fredag
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -81,7 +94,11 @@ class VentetidTest : Testoppsett() {
             fom = mandag,
             tom = mandag.plusDays(15)
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -96,7 +113,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(17)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -111,7 +132,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(2)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -126,7 +151,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(15)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -141,7 +170,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.plusDays(15)
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -157,7 +190,11 @@ class VentetidTest : Testoppsett() {
             tom = LocalDate.of(2021, 1, 18)
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -172,7 +209,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(2)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
+        ).`should be false`()
     }
 
     @Test
@@ -187,7 +228,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(15)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
+        ).`should be true`()
     }
 
     @Test
@@ -202,7 +247,11 @@ class VentetidTest : Testoppsett() {
             tom = LocalDate.of(2018, 9, 26)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -243,7 +292,11 @@ class VentetidTest : Testoppsett() {
             tom = LocalDate.of(2018, 9, 26)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -254,7 +307,11 @@ class VentetidTest : Testoppsett() {
             type = PeriodetypeDTO.AVVENTENDE
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -265,7 +322,11 @@ class VentetidTest : Testoppsett() {
             type = PeriodetypeDTO.REISETILSKUDD
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -275,7 +336,11 @@ class VentetidTest : Testoppsett() {
             tom = mandag.plusDays(3),
             harRedusertArbeidsgiverperiode = true
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -285,7 +350,11 @@ class VentetidTest : Testoppsett() {
             tom = mandag.plusDays(2),
             harRedusertArbeidsgiverperiode = true
         ).also { it.publiser() }
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -302,7 +371,11 @@ class VentetidTest : Testoppsett() {
             harRedusertArbeidsgiverperiode = true
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -319,7 +392,11 @@ class VentetidTest : Testoppsett() {
             harRedusertArbeidsgiverperiode = true
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -334,7 +411,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.minusDays(2)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -345,7 +426,11 @@ class VentetidTest : Testoppsett() {
             type = PeriodetypeDTO.BEHANDLINGSDAGER
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be false`()
     }
 
     @Test
@@ -361,7 +446,11 @@ class VentetidTest : Testoppsett() {
             tom = mandag.minusDays(1)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -377,7 +466,11 @@ class VentetidTest : Testoppsett() {
             tom = mandag.minusDays(2)
         ).publiser()
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -392,7 +485,11 @@ class VentetidTest : Testoppsett() {
             tom = LocalDate.of(2020, 8, 31)
         ).also { it.publiser() }
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest()).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest()
+        ).`should be true`()
     }
 
     @Test
@@ -402,7 +499,11 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.plusDays(16)
         )
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
+        ).`should be true`()
     }
 
     @Test
@@ -411,7 +512,11 @@ class VentetidTest : Testoppsett() {
             fom = onsdag,
             tom = onsdag.plusDays(15)
         )
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)).`should be false`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
+        ).`should be false`()
     }
 
     @Test
@@ -429,7 +534,11 @@ class VentetidTest : Testoppsett() {
             )
         )
 
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)).`should be true`()
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
+        ).`should be true`()
     }
 
     @Test
@@ -439,60 +548,19 @@ class VentetidTest : Testoppsett() {
             tom = onsdag.plusDays(15)
         ).also { it.publiser() }
 
-        val tilleggsopplysninger = Tilleggsopplysninger(egenmeldingsperioder = listOf(Datospenn(fom = onsdag.minusDays(1), tom = onsdag.minusDays(1))))
-
-        erUtenforVentetid(listOf(element = fnr), sykmeldingId = melding.sykmelding.id, erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger)).`should be true`()
-    }
-
-    private fun MottattSykmeldingKafkaMessage.publiser() {
-        sykmeldingLagring.handterMottattSykmelding("key", this)
-    }
-
-    private fun skapApenSykmeldingKafkaMessage(
-        fom: LocalDate = LocalDate.now(),
-        tom: LocalDate = LocalDate.now(),
-        harRedusertArbeidsgiverperiode: Boolean = false,
-        type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG
-    ): MottattSykmeldingKafkaMessage {
-
-        val sykmeldingId = UUID.randomUUID().toString()
-        return MottattSykmeldingKafkaMessage(
-            sykmelding = skapArbeidsgiverSykmelding(
-                fom = fom,
-                tom = tom,
-                sykmeldingId = sykmeldingId,
-                harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
-                type = type,
-
-            ),
-            kafkaMetadata = KafkaMetadataDTO(
-                sykmeldingId = sykmeldingId,
-                fnr = fnr,
-                timestamp = OffsetDateTime.now(),
-                source = "Denne testen"
+        val tilleggsopplysninger = Tilleggsopplysninger(
+            egenmeldingsperioder = listOf(
+                Datospenn(
+                    fom = onsdag.minusDays(1),
+                    tom = onsdag.minusDays(1)
+                )
             )
         )
-    }
 
-    private fun skapSykmeldingKafkaMessage(
-        fom: LocalDate = LocalDate.now(),
-        tom: LocalDate = LocalDate.now(),
-        harRedusertArbeidsgiverperiode: Boolean = false,
-        type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-        sporsmals: List<SporsmalOgSvarDTO>? = null
-    ): SykmeldingKafkaMessage {
-
-        val apen = skapApenSykmeldingKafkaMessage(fom, tom, harRedusertArbeidsgiverperiode, type)
-
-        return SykmeldingKafkaMessage(
-            sykmelding = apen.sykmelding, kafkaMetadata = apen.kafkaMetadata,
-            event = SykmeldingStatusKafkaEventDTO(
-                sykmeldingId = apen.sykmelding.id,
-                timestamp = OffsetDateTime.now(),
-                statusEvent = STATUS_BEKREFTET,
-                arbeidsgiver = null,
-                sporsmals = sporsmals
-            )
-        )
+        erUtenforVentetid(
+            listOf(element = fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger)
+        ).`should be true`()
     }
 }
