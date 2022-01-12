@@ -54,7 +54,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         val aktuellSykmeldingBiter = syketilfellebiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter til sykmelding $sykmeldingId og i flex-syketilfelledatabasen.")
+            log.error("Fant ikke biter til sykmelding $sykmeldingId i flex-syketilfelledatabasen.")
             return false
         }
 
