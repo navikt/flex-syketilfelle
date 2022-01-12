@@ -2,12 +2,14 @@ package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
+import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
@@ -43,10 +45,14 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = mandag.plusDays(16)
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
+
+        val ventetidResponse = erUtenforVentetidSomBruker(fnr, sykmeldingId = melding.sykmelding.id)
+        ventetidResponse.erUtenforVentetid.`should be true`()
+        ventetidResponse.oppfolgingsdato `should be equal to` mandag
     }
 
     @Test
@@ -56,7 +62,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = søndag.plusDays(16)
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -69,10 +75,14 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = lørdag
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
+
+        val ventetidResponse = erUtenforVentetidSomBruker(fnr, sykmeldingId = melding.sykmelding.id)
+        ventetidResponse.erUtenforVentetid.`should be false`()
+        ventetidResponse.oppfolgingsdato `should be equal to` lørdag.minusDays(16)
     }
 
     @Test
@@ -82,7 +92,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = fredag
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -95,7 +105,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = mandag.plusDays(15)
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -114,7 +124,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -133,7 +143,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -152,7 +162,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -171,7 +181,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -191,7 +201,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -210,7 +220,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
         ).`should be false`()
@@ -229,7 +239,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
         ).`should be true`()
@@ -248,7 +258,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -293,7 +303,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -308,7 +318,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -323,7 +333,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -337,7 +347,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             harRedusertArbeidsgiverperiode = true
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -351,7 +361,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             harRedusertArbeidsgiverperiode = true
         ).also { it.publiser() }
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -372,7 +382,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -393,7 +403,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -412,7 +422,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -427,7 +437,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
@@ -447,7 +457,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -467,7 +477,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).publiser()
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -486,7 +496,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         ).also { it.publiser() }
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
@@ -500,7 +510,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         )
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
         ).`should be true`()
@@ -513,7 +523,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             tom = onsdag.plusDays(15)
         )
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
         ).`should be false`()
@@ -535,7 +545,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         )
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding)
         ).`should be true`()
@@ -558,7 +568,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
         )
 
         erUtenforVentetid(
-            listOf(element = fnr),
+            listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger)
         ).`should be true`()

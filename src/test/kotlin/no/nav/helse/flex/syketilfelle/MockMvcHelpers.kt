@@ -3,6 +3,7 @@ package no.nav.helse.flex.syketilfelle
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
+import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
@@ -34,6 +35,20 @@ fun Testoppsett.hentSykeforloep(
             .header("fnr", fnr.joinToString(separator = ", "))
             .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
             .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun Testoppsett.erUtenforVentetidSomBruker(
+    fnr: String,
+    sykmeldingId: String,
+): ErUtenforVentetidResponse {
+
+    val json = mockMvc.perform(
+        get("/api/bruker/v1/ventetid/$sykmeldingId/erUtenforVentetid")
+            .header("Authorization", "Bearer ${server.loginserviceToken(subject = fnr)}")
             .contentType(MediaType.APPLICATION_JSON)
     ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 
