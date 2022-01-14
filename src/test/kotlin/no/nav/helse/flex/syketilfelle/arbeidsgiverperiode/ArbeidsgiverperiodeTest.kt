@@ -198,8 +198,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         )
 
         val res = post(soknad = soknad)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
 
     @Test
@@ -283,8 +283,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         )
 
         val res = post(soknad = soknad)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 3, 11))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 3, 11))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 11))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 11))
     }
 
     @Test
@@ -375,8 +375,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         )
 
         val res = post(soknad = soknad)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
 
     @Test
@@ -432,8 +432,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         val res = post(soknad = soknad)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
 
     @Test
@@ -455,8 +455,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         val res = post(soknad = soknad)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(soknad.fom)
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(soknad.tom!!.minusDays(1))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(soknad.fom)
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(soknad.tom!!.minusDays(1))
     }
 
     @Test
@@ -477,8 +477,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         val res = post(soknad = soknad)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(soknad.fom)
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(soknad.tom)
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(soknad.fom)
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(soknad.tom)
     }
 
     @Test
@@ -513,8 +513,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         val res = post(soknad = soknad)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 3, 1))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 3, 16))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 16))
     }
 
     @Test
@@ -574,8 +574,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         val res = post(soknad = soknad)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 3, 16))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 3, 18))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 16))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 18))
     }
 
     @Test
@@ -636,8 +636,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         val res = post(soknad = soknad)
 
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
 
     @Test
@@ -673,8 +673,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         val res = post(soknad = soknad)
 
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2019, 2, 5))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2019, 2, 20))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 5))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 20))
     }
 
     @Test
@@ -815,8 +815,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         val res = post(soknad = soknad)
         assertThat(res?.antallBrukteDager).isEqualTo(26)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
-        assertThat(res?.arbeidsgiverperiode?.fom).isEqualTo(LocalDate.of(2020, 1, 27))
-        assertThat(res?.arbeidsgiverperiode?.tom).isEqualTo(LocalDate.of(2020, 2, 11))
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2020, 1, 27))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2020, 2, 11))
     }
 
     private fun post(
