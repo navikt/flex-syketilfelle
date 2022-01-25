@@ -60,23 +60,24 @@ class ArbeidsgiverperiodeController(
             )
 
         arbeidsgiverperiode?.let {
+
+            // TODO ikke produser for dry runs
             juridiskVurderingKafkaProducer.produserMelding(
                 JuridiskVurdering(
-                    fødselsnummer = fnr,
-                    sporing = mapOf(
-                        sykepengesoknadDTO.id to "SØKNAD",
-                        sykepengesoknadDTO.sykmeldingId!! to "SYKMELDING"
-                    ),
-                    input = mapOf("in" to "TODO!!"),
-                    output = mapOf("arbeidsgiverperiode" to it),
+                    fødselsnummer = alleFnrs.first(),
+                    sporing = hashMapOf(sykepengesoknadDTO.id to "SØKNAD")
+                        .also {
+                            sykepengesoknadDTO.sykmeldingId?.let { sykmeldingId ->
+                                it[sykmeldingId] = "SYKMELDING"
+                            }
+                        },
+                    input = mapOf("in" to "TODO!!"), // TODO hva er input?
+                    output = mapOf("arbeidsgiverperiode" to it), // TODO grei output
                     lovverk = "folketrygdloven",
                     paragraf = "§8-19",
-                    ledd = null,
-                    punktum = null,
-                    bokstav = null,
-                    lovverksversjon = LocalDate.of(1997, 5, 1),
-                    organisasjonsnummer = sykepengesoknadDTO.arbeidsgiver?.orgnummer ?: "TODO optional i schema",
-                    utfall = Utfall.VILKAR_BEREGNET,
+                    lovverksversjon = LocalDate.of(2001, 1, 1),
+                    organisasjonsnummer = sykepengesoknadDTO.arbeidsgiver?.orgnummer,
+                    utfall = Utfall.VILKAR_UAVKLART, // TODO hva skal denne være
                 )
             )
         }

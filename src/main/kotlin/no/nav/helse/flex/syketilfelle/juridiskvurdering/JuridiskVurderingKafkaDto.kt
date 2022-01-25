@@ -15,7 +15,7 @@ data class JuridiskVurderingKafkaDto(
     val kilde: String,
     val versjonAvKode: String,
     val fødselsnummer: String,
-    val organisasjonsnummer: String,
+    val organisasjonsnummer: String?,
     val sporing: Map<String, String>,
     val tidsstempel: Instant,
     val lovverk: String,
