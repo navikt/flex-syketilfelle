@@ -40,8 +40,7 @@ class JuridiskVurderingKafkaProducer(
 
     fun JuridiskVurdering.tilDto(): JuridiskVurderingKafkaDto = JuridiskVurderingKafkaDto(
         bokstav = bokstav,
-        fødselsnummer = fødselsnummer,
-        organisasjonsnummer = organisasjonsnummer,
+        fodselsnummer = fodselsnummer,
         sporing = sporing,
         lovverk = lovverk,
         lovverksversjon = lovverksversjon,

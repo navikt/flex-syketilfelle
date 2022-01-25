@@ -3,8 +3,7 @@ package no.nav.helse.flex.syketilfelle.juridiskvurdering
 import java.time.LocalDate
 
 data class JuridiskVurdering(
-    val fødselsnummer: String,
-    val organisasjonsnummer: String?,
+    val fodselsnummer: String,
     val sporing: Map<String, String>,
     val lovverk: String,
     val lovverksversjon: LocalDate,

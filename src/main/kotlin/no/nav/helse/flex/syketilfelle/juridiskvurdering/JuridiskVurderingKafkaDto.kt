@@ -14,8 +14,7 @@ data class JuridiskVurderingKafkaDto(
     @JsonProperty("@kilde")
     val kilde: String,
     val versjonAvKode: String,
-    val fødselsnummer: String,
-    val organisasjonsnummer: String?,
+    val fodselsnummer: String,
     val sporing: Map<String, String>,
     val tidsstempel: Instant,
     val lovverk: String,
