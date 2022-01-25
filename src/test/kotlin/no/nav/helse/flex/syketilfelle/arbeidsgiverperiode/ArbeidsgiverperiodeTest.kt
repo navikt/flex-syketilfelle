@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 class ArbeidsgiverperiodeTest : Testoppsett() {
 
@@ -194,6 +195,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -279,6 +281,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -371,6 +374,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 ),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -427,6 +431,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -449,6 +454,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             arbeidGjenopptatt = (null),
             egenmeldinger = (emptyList()),
             fnr = fnr,
+            sykmeldingId = UUID.randomUUID().toString(),
             status = SoknadsstatusDTO.SENDT,
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
@@ -472,6 +478,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -508,6 +515,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -569,6 +577,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -630,6 +639,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -667,7 +677,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
+            type = SoknadstypeDTO.ARBEIDSTAKERE,
+            sykmeldingId = UUID.randomUUID().toString(),
         )
 
         val res = post(soknad = soknad)
@@ -809,6 +820,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             fom = (LocalDate.of(2020, 3, 9)),
             egenmeldinger = (emptyList()),
             fnr = fnr,
+            sykmeldingId = UUID.randomUUID().toString(),
             status = SoknadsstatusDTO.SENDT,
         )
 
