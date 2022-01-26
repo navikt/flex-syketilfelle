@@ -15,7 +15,7 @@ class CronJob(
 ) {
     val log = logger()
 
-    @Scheduled(initialDelay = 20000, fixedDelay = 10, timeUnit = TimeUnit.MILLISECONDS)
+    @Scheduled(initialDelay = 60 * 1000, fixedDelay = 10, timeUnit = TimeUnit.MILLISECONDS)
     fun run() {
         if (leaderElection.isLeader()) {
             try {
