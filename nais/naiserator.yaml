@@ -8,8 +8,8 @@ metadata:
 spec:
   image: {{image}}
   replicas:
-    min: 2
-    max: 3
+    min: 3
+    max: 4
     cpuThresholdPercentage: 90
   port: 8080
   ingresses:
@@ -31,11 +31,11 @@ spec:
     path: /internal/prometheus
   resources:
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: 700m
+      memory: 800Mi
     requests:
       cpu: 200m
-      memory: 100Mi
+      memory: 400Mi
   azure:
     application:
       enabled: true
