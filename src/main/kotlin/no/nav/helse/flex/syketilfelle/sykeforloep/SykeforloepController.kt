@@ -44,6 +44,10 @@ class SykeforloepController(
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
                     app = "syfosmpapirregler",
+                ),
+                NamespaceAndApp(
+                    namespace = "teamsykmelding",
+                    app = "dinesykmeldte-backend",
                 )
             )
         )
