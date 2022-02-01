@@ -15,7 +15,7 @@ data class JuridiskVurderingKafkaDto(
     val kilde: String,
     val versjonAvKode: String,
     val fodselsnummer: String,
-    val sporing: Map<String, String>,
+    val sporing: Map<String, SporingType>,
     val tidsstempel: Instant,
     val lovverk: String,
     val lovverksversjon: LocalDate,
@@ -30,7 +30,17 @@ data class JuridiskVurderingKafkaDto(
 
 enum class Utfall {
     VILKAR_OPPFYLT,
+    VILKAR_DELVIS_OPPFYLT,
     VILKAR_IKKE_OPPFYLT,
     VILKAR_UAVKLART,
     VILKAR_BEREGNET
+}
+
+enum class SporingType {
+    organisasjonsnummer,
+    soknad,
+    sykmelding,
+    vedtaksperiode,
+    inntektsmelding,
+    utbetaling,
 }

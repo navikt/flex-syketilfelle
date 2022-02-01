@@ -3,7 +3,6 @@ package no.nav.helse.flex.syketilfelle.juridiskvurdering
 import no.nav.helse.flex.syketilfelle.logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -16,25 +15,29 @@ class JuridiskVurderingKafkaProducer(
     private val naisAppName: String,
     @Value("\${nais.app.image}")
     private val naisAppImage: String,
+    @Value("\${juridisk.vurdering.enabled}")
+    private val enabled: Boolean,
 ) {
     val log = logger()
 
-    fun produserMelding(juridiskVurdering: JuridiskVurdering): RecordMetadata {
-        val dto = juridiskVurdering.tilDto()
-        try {
-            return producer.send(
-                ProducerRecord(
-                    juridiskVurderingTopic,
-                    dto.id,
-                    dto
+    fun produserMelding(juridiskVurdering: JuridiskVurdering) {
+        if (enabled) {
+            val dto = juridiskVurdering.tilDto()
+            try {
+                producer.send(
+                    ProducerRecord(
+                        juridiskVurderingTopic,
+                        dto.id,
+                        dto
+                    )
+                ).get()
+            } catch (e: Throwable) {
+                log.warn(
+                    "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
+                    e
                 )
-            ).get()
-        } catch (e: Throwable) {
-            log.warn(
-                "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
-                e
-            )
-            throw e
+                throw e
+            }
         }
     }
 
@@ -59,4 +62,4 @@ class JuridiskVurderingKafkaProducer(
     )
 }
 
-val juridiskVurderingTopic = "flex.juridisk-vurdering-test"
+val juridiskVurderingTopic = "flex.omrade-helse-etterlevelse"
