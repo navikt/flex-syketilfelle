@@ -16,12 +16,12 @@ class JuridiskVurderingKafkaProducer(
     @Value("\${nais.app.image}")
     private val naisAppImage: String,
     @Value("\${juridisk.vurdering.enabled}")
-    private val enabled: Boolean,
+    private val enabled: String,
 ) {
     val log = logger()
 
     fun produserMelding(juridiskVurdering: JuridiskVurdering) {
-        if (enabled) {
+        if (enabled == "enabled") {
             val dto = juridiskVurdering.tilDto()
             try {
                 producer.send(
