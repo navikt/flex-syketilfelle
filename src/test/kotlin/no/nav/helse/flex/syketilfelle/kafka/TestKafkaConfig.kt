@@ -28,7 +28,10 @@ class TestKafkaConfig(
     }
 
     @Bean
-    fun kafkaConsumer() = KafkaConsumer<String, String>(consumerConfig())
+    fun syketilfelleBitConsumer() = KafkaConsumer<String, String>(consumerConfig())
+
+    @Bean
+    fun juridiskVurderingKafkaConsumer() = KafkaConsumer<String, String>(consumerConfig())
 
     private fun consumerConfig() = mapOf(
         ConsumerConfig.GROUP_ID_CONFIG to UUID.randomUUID().toString(),

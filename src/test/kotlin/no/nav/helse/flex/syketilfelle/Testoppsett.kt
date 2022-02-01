@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle
 
+import no.nav.helse.flex.syketilfelle.juridiskvurdering.juridiskVurderingTopic
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
@@ -70,7 +71,10 @@ abstract class Testoppsett {
     }
 
     @Autowired
-    lateinit var kafkaConsumer: Consumer<String, String>
+    lateinit var syketilfelleBitConsumer: Consumer<String, String>
+
+    @Autowired
+    lateinit var juridiskVurderingKafkaConsumer: Consumer<String, String>
 
     @AfterAll
     fun `Vi tømmer databasen`() {
@@ -98,12 +102,23 @@ abstract class Testoppsett {
 
     @BeforeAll
     fun `Vi leser kafka topicet og feiler om noe eksisterer`() {
-        kafkaConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
-        kafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+        syketilfelleBitConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
+        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
     }
     @AfterAll
     fun `Vi leser topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
-        kafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
+
+    @AfterAll
+    fun `Vi leser juridisk vurdering topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
+        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
+
+    @BeforeAll
+    fun `Vi leser juridiskvurdering kafka topicet og feiler om noe eksisterer`() {
+        juridiskVurderingKafkaConsumer.subscribeHvisIkkeSubscribed(juridiskVurderingTopic)
+        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
     }
 }
 

@@ -839,6 +839,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
                 .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
                 .header("fnr", fnr)
+                .header("forelopig", "true")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(soknad))
         )

@@ -1,5 +1,7 @@
 package no.nav.helse.flex.syketilfelle
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.syketilfelle.juridiskvurdering.JuridiskVurderingKafkaDto
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.awaitility.Awaitility.await
@@ -35,4 +37,8 @@ fun <K, V> Consumer<K, V>.ventPåRecords(
         alle.size == antall
     }
     return alle
+}
+
+fun List<ConsumerRecord<String, String>>.tilJuridiskVurdering(): List<JuridiskVurderingKafkaDto> {
+    return this.map { objectMapper.readValue(it.value()) }
 }

@@ -35,7 +35,7 @@ class KafkaProduseringTest : Testoppsett() {
     fun `tester med ingen data`() {
         kafkaProduseringJob.publiser()
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldBeEmpty()
-        kafkaConsumer.ventPåRecords(antall = 0).shouldBeEmpty()
+        syketilfelleBitConsumer.ventPåRecords(antall = 0).shouldBeEmpty()
     }
 
     @Test
@@ -85,7 +85,7 @@ class KafkaProduseringTest : Testoppsett() {
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(1)
         kafkaProduseringJob.publiser()
 
-        val records = kafkaConsumer.ventPåRecords(antall = 2).map { it.deserialisert() }
+        val records = syketilfelleBitConsumer.ventPåRecords(antall = 2).map { it.deserialisert() }
 
         records[0].second.ressursId `should be equal to` "den eldste"
         records[1].second.ressursId `should be equal to` "den nyeste"
@@ -93,7 +93,7 @@ class KafkaProduseringTest : Testoppsett() {
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(3)
 
         kafkaProduseringJob.publiser()
-        kafkaConsumer.ventPåRecords(antall = 0).shouldBeEmpty()
+        syketilfelleBitConsumer.ventPåRecords(antall = 0).shouldBeEmpty()
     }
 
     @Test
@@ -123,7 +123,7 @@ class KafkaProduseringTest : Testoppsett() {
 
         kafkaProduseringJob.publiser()
 
-        kafkaConsumer.ventPåRecords(antall = 300, duration = Duration.ofSeconds(10))
+        syketilfelleBitConsumer.ventPåRecords(antall = 300, duration = Duration.ofSeconds(10))
         syketilfellebitRepository.count() `should be equal to` 420
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(120)
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(300)
