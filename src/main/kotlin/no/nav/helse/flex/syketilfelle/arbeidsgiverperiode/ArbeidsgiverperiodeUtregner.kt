@@ -73,7 +73,7 @@ class ArbeidsgiverperiodeUtregner(
                                 "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
                             ),
                             lovverk = "folketrygdloven",
-                            paragraf = "§8-19",
+                            paragraf = "8-19",
                             bokstav = null,
                             ledd = null,
                             punktum = null,

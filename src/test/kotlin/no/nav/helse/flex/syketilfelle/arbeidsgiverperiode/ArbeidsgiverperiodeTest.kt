@@ -66,7 +66,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         val vurdering = juridiskVurderingKafkaConsumer
             .ventPåRecords(antall = 1, duration = Duration.ofSeconds(5))
             .tilJuridiskVurdering()
-            .first { it.paragraf == "§8-19" }
+            .first { it.paragraf == "8-19" }
 
         vurdering.ledd.`should be null`()
         vurdering.bokstav.`should be null`()
