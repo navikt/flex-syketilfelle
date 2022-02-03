@@ -11,6 +11,7 @@ import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.web.client.RestTemplate
+import java.time.Duration
 
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
@@ -38,6 +39,8 @@ class AadRestTemplateConfiguration {
         val clientProperties = clientConfigurationProperties.registration[registrationName]
             ?: throw RuntimeException("Fant ikke config for $registrationName")
         return restTemplateBuilder
+            .setConnectTimeout(Duration.ofSeconds(2))
+            .setReadTimeout(Duration.ofSeconds(3))
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
             .build()
     }
