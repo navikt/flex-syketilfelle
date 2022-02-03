@@ -27,7 +27,7 @@ class JuridiskVurderingKafkaProducer(
                 producer.send(
                     ProducerRecord(
                         juridiskVurderingTopic,
-                        dto.id,
+                        dto.fodselsnummer,
                         dto
                     )
                 ).get()

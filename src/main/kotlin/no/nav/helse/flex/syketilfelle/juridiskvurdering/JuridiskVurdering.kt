@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class JuridiskVurdering(
     val fodselsnummer: String,
-    val sporing: Map<String, SporingType>,
+    val sporing: Map<SporingType, List<String>>,
     val lovverk: String,
     val lovverksversjon: LocalDate,
     val paragraf: String,

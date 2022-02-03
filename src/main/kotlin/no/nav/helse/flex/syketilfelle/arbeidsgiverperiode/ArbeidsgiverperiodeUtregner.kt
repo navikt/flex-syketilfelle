@@ -54,13 +54,13 @@ class ArbeidsgiverperiodeUtregner(
                     juridiskVurderingKafkaProducer.produserMelding(
                         JuridiskVurdering(
                             fodselsnummer = fnrs.first(),
-                            sporing = hashMapOf(soknad.id to SporingType.soknad)
+                            sporing = hashMapOf(SporingType.soknad to listOf(soknad.id))
                                 .also { map ->
                                     soknad.sykmeldingId?.let {
-                                        map[it] = sykmelding
+                                        map[sykmelding] = listOf(it)
                                     }
                                     soknad.arbeidsgiver?.orgnummer?.let {
-                                        map[it] = organisasjonsnummer
+                                        map[organisasjonsnummer] = listOf(it)
                                     }
                                 },
                             input = mapOf(

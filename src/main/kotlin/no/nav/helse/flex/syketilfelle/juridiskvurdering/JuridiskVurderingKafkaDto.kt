@@ -1,21 +1,16 @@
 package no.nav.helse.flex.syketilfelle.juridiskvurdering
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.Instant
 import java.time.LocalDate
 
 data class JuridiskVurderingKafkaDto(
-    @JsonProperty("@id")
     val id: String,
-    @JsonProperty("@versjon")
     val versjon: String,
-    @JsonProperty("@event_name")
     val eventName: String,
-    @JsonProperty("@kilde")
     val kilde: String,
     val versjonAvKode: String,
     val fodselsnummer: String,
-    val sporing: Map<String, SporingType>,
+    val sporing: Map<SporingType, List<String>>,
     val tidsstempel: Instant,
     val lovverk: String,
     val lovverksversjon: LocalDate,
