@@ -1,6 +1,7 @@
 package no.nav.helse.flex.syketilfelle
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.syketilfelle.SubsumsjonAssertions.assertSubsumsjonsmelding
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.JuridiskVurderingKafkaDto
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -40,5 +41,10 @@ fun <K, V> Consumer<K, V>.ventPåRecords(
 }
 
 fun List<ConsumerRecord<String, String>>.tilJuridiskVurdering(): List<JuridiskVurderingKafkaDto> {
-    return this.map { objectMapper.readValue(it.value()) }
+    return this
+        .map {
+            assertSubsumsjonsmelding(it.value())
+            it.value()
+        }
+        .map { objectMapper.readValue(it) }
 }
