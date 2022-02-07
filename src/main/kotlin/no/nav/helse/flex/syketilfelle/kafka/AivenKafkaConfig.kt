@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
+import no.nav.helse.flex.syketilfelle.juridiskvurdering.JuridiskVurderingKafkaDto
 import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG
@@ -97,5 +98,17 @@ class AivenKafkaConfig(
             ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100
         ) + commonConfig()
         return KafkaProducer<String, KafkaSyketilfellebit>(kafkaConfig)
+    }
+
+    @Bean
+    fun juridiskVurderingProducer(): KafkaProducer<String, JuridiskVurderingKafkaDto> {
+        val kafkaConfig = mapOf(
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonKafkaSerializer::class.java,
+            ProducerConfig.ACKS_CONFIG to "all",
+            ProducerConfig.RETRIES_CONFIG to 10,
+            ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100
+        ) + commonConfig()
+        return KafkaProducer<String, JuridiskVurderingKafkaDto>(kafkaConfig)
     }
 }

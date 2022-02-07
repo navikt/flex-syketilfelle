@@ -43,3 +43,11 @@ KAFKA_KEYSTORE_PATH: ""
 KAFKA_SCHEMA_REGISTRY: ""
 KAFKA_SCHEMA_REGISTRY_USER: ""
 KAFKA_SCHEMA_REGISTRY_PASSWORD: ""
+
+
+nais:
+  app:
+    name: "flex-syketilfelle"
+    image: "flex-syketilfelle-12432536"
+
+juridisk.vurdering.enabled: "enabled"

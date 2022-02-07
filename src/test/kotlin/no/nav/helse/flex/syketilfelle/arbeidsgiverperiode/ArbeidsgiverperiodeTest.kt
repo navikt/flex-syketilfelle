@@ -5,11 +5,16 @@ import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
+import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
+import no.nav.helse.flex.syketilfelle.tilJuridiskVurdering
+import no.nav.helse.flex.syketilfelle.ventPåRecords
 import no.nav.syfo.kafka.felles.*
+import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.`should be null`
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -17,8 +22,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 class ArbeidsgiverperiodeTest : Testoppsett() {
 
@@ -32,6 +39,54 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     fun lagreBitSomRecord(bit: Syketilfellebit) {
         syketilfellebitRepository.save(bit.tilSyketilfellebitDbRecord())
+    }
+
+    @Test
+    fun `juridisk vurdering publiserers ved utregning av arbeidsgiver perioden når det ikke er en foreløpig beregning`() {
+        val soknad = SykepengesoknadDTO(
+            id = UUID.randomUUID().toString(),
+            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "orgnummer"),
+            fravar = emptyList(),
+            andreInntektskilder = emptyList(),
+            fom = LocalDate.of(2019, 3, 1),
+            tom = LocalDate.of(2019, 3, 16),
+            arbeidGjenopptatt = null,
+            egenmeldinger = emptyList(),
+            fnr = fnr,
+            status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
+            type = SoknadstypeDTO.ARBEIDSTAKERE
+        )
+
+        val res = post(soknad = soknad, forelopig = false)!!
+        assertThat(res.oppbruktArbeidsgiverperiode).isEqualTo(false)
+        assertThat(res.arbeidsgiverPeriode.fom).isEqualTo(soknad.fom)
+        assertThat(res.arbeidsgiverPeriode.tom).isEqualTo(soknad.tom)
+
+        val vurdering = juridiskVurderingKafkaConsumer
+            .ventPåRecords(antall = 1, duration = Duration.ofSeconds(5))
+            .tilJuridiskVurdering()
+            .first { it.paragraf == "8-19" }
+
+        vurdering.ledd.`should be null`()
+        vurdering.bokstav.`should be null`()
+        vurdering.punktum.`should be null`()
+        vurdering.kilde `should be equal to` "flex-syketilfelle"
+        vurdering.versjonAvKode `should be equal to` "flex-syketilfelle-12432536"
+
+        vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
+        vurdering.input `should be equal to` mapOf(
+            "soknad" to soknad.id,
+            "versjon" to "2022-02-01",
+        )
+        vurdering.output `should be equal to` mapOf(
+            "arbeidsgiverperiode" to mapOf(
+                "fom" to "2019-03-01",
+                "tom" to "2019-03-16",
+            ),
+            "oppbruktArbeidsgiverperiode" to false,
+            "versjon" to "2022-02-01",
+        )
     }
 
     @Test
@@ -194,6 +249,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -279,6 +335,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -371,6 +428,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 ),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -427,6 +485,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -449,6 +508,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             arbeidGjenopptatt = (null),
             egenmeldinger = (emptyList()),
             fnr = fnr,
+            sykmeldingId = UUID.randomUUID().toString(),
             status = SoknadsstatusDTO.SENDT,
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
@@ -472,6 +532,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -508,6 +569,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -569,6 +631,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -630,6 +693,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
+            sykmeldingId = UUID.randomUUID().toString(),
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
@@ -667,7 +731,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
+            type = SoknadstypeDTO.ARBEIDSTAKERE,
+            sykmeldingId = UUID.randomUUID().toString(),
         )
 
         val res = post(soknad = soknad)
@@ -809,6 +874,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             fom = (LocalDate.of(2020, 3, 9)),
             egenmeldinger = (emptyList()),
             fnr = fnr,
+            sykmeldingId = UUID.randomUUID().toString(),
             status = SoknadsstatusDTO.SENDT,
         )
 
@@ -821,12 +887,14 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     private fun post(
         soknad: SykepengesoknadDTO,
-        expectNoContent: Boolean = false
+        expectNoContent: Boolean = false,
+        forelopig: Boolean = true
     ): Arbeidsgiverperiode? {
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
                 .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
                 .header("fnr", fnr)
+                .header("forelopig", forelopig.toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(soknad))
         )

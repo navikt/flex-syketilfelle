@@ -5,14 +5,12 @@ import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
-import no.nav.helse.flex.syketilfelle.soknad.mapSoknadTilBiter
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.syfo.kafka.felles.SoknadsstatusDTO
 import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDate
 
 @RestController
 class ArbeidsgiverperiodeController(
@@ -28,9 +26,10 @@ class ArbeidsgiverperiodeController(
     )
     @ResponseBody
     @ProtectedWithClaims(issuer = "azureator")
-    fun beregnOppfolgingstilfelle(
+    fun beregnArbeidsgiverperiode(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @RequestHeader(required = false) forelopig: Boolean = false,
         @RequestParam(defaultValue = "") andreKorrigerteRessurser: List<String>,
         @RequestBody sykepengesoknadDTO: SykepengesoknadDTO
     ): ResponseEntity<Arbeidsgiverperiode> {
@@ -45,22 +44,18 @@ class ArbeidsgiverperiodeController(
 
         val soknad = sykepengesoknadDTO.copy(status = SoknadsstatusDTO.SENDT)
 
-        return (
-            oppfolgingstilfelleService.beregnOppfolgingstilfelleForSoknadTilInnsending(
-                alleFnrs,
-                andreKorrigerteRessurser,
-                soknad.mapSoknadTilBiter(),
-                soknad.tom!!,
-                soknad.forsteDagISoknad(),
-                sykepengesoknadDTO.startSyketilfelle
+        val arbeidsgiverperiode =
+            oppfolgingstilfelleService.beregnArbeidsgiverperiode(
+                fnrs = alleFnrs,
+                andreKorrigerteRessurser = andreKorrigerteRessurser,
+                soknad = soknad,
+                forelopig = forelopig,
             )
+
+        return (
+            arbeidsgiverperiode
                 ?.let { ResponseEntity.ok(it) }
                 ?: ResponseEntity.noContent().build()
             )
-    }
-
-    private fun SykepengesoknadDTO.forsteDagISoknad(): LocalDate {
-
-        return egenmeldinger!!.map { it.fom!! }.minOrNull() ?: fom!!
     }
 }
