@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.ConnectException
 import java.net.InetAddress
 
 @Component
@@ -31,30 +32,34 @@ class LeaderElection(
     }
 
     private fun kallElector(): Boolean {
-        val hostname: String = InetAddress.getLocalHost().hostName
+        try {
+            val hostname: String = InetAddress.getLocalHost().hostName
 
-        val uriString = UriComponentsBuilder.fromHttpUrl(getHttpPath(electorPath))
-            .toUriString()
-        val result = plainTextUtf8RestTemplate
-            .exchange(
-                uriString, HttpMethod.GET,
-                null,
-                String::class.java
-            )
-        if (result.statusCode != HttpStatus.OK) {
-            val message = "Kall mot elector feiler med HTTP-" + result.statusCode
+            val uriString = UriComponentsBuilder.fromHttpUrl(getHttpPath(electorPath))
+                .toUriString()
+            val result = plainTextUtf8RestTemplate
+                .exchange(
+                    uriString, HttpMethod.GET,
+                    null,
+                    String::class.java
+                )
+            if (result.statusCode != HttpStatus.OK) {
+                val message = "Kall mot elector feiler med HTTP-" + result.statusCode
+                log.error(message)
+                throw RuntimeException(message)
+            }
+
+            result.body?.let {
+                val leader: Leader = objectMapper.readValue(it)
+                return leader.name == hostname
+            }
+
+            val message = "Kall mot elector returnerer ikke data"
             log.error(message)
             throw RuntimeException(message)
+        } catch (e: ConnectException) {
+            return false
         }
-
-        result.body?.let {
-            val leader: Leader = objectMapper.readValue(it)
-            return leader.name == hostname
-        }
-
-        val message = "Kall mot elector returnerer ikke data"
-        log.error(message)
-        throw RuntimeException(message)
     }
 
     private fun getHttpPath(url: String): String =
@@ -62,6 +67,7 @@ class LeaderElection(
             true -> url
             else -> "http://$url"
         }
+
     private data class Leader(val name: String)
 
     private val objectMapper = ObjectMapper()
