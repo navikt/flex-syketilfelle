@@ -47,7 +47,7 @@ val testContainersVersion = "1.16.3"
 val kluentVersion = "1.68"
 val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
 val syfoSmCommon = "1.88ca328"
-val jsonSchemaValidatorVersion = "1.0.65"
+val jsonSchemaValidatorVersion = "1.0.66"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
