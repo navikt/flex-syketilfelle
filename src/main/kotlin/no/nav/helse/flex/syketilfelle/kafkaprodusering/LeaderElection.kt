@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.ConnectException
@@ -57,8 +58,11 @@ class LeaderElection(
             val message = "Kall mot elector returnerer ikke data"
             log.error(message)
             throw RuntimeException(message)
-        } catch (e: ConnectException) {
-            return false
+        } catch (e: ResourceAccessException) {
+            if (e.cause is ConnectException) {
+                return false
+            }
+            throw e
         }
     }
 
