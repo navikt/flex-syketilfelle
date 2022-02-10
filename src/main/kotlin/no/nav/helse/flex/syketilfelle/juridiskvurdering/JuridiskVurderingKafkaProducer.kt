@@ -14,30 +14,26 @@ class JuridiskVurderingKafkaProducer(
     @Value("\${nais.app.name}")
     private val naisAppName: String,
     @Value("\${nais.app.image}")
-    private val naisAppImage: String,
-    @Value("\${juridisk.vurdering.enabled}")
-    private val enabled: String,
+    private val naisAppImage: String
 ) {
     val log = logger()
 
     fun produserMelding(juridiskVurdering: JuridiskVurdering) {
-        if (enabled == "enabled") {
-            val dto = juridiskVurdering.tilDto()
-            try {
-                producer.send(
-                    ProducerRecord(
-                        juridiskVurderingTopic,
-                        dto.fodselsnummer,
-                        dto
-                    )
-                ).get()
-            } catch (e: Throwable) {
-                log.warn(
-                    "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
-                    e
+        val dto = juridiskVurdering.tilDto()
+        try {
+            producer.send(
+                ProducerRecord(
+                    juridiskVurderingTopic,
+                    dto.fodselsnummer,
+                    dto
                 )
-                throw e
-            }
+            ).get()
+        } catch (e: Throwable) {
+            log.warn(
+                "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
+                e
+            )
+            throw e
         }
     }
 
