@@ -47,4 +47,3 @@ aiven-kafka:
   auto-offset-reset: none
   security-protocol: SSL
 
-juridisk.vurdering.enabled: "disabled"
