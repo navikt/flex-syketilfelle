@@ -41,11 +41,11 @@ repositories {
     }
 }
 
-val tokenSupportVersion = "1.3.9"
+val tokenSupportVersion = "1.3.10"
 val logstashEncoderVersion = "7.0.1"
 val testContainersVersion = "1.16.3"
 val kluentVersion = "1.68"
-val syfoKafkaVersion = "2021.07.20-09.39-6be2c52c"
+val sykepengesoknadKafkaVersion = "2022.02.10-16.07-0892e94a"
 val syfoSmCommon = "1.88ca328"
 val jsonSchemaValidatorVersion = "1.0.66"
 
@@ -69,7 +69,7 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
-    implementation("no.nav.syfo.kafka:felles:$syfoKafkaVersion")
+    implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
 
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
 

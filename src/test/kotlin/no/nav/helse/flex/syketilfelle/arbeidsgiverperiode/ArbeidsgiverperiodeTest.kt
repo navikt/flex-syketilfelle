@@ -1,6 +1,7 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
 import no.nav.helse.flex.syketilfelle.azureToken
@@ -12,7 +13,6 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.tilJuridiskVurdering
 import no.nav.helse.flex.syketilfelle.ventPåRecords
-import no.nav.syfo.kafka.felles.*
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be null`
 import org.assertj.core.api.Assertions.assertThat
