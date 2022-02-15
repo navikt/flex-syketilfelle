@@ -1,13 +1,12 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
+import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.security.token.support.core.api.ProtectedWithClaims
-import no.nav.syfo.kafka.felles.SoknadsstatusDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykepengesoknad
 
+import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.soknad.SYKEPENGESOKNAD_TOPIC
@@ -7,16 +8,6 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SYKEPENGESOKNAD
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
-import no.nav.syfo.kafka.felles.ArbeidsgiverDTO
-import no.nav.syfo.kafka.felles.ArbeidssituasjonDTO
-import no.nav.syfo.kafka.felles.FravarDTO
-import no.nav.syfo.kafka.felles.FravarstypeDTO
-import no.nav.syfo.kafka.felles.PeriodeDTO
-import no.nav.syfo.kafka.felles.SoknadsperiodeDTO
-import no.nav.syfo.kafka.felles.SoknadsstatusDTO
-import no.nav.syfo.kafka.felles.SoknadstypeDTO
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
-import no.nav.syfo.kafka.felles.SykmeldingstypeDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldHaveSize

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.PeriodeDTO
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.JuridiskVurdering
@@ -12,7 +13,6 @@ import no.nav.helse.flex.syketilfelle.soknad.mapSoknadTilBiter
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.utenKorrigerteSoknader
-import no.nav.syfo.kafka.felles.SykepengesoknadDTO
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 

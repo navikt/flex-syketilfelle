@@ -1,9 +1,9 @@
 package no.nav.helse.flex.syketilfelle.soknad
 
+import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
-import no.nav.syfo.kafka.felles.*
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
