@@ -25,7 +25,7 @@ class PdlClient(
     private val HENT_PERSON_QUERY =
         """
 query(${"$"}ident: ID!){
-  hentIdenter(ident: ${"$"}ident, historikk: false) {
+  hentIdenter(ident: ${"$"}ident, historikk: true) {
     identer {
       ident,
       gruppe
