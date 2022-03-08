@@ -71,7 +71,5 @@ spec:
         - application: syfosmpapirregler
           namespace: teamsykmelding
           cluster: {{environment}}-fss
-        - application: dinesykmeldte-backend
-          namespace: teamsykmelding
         - application: dinesykmeldte-kafka
           namespace: teamsykmelding
