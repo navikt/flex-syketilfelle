@@ -45,6 +45,11 @@ Dersom *korrigererSendtSoknad* er satt **må** konsumenten ignorere andre biter 
 Dette kan løses ved å fortsatt lagre ned alle biter, men filtrere ut de som er korrigert når man leser bitene til en person opp.
 
 
+## Data
+Applikasjonen har en database i GCP. Syketilfellebitene er normaliserte data basert på søknad og sykmelding. Dataene er personidentifiserbare. Det slettes ikke data fra tabellen.
+
+Topicet som holder de samme dataene har evig reteniton.
+
 # Komme i gang
 
 Bygges med gradle. Standard spring boot oppsett.
