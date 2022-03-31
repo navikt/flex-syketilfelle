@@ -34,6 +34,10 @@ class SykeforloepController(
                     app = "syfosoknad",
                 ),
                 NamespaceAndApp(
+                    namespace = "flex",
+                    app = "sykepengesoknad-backend",
+                ),
+                NamespaceAndApp(
                     namespace = "teamsykmelding",
                     app = "sparenaproxy",
                 ),
