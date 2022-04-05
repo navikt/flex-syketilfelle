@@ -5,8 +5,8 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
     id("org.springframework.boot") version "2.6.6"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("plugin.spring") version "1.6.10"
-    kotlin("jvm") version "1.6.10"
+    kotlin("plugin.spring") version "1.6.20"
+    kotlin("jvm") version "1.6.20"
 }
 
 group = "no.nav.helse.flex"
@@ -60,6 +60,7 @@ dependencies {
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("org.slf4j:slf4j-api")
     implementation("org.flywaydb:flyway-core")
+    implementation("org.apache.httpcomponents:httpclient")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.postgresql:postgresql")
     implementation("org.hibernate.validator:hibernate-validator")
