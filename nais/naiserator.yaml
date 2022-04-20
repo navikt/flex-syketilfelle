@@ -48,6 +48,9 @@ spec:
         diskAutoresize: true
         databases:
           - name: flex-syketilfelle-db
+        maintenance:
+          day: 2
+          hour: 2
   envFrom:
     - configmap: loginservice-idporten
   env:
