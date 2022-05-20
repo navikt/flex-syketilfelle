@@ -26,7 +26,7 @@ fun Testoppsett.hentSykeforloep(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     inkluderPapirsykmelding: Boolean = true,
-    token: String = server.azureToken(subject = "syfosoknad-client-id")
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id")
 ): List<Sykeforloep> {
 
     val json = mockMvc.perform(
@@ -60,7 +60,7 @@ fun Testoppsett.erUtenforVentetid(
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,
     erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    token: String = server.azureToken(subject = "syfosoknad-client-id")
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id")
 ): Boolean {
 
     val json = mockMvc.perform(

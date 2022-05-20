@@ -5,7 +5,7 @@
 flex-syketilfelle brukes til å beregne arbeidsgiverperiode, ventepriode og et sykeforløp.
 Sykeforløp brukes ofte til å hente første dagen i et syketilfelle
 
-Appen kalles av syfosoknad, sykmelding frontend og ditt sykefravær frontend.
+Appen kalles av sykepengesoknad-backend, sykmelding frontend og ditt sykefravær frontend.
 
 ## Inkommenda data
 Data input til appen er topicene med søknader og sykmeldinger. Disse normaliseres til en syketilfellebit og lagres i databasen. Dette for å gjøre det enklere å lage logikk på en tidslinje av hendelser.

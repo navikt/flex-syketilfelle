@@ -35,15 +35,9 @@ class VentetidController(
         @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest
     ): Boolean {
         clientIdValidation.validateClientId(
-            listOf(
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "syfosoknad",
-                ),
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "sykepengesoknad-backend",
-                )
+            NamespaceAndApp(
+                namespace = "flex",
+                app = "sykepengesoknad-backend",
             )
         )
         with(erUtenforVentetidRequest) {

@@ -31,7 +31,7 @@ no.nav.security.jwt:
       discoveryurl: http://localhost:${mock-oauth2-server.port}/azureator/.well-known/openid-configuration
       accepted_audience: flex-syketilfelle-client-id
 
-AZURE_APP_PRE_AUTHORIZED_APPS: "[{\"name\":\"dev-fss:flex:syfosoknad\",\"clientId\":\"syfosoknad-client-id\"},{\"name\":\"dev-fss:teamsykmelding:sparenaproxy\",\"clientId\":\"sparenaproxy-client-id\"}]"
+AZURE_APP_PRE_AUTHORIZED_APPS: "[{\"name\":\"dev-fss:flex:sykepengesoknad-backend\",\"clientId\":\"sykepengesoknad-backend-client-id\"},{\"name\":\"dev-fss:teamsykmelding:sparenaproxy\",\"clientId\":\"sparenaproxy-client-id\"}]"
 
 aiven-kafka:
   auto-offset-reset: latest
