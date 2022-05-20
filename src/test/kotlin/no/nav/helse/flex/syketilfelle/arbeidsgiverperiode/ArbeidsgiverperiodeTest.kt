@@ -892,7 +892,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
     ): Arbeidsgiverperiode? {
         val result = mockMvc.perform(
             MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
+                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
                 .header("fnr", fnr)
                 .header("forelopig", forelopig.toString())
                 .contentType(MediaType.APPLICATION_JSON)

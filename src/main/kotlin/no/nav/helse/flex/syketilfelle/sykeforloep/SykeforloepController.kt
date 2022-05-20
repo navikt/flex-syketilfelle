@@ -31,10 +31,6 @@ class SykeforloepController(
             listOf(
                 NamespaceAndApp(
                     namespace = "flex",
-                    app = "syfosoknad",
-                ),
-                NamespaceAndApp(
-                    namespace = "flex",
                     app = "sykepengesoknad-backend",
                 ),
                 NamespaceAndApp(

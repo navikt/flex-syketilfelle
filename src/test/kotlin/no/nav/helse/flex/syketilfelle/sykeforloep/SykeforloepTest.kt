@@ -260,7 +260,7 @@ class SykeforloepTest : Testoppsett() {
     fun `Krever fnr header som input`() {
         val json = mockMvc.perform(
             get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
+                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"Bad Request\"}"
@@ -291,7 +291,7 @@ class SykeforloepTest : Testoppsett() {
     fun `Krever gyldig fnr i input`() {
         val json = mockMvc.perform(
             get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
+                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
                 .header("fnr", "blah")
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest).andReturn().response.contentAsString
@@ -302,7 +302,7 @@ class SykeforloepTest : Testoppsett() {
     fun `Kan ikke hente identer fra PDL hvis det er flere enn en ident i requesten`() {
         val json = mockMvc.perform(
             get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "syfosoknad-client-id")}")
+                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
                 .header("fnr", "$fnr, $nyttFnr")
                 .queryParam("hentAndreIdenter", true.toString())
                 .contentType(MediaType.APPLICATION_JSON)

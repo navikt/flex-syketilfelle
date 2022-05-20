@@ -61,9 +61,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: syfosoknad
-          namespace: flex
-          cluster: {{environment}}-fss
         - application: sykepengesoknad-backend
           namespace: flex
           cluster: {{environment}}-gcp

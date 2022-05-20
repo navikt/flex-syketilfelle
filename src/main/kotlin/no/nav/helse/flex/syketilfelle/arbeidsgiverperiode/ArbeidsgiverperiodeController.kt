@@ -33,15 +33,9 @@ class ArbeidsgiverperiodeController(
         @RequestBody sykepengesoknadDTO: SykepengesoknadDTO
     ): ResponseEntity<Arbeidsgiverperiode> {
         clientIdValidation.validateClientId(
-            listOf(
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "syfosoknad",
-                ),
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "sykepengesoknad-backend",
-                )
+            NamespaceAndApp(
+                namespace = "flex",
+                app = "sykepengesoknad-backend",
             )
         )
 
