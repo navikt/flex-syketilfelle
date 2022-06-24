@@ -1,6 +1,7 @@
 package no.nav.helse.flex.syketilfelle.kafkaprodusering
 
 import io.micrometer.core.instrument.MeterRegistry
+import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilKafkasyketilfellebit
 import org.springframework.stereotype.Component
@@ -12,10 +13,12 @@ class KafkaProduseringJob(
     registry: MeterRegistry,
 ) {
     val publisertSyketilfellebit = registry.counter("publisert_syketilfellebit_counter")
+    val log = logger()
 
     fun publiser() {
 
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false)
+            .also { log.info("Antall upubliserte = ${it.size}") }
             .forEach {
                 syketilfellebitKafkaProducer.produserMelding(it.tilKafkasyketilfellebit())
                 syketilfellebitRepository.save(it.copy(publisert = true))

@@ -17,7 +17,10 @@ class CronJob(
 
     @Scheduled(initialDelay = 60 * 2, fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
     fun run() {
-        if (leaderElection.isLeader()) {
+        val leader = leaderElection.isLeader()
+        log.info("publisertSyketilfellebit leader = $leader")
+
+        if (leader) {
             try {
                 kafkaProduseringJob.publiser()
             } catch (e: Exception) {

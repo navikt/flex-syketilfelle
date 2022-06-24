@@ -19,6 +19,9 @@ class SyketilfellebitKafkaProducer(
     private val headers = RecordHeaders().also { it.add(RecordHeader("kilde", "flex-syketilfelle".toByteArray())) }
 
     fun produserMelding(kafkaSyketilfellebit: KafkaSyketilfellebit) {
+        log.info("Legger melding på kafa: $kafkaSyketilfellebit")
+        log.info("Orgnummer = ${kafkaSyketilfellebit.orgnummer}")
+
         try {
             producer.send(
                 ProducerRecord(SYKETILFELLEBIT_TOPIC, null, kafkaSyketilfellebit.fnr, kafkaSyketilfellebit, headers),
