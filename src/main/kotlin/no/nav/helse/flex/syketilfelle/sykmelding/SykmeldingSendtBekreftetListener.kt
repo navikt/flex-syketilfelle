@@ -21,6 +21,7 @@ class SykmeldingSendtBekreftetListener(
         topics = [SYKMELDINGSENDT_TOPIC, SYKMELDINGBEKREFTET_TOPIC],
         idIsGroup = false,
         containerFactory = "syketilfelleKafkaListenerContainerFactory",
+        properties = ["auto.offset.reset = latest"],
     )
     fun listen(cr: ConsumerRecord<String, String?>, acknowledgment: Acknowledgment) {
 
