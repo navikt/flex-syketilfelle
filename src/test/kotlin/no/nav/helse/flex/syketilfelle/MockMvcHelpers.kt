@@ -31,7 +31,7 @@ fun Testoppsett.hentSykeforloep(
     return objectMapper.readValue(json)
 }
 
-fun Testoppsett.erUtenforVentetidSomBruker(
+fun Testoppsett.erUtenforVentetidSomBrukerLoginservice(
     fnr: String,
     sykmeldingId: String,
 ): ErUtenforVentetidResponse {
@@ -39,6 +39,20 @@ fun Testoppsett.erUtenforVentetidSomBruker(
     val json = mockMvc.perform(
         get("/api/bruker/v1/ventetid/$sykmeldingId/erUtenforVentetid")
             .header("Authorization", "Bearer ${server.loginserviceToken(subject = fnr)}")
+            .contentType(MediaType.APPLICATION_JSON)
+    ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun Testoppsett.erUtenforVentetidSomBrukerTokenX(
+    fnr: String,
+    sykmeldingId: String,
+): ErUtenforVentetidResponse {
+
+    val json = mockMvc.perform(
+        get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
+            .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
             .contentType(MediaType.APPLICATION_JSON)
     ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 
@@ -100,6 +114,32 @@ fun MockOAuth2Server.loginserviceToken(
         DefaultOAuth2TokenCallback(
             issuerId = issuerId,
             subject = subject,
+            audience = listOf(audience),
+            claims = claims,
+            expiry = 3600
+        )
+    ).serialize()
+}
+
+fun MockOAuth2Server.tokenxToken(
+    fnr: String,
+    audience: String = "flex-syketilfelle-client-id",
+    issuerId: String = "tokenx",
+    clientId: String = "frontend-client-id",
+    claims: Map<String, Any> = mapOf(
+        "acr" to "Level4",
+        "idp" to "idporten",
+        "client_id" to clientId,
+        "pid" to fnr,
+    ),
+): String {
+
+    return issueToken(
+        issuerId,
+        clientId,
+        DefaultOAuth2TokenCallback(
+            issuerId = issuerId,
+            subject = UUID.randomUUID().toString(),
             audience = listOf(audience),
             claims = claims,
             expiry = 3600
