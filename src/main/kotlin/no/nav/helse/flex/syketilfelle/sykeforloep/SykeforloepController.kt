@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.identer.fnrFraLoginservicetoken
+import no.nav.helse.flex.syketilfelle.logger
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import org.springframework.http.MediaType
@@ -18,6 +19,8 @@ class SykeforloepController(
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     override val pdlClient: PdlClient,
 ) : MedPdlClient {
+
+    val log = logger()
 
     @GetMapping("/api/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseBody
@@ -60,6 +63,7 @@ class SykeforloepController(
     @ResponseBody
     @ProtectedWithClaims(issuer = "loginservice", claimMap = ["acr=Level4"])
     fun hentSykeforloep(): List<Sykeforloep> {
+        log.error("Sykeforloep api er i bruk. ikke slett meg")
         val fnr = tokenValidationContextHolder.fnrFraLoginservicetoken()
         val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
         return sykeforloepUtregner.hentSykeforloep(fnrs = fnrs, inkluderPapirsykmelding = false)
