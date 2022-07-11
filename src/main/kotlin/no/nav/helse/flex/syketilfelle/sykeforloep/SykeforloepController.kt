@@ -4,10 +4,8 @@ import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
-import no.nav.helse.flex.syketilfelle.identer.fnrFraLoginservicetoken
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.security.token.support.core.api.ProtectedWithClaims
-import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.*
 class SykeforloepController(
     private val clientIdValidation: ClientIdValidation,
     private val sykeforloepUtregner: SykeforloepUtregner,
-    private val tokenValidationContextHolder: TokenValidationContextHolder,
     override val pdlClient: PdlClient,
 ) : MedPdlClient {
 
@@ -57,15 +54,5 @@ class SykeforloepController(
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
         return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding)
-    }
-
-    @GetMapping("/api/bruker/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE])
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "loginservice", claimMap = ["acr=Level4"])
-    fun hentSykeforloep(): List<Sykeforloep> {
-        log.error("Sykeforloep api er i bruk. ikke slett meg")
-        val fnr = tokenValidationContextHolder.fnrFraLoginservicetoken()
-        val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
-        return sykeforloepUtregner.hentSykeforloep(fnrs = fnrs, inkluderPapirsykmelding = false)
     }
 }

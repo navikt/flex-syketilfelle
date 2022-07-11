@@ -3,7 +3,6 @@ package no.nav.helse.flex.syketilfelle.sykeforloep
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
-import no.nav.helse.flex.syketilfelle.hentSykeforloepSomBruker
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
@@ -55,7 +54,7 @@ class SykeforloepTest : Testoppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size + syketilfellebitRepository.findByFnr(nyttFnr).size == 2
         }
-        val sykeforloep = hentSykeforloepSomBruker(nyttFnr)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(12))
@@ -69,9 +68,6 @@ class SykeforloepTest : Testoppsett() {
                 )
             )
         )
-
-        val sykeforloepMaskin = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
-        sykeforloepMaskin `should be equal to` sykeforloep
     }
 
     @Test
@@ -89,7 +85,7 @@ class SykeforloepTest : Testoppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
-        val sykeforloep = hentSykeforloepSomBruker(nyttFnr)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(40))
@@ -113,9 +109,6 @@ class SykeforloepTest : Testoppsett() {
                 )
             )
         )
-
-        val sykeforloepMaskin = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
-        sykeforloepMaskin `should be equal to` sykeforloep
     }
 
     @Test
@@ -131,7 +124,7 @@ class SykeforloepTest : Testoppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 3
         }
-        val sykeforloep = hentSykeforloepSomBruker(fnr)
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
@@ -150,7 +143,7 @@ class SykeforloepTest : Testoppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size + syketilfellebitRepository.findByFnr(nyttFnr).size == 3
         }
-        val sykeforloep = hentSykeforloepSomBruker(nyttFnr)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(2)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
@@ -196,7 +189,7 @@ class SykeforloepTest : Testoppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
-        val sykeforloep = hentSykeforloepSomBruker(fnr)
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(13))
