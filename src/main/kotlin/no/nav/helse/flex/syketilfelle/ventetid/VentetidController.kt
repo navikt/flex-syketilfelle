@@ -3,11 +3,16 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
+import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
+import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.identer.fnrFraLoginservicetoken
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
+import no.nav.security.token.support.core.jwt.JwtTokenClaims
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
@@ -19,6 +24,10 @@ class VentetidController(
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     private val sykeforloepUtregner: SykeforloepUtregner,
     override val pdlClient: PdlClient,
+
+    @Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
+    val sykmeldingerFrontendClientId: String,
+
 ) : MedPdlClient {
 
     @PostMapping(
@@ -60,8 +69,26 @@ class VentetidController(
     )
     @ResponseBody
     @ProtectedWithClaims(issuer = "loginservice", claimMap = ["acr=Level4"])
-    fun erUtenforVentetid(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
+    fun erUtenforVentetidLoginservice(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
         val fnr = tokenValidationContextHolder.fnrFraLoginservicetoken()
+        return erUtenforVentetidResponse(fnr, sykmeldingId)
+    }
+
+    @GetMapping(
+        "/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid",
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "tokenx", claimMap = ["acr=Level4"])
+    fun erUtenforVentetid(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
+        val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
+        return erUtenforVentetidResponse(fnr, sykmeldingId)
+    }
+
+    private fun erUtenforVentetidResponse(
+        fnr: String,
+        sykmeldingId: String
+    ): ErUtenforVentetidResponse {
         val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
 
         val utenforVentetid =
@@ -74,4 +101,25 @@ class VentetidController(
 
         return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
     }
+
+    private fun validerTokenXClaims(): JwtTokenClaims {
+        val context = tokenValidationContextHolder.tokenValidationContext
+        val claims = context.getClaims("tokenx")
+        val clientId = claims.getStringClaim("client_id")
+        if (clientId != sykmeldingerFrontendClientId) {
+            throw IngenTilgang("Uventet client id $clientId")
+        }
+
+        return claims
+    }
+
+    private fun JwtTokenClaims.fnrFraIdportenTokenX(): String {
+        return this.getStringClaim("pid")
+    }
 }
+private class IngenTilgang(override val message: String) : AbstractApiError(
+    message = message,
+    httpStatus = HttpStatus.FORBIDDEN,
+    reason = "INGEN_TILGANG",
+    loglevel = LogLevel.WARN
+)
