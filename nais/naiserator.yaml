@@ -67,6 +67,9 @@ spec:
           namespace: flex
           cluster: {{environment}}-gcp
         - application: flex-gateway
+        - application: sykmeldinger
+          namespace: teamsykmelding
+          cluster: {{environment}}-gcp
         - application: sparenaproxy
           namespace: teamsykmelding
           cluster: {{environment}}-fss
