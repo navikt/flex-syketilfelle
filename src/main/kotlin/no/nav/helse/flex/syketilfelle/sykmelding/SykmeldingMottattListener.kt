@@ -12,12 +12,12 @@ const val SYKMELDINGMOTTATT_TOPIC = "teamsykmelding." + "syfo-mottatt-sykmelding
 
 @Component
 class AivenSykmeldingMottattListener(
-
     private val sykmeldingLagring: SykmeldingLagring,
 ) {
 
     @KafkaListener(
         topics = [SYKMELDINGMOTTATT_TOPIC],
+        id = "sykmelding-mottatt",
         idIsGroup = false,
         containerFactory = "syketilfelleKafkaListenerContainerFactory",
     )
