@@ -5,8 +5,8 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
     id("org.springframework.boot") version "2.7.2"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("plugin.spring") version "1.6.21"
-    kotlin("jvm") version "1.6.21"
+    kotlin("plugin.spring") version "1.7.10"
+    kotlin("jvm") version "1.7.10"
 }
 
 group = "no.nav.helse.flex"
@@ -41,9 +41,9 @@ repositories {
     }
 }
 
-val tokenSupportVersion = "2.0.20"
+val tokenSupportVersion = "2.1.2"
 val logstashEncoderVersion = "7.2"
-val testContainersVersion = "1.17.2"
+val testContainersVersion = "1.17.3"
 val kluentVersion = "1.68"
 val sykepengesoknadKafkaVersion = "2022.02.10-16.07-0892e94a"
 val syfoSmCommon = "1.88ca328"
