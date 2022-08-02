@@ -16,13 +16,13 @@ spec:
     - {{ingress}}
   liveness:
     path: /internal/health
-    initialDelay: 10
+    initialDelay: 40
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
     path: /internal/health
-    initialDelay: 10
+    initialDelay: 40
     periodSeconds: 5
     timeout: 5
   leaderElection: true
