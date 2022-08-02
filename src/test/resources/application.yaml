@@ -8,6 +8,17 @@ spring:
       minimum-idle: 1
       maximum-pool-size: 3
 
+management:
+  endpoint:
+    prometheus.enabled: true
+    health.probes.enabled: true
+  endpoints.web:
+    base-path: /internal
+    exposure.include: health, prometheus
+  health:
+    livenessstate.enabled: true
+    readinessState.enabled: true
+  metrics.export.prometheus.enabled: true
 
 logging.config: "classpath:logback-local.xml"
 elector.path: dont_look_for_leader

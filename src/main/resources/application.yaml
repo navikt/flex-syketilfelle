@@ -1,12 +1,11 @@
 server:
   port: 8080
+  shutdown: graceful
 
 spring:
   main.banner-mode: 'off'
-  profiles:
-    active: default
-  flyway:
-    enabled: true
+  profiles.active: default
+  flyway.enabled: true
   datasource:
     url: "jdbc:postgresql://${NAIS_DATABASE_FLEX_SYKETILFELLE_FLEX_SYKETILFELLE_DB_HOST}:${NAIS_DATABASE_FLEX_SYKETILFELLE_FLEX_SYKETILFELLE_DB_PORT}/${NAIS_DATABASE_FLEX_SYKETILFELLE_FLEX_SYKETILFELLE_DB_DATABASE}?reWriteBatchedInserts=true"
     username: ${NAIS_DATABASE_FLEX_SYKETILFELLE_FLEX_SYKETILFELLE_DB_USERNAME}
@@ -14,6 +13,18 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 3
+
+management:
+  endpoint:
+    prometheus.enabled: true
+    health.probes.enabled: true
+  endpoints.web:
+    base-path: /internal
+    exposure.include: health, prometheus
+  health:
+    livenessstate.enabled: true
+    readinessState.enabled: true
+  metrics.export.prometheus.enabled: true
 
 logging.config: "classpath:logback.xml"
 
@@ -38,13 +49,6 @@ no.nav.security.jwt:
     tokenx:
       discoveryurl: ${TOKEN_X_WELL_KNOWN_URL}
       accepted_audience: ${TOKEN_X_CLIENT_ID}
-
-management:
-  endpoint.prometheus.enabled: true
-  endpoints.web:
-    base-path: /internal
-    exposure.include: health,prometheus
-    path-mapping.prometheus: /prometheus
 
 aiven-kafka:
   auto-offset-reset: none
