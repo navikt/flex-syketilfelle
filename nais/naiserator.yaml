@@ -15,16 +15,16 @@ spec:
   ingresses:
     - {{ingress}}
   liveness:
-    path: /internal/health
+    path: /internal/health/liveness
     initialDelay: 40
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
-    path: /internal/health
+    path: /internal/health/readiness
     initialDelay: 40
+    timeout: 1
     periodSeconds: 5
-    timeout: 5
   leaderElection: true
   prometheus:
     enabled: true

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("testdatareset")
-class TestdataResetListener(val syketilfellebitRepository: SyketilfellebitRepository) {
+class TestdataResetListener(
+    private val syketilfellebitRepository: SyketilfellebitRepository,
+) {
 
     val log = logger()
 
@@ -18,6 +20,8 @@ class TestdataResetListener(val syketilfellebitRepository: SyketilfellebitReposi
         topics = [TESTDATA_RESET_TOPIC],
         containerFactory = "aivenKafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
+        id = "testdata-reset",
+        idIsGroup = false,
     )
     fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         val fnr = cr.value()
