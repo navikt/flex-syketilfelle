@@ -31,7 +31,7 @@ class ArbeidsgiverperiodeUtregner(
 
         return genererOppfolgingstilfelle(
             fnrs = fnrs,
-            biter = finnBiter(fnrs),
+            biter = finnBiter(fnrs).filter { it.orgnummer == soknad.arbeidsgiver?.orgnummer },
             andreKorrigerteRessurser = andreKorrigerteRessurser,
             tilleggsbiter = soknad.mapSoknadTilBiter(),
             grense = soknad.tom!!.atStartOfDay(),

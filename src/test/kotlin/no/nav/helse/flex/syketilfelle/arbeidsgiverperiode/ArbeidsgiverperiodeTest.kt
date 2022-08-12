@@ -1,13 +1,10 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.Testoppsett
-import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
-import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
-import no.nav.helse.flex.syketilfelle.objectMapper
+import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
@@ -19,9 +16,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -58,7 +52,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad, forelopig = false)!!
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, forelopig = false, fnr = fnr)!!
         assertThat(res.oppbruktArbeidsgiverperiode).isEqualTo(false)
         assertThat(res.arbeidsgiverPeriode.fom).isEqualTo(soknad.fom)
         assertThat(res.arbeidsgiverPeriode.tom).isEqualTo(soknad.tom)
@@ -169,7 +163,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        post(soknad = soknad, expectNoContent = true)
+        kallArbeidsgiverperiodeApi(soknad = soknad, expectNoContent = true, fnr = fnr)
     }
 
     @Test
@@ -253,7 +247,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
@@ -339,7 +333,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 11))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 11))
     }
@@ -432,7 +426,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
     }
@@ -442,8 +436,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = null,
-                tags = setOf(SYKMELDING, NY, PERIODE, INGEN_AKTIVITET),
+                orgnummer = "orgnummer",
+                tags = setOf(SYKMELDING, SENDT, PERIODE, INGEN_AKTIVITET),
                 inntruffet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
@@ -489,7 +483,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 2, 16))
@@ -513,7 +507,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(soknad.fom)
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(soknad.tom!!.minusDays(1))
@@ -536,7 +530,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(soknad.fom)
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(soknad.tom)
@@ -548,8 +542,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = null,
-                tags = setOf(SYKMELDING, NY, PERIODE, INGEN_AKTIVITET),
+                orgnummer = "orgnummer",
+                tags = setOf(SYKMELDING, SENDT, PERIODE, INGEN_AKTIVITET),
                 inntruffet = LocalDateTime.of(2019, 3, 1, 8, 42, 34).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
@@ -573,7 +567,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 1))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 16))
@@ -635,7 +629,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 16))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2019, 3, 18))
@@ -646,8 +640,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = null,
-                tags = setOf(SYKMELDING, NY, PERIODE, INGEN_AKTIVITET),
+                orgnummer = "orgnummer",
+                tags = setOf(SYKMELDING, SENDT, PERIODE, INGEN_AKTIVITET),
                 inntruffet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
@@ -697,7 +691,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             type = SoknadstypeDTO.ARBEIDSTAKERE
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
 
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
@@ -709,8 +703,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = null,
-                tags = setOf(SYKMELDING, NY, PERIODE, INGEN_AKTIVITET),
+                orgnummer = "orgnummer",
+                tags = setOf(SYKMELDING, SENDT, PERIODE, INGEN_AKTIVITET),
                 inntruffet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
@@ -735,7 +729,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             sykmeldingId = UUID.randomUUID().toString(),
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
 
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 5))
@@ -760,7 +754,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKMELDING, SENDT, PERIODE, GRADERT_AKTIVITET),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 35).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 35).tilOsloZone(),
@@ -786,7 +780,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKMELDING, SENDT, PERIODE, BEHANDLINGSDAGER),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
@@ -799,7 +793,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKEPENGESOKNAD, SENDT),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 38).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 38).tilOsloZone(),
@@ -812,7 +806,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAGER),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
@@ -825,7 +819,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
@@ -838,7 +832,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
@@ -851,7 +845,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
-                orgnummer = "995816598",
+                orgnummer = "orgnummer",
                 tags = setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG),
                 inntruffet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
@@ -878,33 +872,10 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             status = SoknadsstatusDTO.SENDT,
         )
 
-        val res = post(soknad = soknad)
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.antallBrukteDager).isEqualTo(26)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2020, 1, 27))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2020, 2, 11))
-    }
-
-    private fun post(
-        soknad: SykepengesoknadDTO,
-        expectNoContent: Boolean = false,
-        forelopig: Boolean = true
-    ): Arbeidsgiverperiode? {
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                .header("fnr", fnr)
-                .header("forelopig", forelopig.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(soknad))
-        )
-            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andExpect(
-                if (expectNoContent) MockMvcResultMatchers.status().isNoContent else
-                    MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-            )
-            .andReturn()
-        return result.response.contentAsString.takeIf { it.isNotBlank() }
-            ?.let { objectMapper.readValue(it) }
     }
 }

@@ -3,18 +3,14 @@ package no.nav.helse.flex.syketilfelle.sykeforloep
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
+import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
+import no.nav.helse.flex.syketilfelle.opprettSendtSykmelding
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
-import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.assertj.core.api.Assertions.assertThat
@@ -301,46 +297,5 @@ class SykeforloepTest : Testoppsett() {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
-    }
-
-    fun opprettSendtSykmelding(sykmelding: ArbeidsgiverSykmelding, fnr: String): String {
-
-        val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding, fnr)
-        producerPåSendtBekreftetTopic(kafkaMessage)
-        return sykmelding.id
-    }
-
-    fun opprettMottattSykmelding(sykmelding: ArbeidsgiverSykmelding, fnr: String): String {
-
-        val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding, fnr)
-        val apenSykmeldingKafkaMessage = MottattSykmeldingKafkaMessage(
-            sykmelding = kafkaMessage.sykmelding,
-            kafkaMetadata = kafkaMessage.kafkaMetadata
-        )
-        producerPåMottattTopic(apenSykmeldingKafkaMessage)
-        return sykmelding.id
-    }
-
-    fun opprettSykmeldingKafkaMessage(sykmelding: ArbeidsgiverSykmelding, fnr: String): SykmeldingKafkaMessage {
-
-        val kafkaMetadata = KafkaMetadataDTO(
-            sykmeldingId = sykmelding.id,
-            fnr = fnr,
-            timestamp = OffsetDateTime.now(),
-            source = "Denne testen"
-        )
-
-        val event = SykmeldingStatusKafkaEventDTO(
-            sykmeldingId = sykmelding.id,
-            timestamp = OffsetDateTime.now(),
-            statusEvent = STATUS_SENDT,
-            arbeidsgiver = null,
-            sporsmals = emptyList()
-        )
-        return SykmeldingKafkaMessage(
-            sykmelding = sykmelding,
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC))
-        )
     }
 }
