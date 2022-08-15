@@ -7,6 +7,7 @@ import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.identer.fnrFraLoginservicetoken
+import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
@@ -29,6 +30,7 @@ class VentetidController(
     val sykmeldingerFrontendClientId: String,
 
 ) : MedPdlClient {
+    val log = logger()
 
     @PostMapping(
         value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"],
@@ -71,6 +73,7 @@ class VentetidController(
     @ProtectedWithClaims(issuer = "loginservice", claimMap = ["acr=Level4"])
     fun erUtenforVentetidLoginservice(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
         val fnr = tokenValidationContextHolder.fnrFraLoginservicetoken()
+        log.error("Loginservice api er i bruk")
         return erUtenforVentetidResponse(fnr, sykmeldingId)
     }
 
@@ -117,6 +120,7 @@ class VentetidController(
         return this.getStringClaim("pid")
     }
 }
+
 private class IngenTilgang(override val message: String) : AbstractApiError(
     message = message,
     httpStatus = HttpStatus.FORBIDDEN,
