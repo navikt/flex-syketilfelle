@@ -53,8 +53,6 @@ spec:
         maintenance:
           day: 2
           hour: 2
-  envFrom:
-    - configmap: loginservice-idporten
   env:
   {{#each env}}
      - name: {{@key}}
@@ -66,7 +64,6 @@ spec:
         - application: sykepengesoknad-backend
           namespace: flex
           cluster: {{environment}}-gcp
-        - application: flex-gateway
         - application: sykmeldinger
           namespace: teamsykmelding
           cluster: {{environment}}-gcp

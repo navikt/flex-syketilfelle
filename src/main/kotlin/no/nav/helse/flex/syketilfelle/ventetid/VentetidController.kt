@@ -6,7 +6,6 @@ import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.Name
 import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
-import no.nav.helse.flex.syketilfelle.identer.fnrFraLoginservicetoken
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
 import no.nav.security.token.support.core.api.ProtectedWithClaims
@@ -63,18 +62,6 @@ class VentetidController(
             erUtenforVentetidRequest = erUtenforVentetidRequest,
             fnrs = alleFnrs,
         )
-    }
-
-    @GetMapping(
-        "/api/bruker/v1/ventetid/{sykmeldingId}/erUtenforVentetid",
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "loginservice", claimMap = ["acr=Level4"])
-    fun erUtenforVentetidLoginservice(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
-        val fnr = tokenValidationContextHolder.fnrFraLoginservicetoken()
-        log.error("Loginservice api er i bruk")
-        return erUtenforVentetidResponse(fnr, sykmeldingId)
     }
 
     @GetMapping(
