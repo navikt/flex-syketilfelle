@@ -2,9 +2,7 @@ package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
-import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerLoginservice
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
-import no.nav.helse.flex.syketilfelle.loginserviceToken
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
@@ -57,7 +55,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be true`()
 
-        val ventetidResponse = erUtenforVentetidSomBrukerLoginservice(fnr, sykmeldingId = melding.sykmelding.id)
+        val ventetidResponse = erUtenforVentetidSomBrukerTokenX(fnr, sykmeldingId = melding.sykmelding.id)
         ventetidResponse.erUtenforVentetid.`should be true`()
         ventetidResponse.oppfolgingsdato `should be equal to` mandag
         erUtenforVentetidSomBrukerTokenX(fnr, sykmeldingId = melding.sykmelding.id).shouldBeEqualTo(ventetidResponse)
@@ -88,7 +86,7 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
             erUtenforVentetidRequest = ErUtenforVentetidRequest()
         ).`should be false`()
 
-        val ventetidResponse = erUtenforVentetidSomBrukerLoginservice(fnr, sykmeldingId = melding.sykmelding.id)
+        val ventetidResponse = erUtenforVentetidSomBrukerTokenX(fnr, sykmeldingId = melding.sykmelding.id)
         ventetidResponse.erUtenforVentetid.`should be false`()
         ventetidResponse.oppfolgingsdato `should be equal to` lørdag.minusDays(16)
         erUtenforVentetidSomBrukerTokenX(fnr, sykmeldingId = melding.sykmelding.id).shouldBeEqualTo(ventetidResponse)
@@ -107,15 +105,6 @@ class VentetidTest : VentetidFellesOppsett, Testoppsett() {
     fun `tokenx api krever token`() {
         mockMvc.perform(
             MockMvcRequestBuilders.get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `tokenx støtter ikke loginservicetoken`() {
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                .header("Authorization", "Bearer ${server.loginserviceToken(subject = fnr)}")
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
