@@ -72,12 +72,12 @@ spec:
           cluster: {{environment}}-fss
         - application: syfosmregler
           namespace: teamsykmelding
-          cluster: {{environment}}-fss
-        - application: syfosmregler
-          namespace: teamsykmelding
           cluster: {{environment}}-gcp
         - application: syfosmpapirregler
           namespace: teamsykmelding
           cluster: {{environment}}-fss
+        - application: syfosmpapirregler
+          namespace: teamsykmelding
+          cluster: {{environment}}-gcp
         - application: dinesykmeldte-kafka
           namespace: teamsykmelding
