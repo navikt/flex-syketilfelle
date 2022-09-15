@@ -78,7 +78,7 @@ spec:
           cluster: {{environment}}-gcp
         - application: syfosmpapirregler
           namespace: teamsykmelding
-          cluster: {{environment}}-fss
+          cluster: {{environment}}-gcp
         - application: syfosmpapirregler
           namespace: teamsykmelding
           cluster: {{environment}}-gcp
