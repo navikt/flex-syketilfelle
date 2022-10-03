@@ -12,7 +12,7 @@ plugins {
 group = "no.nav.helse.flex"
 version = "1.0"
 description = "flex-syketilfelle"
-java.sourceCompatibility = JavaVersion.VERSION_14
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 buildscript {
     repositories {
@@ -41,7 +41,7 @@ repositories {
     }
 }
 
-val tokenSupportVersion = "2.1.4"
+val tokenSupportVersion = "2.1.6"
 val logstashEncoderVersion = "7.2"
 val testContainersVersion = "1.17.4"
 val kluentVersion = "1.68"
