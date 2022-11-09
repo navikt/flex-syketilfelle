@@ -48,6 +48,7 @@ val kluentVersion = "1.72"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
 val syfoSmCommon = "1.88ca328"
 val jsonSchemaValidatorVersion = "1.0.73"
+val inntektsmeldingKontrakt = "2022.05.25-03-25-807e7"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -67,6 +68,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
