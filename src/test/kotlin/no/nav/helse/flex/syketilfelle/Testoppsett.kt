@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle
 
+import no.nav.helse.flex.syketilfelle.inntektsmelding.INNTEKTSMELDING_TOPIC
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.juridiskVurderingTopic
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
@@ -7,6 +8,7 @@ import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import okhttp3.mockwebserver.MockWebServer
@@ -93,6 +95,8 @@ abstract class Testoppsett {
             )
         ).get()
     }
+    fun producerPåInntektsmeldingTopic(inntektsmelding: Inntektsmelding) =
+        sendKafkaMelding(inntektsmelding.arbeidstakerFnr, inntektsmelding.serialisertTilString(), INNTEKTSMELDING_TOPIC)
 
     fun producerPåSendtBekreftetTopic(sykmeldingSendtBekreftet: SykmeldingKafkaMessage) =
         sendKafkaMelding(sykmeldingSendtBekreftet.sykmelding.id, sykmeldingSendtBekreftet.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)

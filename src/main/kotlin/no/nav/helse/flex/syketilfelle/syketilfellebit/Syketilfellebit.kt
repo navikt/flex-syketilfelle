@@ -116,7 +116,9 @@ enum class Tag {
     DELTID,
     REDUSERT_ARBEIDSGIVERPERIODE,
     REISETILSKUDD,
-    AVVENTENDE
+    AVVENTENDE,
+    INNTEKTSMELDING,
+    ARBEIDSGIVERPERIODE,
 }
 
 fun List<Syketilfellebit>.utenKorrigerteSoknader(): List<Syketilfellebit> {
