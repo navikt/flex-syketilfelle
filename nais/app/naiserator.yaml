@@ -8,8 +8,8 @@ metadata:
 spec:
   image: {{image}}
   replicas:
-    min: 3
-    max: 4
+    min: {{replicas_min}}
+    max: {{replicas_max}}
     cpuThresholdPercentage: 90
   port: 8080
   ingresses:
