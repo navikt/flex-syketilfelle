@@ -33,7 +33,7 @@ class SykmeldingArbeidsgiverperiodeController(
     )
     @ResponseBody
     @ProtectedWithClaims(issuer = "tokenx", claimMap = ["acr=Level4"])
-    fun erUtenforVentetid(@PathVariable("sykmeldingId") sykmeldingId: String): EgenmeldingSporsmalForSykmelding {
+    fun egenmeldingSporsmalForSykmelding(@PathVariable("sykmeldingId") sykmeldingId: String): EgenmeldingSporsmalForSykmelding {
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
 
