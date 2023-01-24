@@ -47,6 +47,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_12
+        tier: {{db_tier}}
         diskAutoresize: true
         databases:
           - name: flex-syketilfelle-db

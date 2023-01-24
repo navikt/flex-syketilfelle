@@ -1,3 +1,4 @@
+db_tier: db-f1-micro
 azureTenant: trygdeetaten.no
 kafkaPool: nav-dev
 environment: dev

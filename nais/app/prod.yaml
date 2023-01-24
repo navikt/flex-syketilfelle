@@ -1,3 +1,4 @@
+db_tier: db-custom-1-3840
 azureTenant: nav.no
 kafkaPool: nav-prod
 environment: prod
