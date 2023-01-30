@@ -231,13 +231,23 @@ class SykeforloepTest : Testoppsett() {
         )
 
         val sykeforloepMedPapirsykmedling =
-            hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, inkluderPapirsykmelding = true, token = server.azureToken(subject = "sparenaproxy-client-id"))
+            hentSykeforloep(
+                listOf(nyttFnr),
+                hentAndreIdenter = true,
+                inkluderPapirsykmelding = true,
+                token = server.azureToken(subject = "sparenaproxy-client-id")
+            )
 
         assertThat(sykeforloepMedPapirsykmedling).hasSize(1)
         assertThat(sykeforloepMedPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 1, 25))
 
         val sykeforloepUtenPapirsykmedling =
-            hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, inkluderPapirsykmelding = false, token = server.azureToken(subject = "sparenaproxy-client-id"))
+            hentSykeforloep(
+                listOf(nyttFnr),
+                hentAndreIdenter = true,
+                inkluderPapirsykmelding = false,
+                token = server.azureToken(subject = "sparenaproxy-client-id")
+            )
 
         assertThat(sykeforloepUtenPapirsykmedling).hasSize(1)
         assertThat(sykeforloepUtenPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 2, 1))
@@ -297,5 +307,47 @@ class SykeforloepTest : Testoppsett() {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
+    }
+
+    @Test
+    fun `sletting av syketilfellebit splitter sykeforløpet`() {
+
+        val sykmelding1 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 10), tom = LocalDate.of(2022, 11, 20))
+
+        opprettMottattSykmelding(sykmelding1, fnr)
+        opprettSendtSykmelding(sykmelding1, fnr)
+
+        val sykmelding2 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 21), tom = LocalDate.of(2023, 1, 9))
+
+        opprettMottattSykmelding(sykmelding2, fnr)
+        opprettSendtSykmelding(sykmelding2, fnr)
+
+        val sykmelding3 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 12, 28), tom = LocalDate.of(2023, 1, 9))
+
+        opprettMottattSykmelding(sykmelding3, fnr)
+        opprettSendtSykmelding(sykmelding3, fnr)
+
+        await().atMost(10, SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 6
+        }
+
+        val biterFørGjenopptatt = syketilfellebitRepository.findByFnr(fnr)
+        biterFørGjenopptatt.size `should be equal to` 6
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
+
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))
+
+        syketilfellebitRepository.findByFnr(fnr)
+            .filter { it.fom == LocalDate.of(2022, 11, 21) }
+            .forEach {
+                syketilfellebitRepository.save(it.copy(slettet = OffsetDateTime.now()))
+            }
+
+        val sykeforloep2 = hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
+
+        assertThat(sykeforloep2).hasSize(2)
+        assertThat(sykeforloep2[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))
+        assertThat(sykeforloep2[1].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 12, 28))
     }
 }
