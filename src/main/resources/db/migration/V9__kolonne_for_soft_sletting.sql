@@ -1,0 +1,2 @@
+ALTER TABLE syketilfellebit
+    ADD COLUMN slettet TIMESTAMP WITH TIME ZONE;

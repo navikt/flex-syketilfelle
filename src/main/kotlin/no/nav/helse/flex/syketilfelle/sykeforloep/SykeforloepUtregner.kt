@@ -20,6 +20,7 @@ class SykeforloepUtregner(
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }
             .utenKorrigerteSoknader()
+            .filterNot { it.slettet != null }
             .filter {
                 if (inkluderPapirsykmelding) {
                     return@filter it.tags.contains(Tag.SYKMELDING) || it.tags.contains(Tag.PAPIRSYKMELDING)
