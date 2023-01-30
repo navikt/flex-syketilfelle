@@ -21,6 +21,7 @@ data class SyketilfellebitDbRecord(
     val tom: LocalDate,
     val korrigererSendtSoknad: String?,
     val publisert: Boolean,
+    val slettet: OffsetDateTime? = null,
 )
 
 fun SyketilfellebitDbRecord.tilSyketilfellebit(): Syketilfellebit = Syketilfellebit(
@@ -36,6 +37,8 @@ fun SyketilfellebitDbRecord.tilSyketilfellebit(): Syketilfellebit = Syketilfelle
     tom = tom,
     korrigererSendtSoknad = korrigererSendtSoknad,
     publisert = publisert,
+    slettet = slettet,
+
 )
 
 fun SyketilfellebitDbRecord.tilKafkasyketilfellebit(): KafkaSyketilfellebit = KafkaSyketilfellebit(
@@ -64,6 +67,7 @@ fun Syketilfellebit.tilSyketilfellebitDbRecord(): SyketilfellebitDbRecord = Syke
     tom = tom,
     korrigererSendtSoknad = korrigererSendtSoknad,
     publisert = publisert,
+    slettet = slettet,
 )
 
 fun Set<String>.asString() = this.joinToString(",")
@@ -84,6 +88,7 @@ data class Syketilfellebit(
     val tom: LocalDate,
     val korrigererSendtSoknad: String? = null,
     val publisert: Boolean = false,
+    val slettet: OffsetDateTime? = null,
 )
 
 enum class Tag {

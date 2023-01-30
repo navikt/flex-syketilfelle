@@ -20,6 +20,7 @@ class SykeforloepUtregner(
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }
             .utenKorrigerteSoknader()
+            // TODO: Filtrer bort biter som er slettet.
             .filter {
                 if (inkluderPapirsykmelding) {
                     return@filter it.tags.contains(Tag.SYKMELDING) || it.tags.contains(Tag.PAPIRSYKMELDING)
