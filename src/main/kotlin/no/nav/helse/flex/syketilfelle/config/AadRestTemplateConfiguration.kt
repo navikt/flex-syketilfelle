@@ -64,6 +64,8 @@ class AadRestTemplateConfiguration {
             // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
             .requestFactory(Supplier { clientHttpRequestFactory })
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
+            .setReadTimeout(Duration.ofSeconds(1))
+            .setConnectTimeout(Duration.ofSeconds(1))
             .build()
     }
 
