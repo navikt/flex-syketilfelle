@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
-import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
@@ -26,19 +25,11 @@ import java.util.function.Supplier
 class AadRestTemplateConfiguration {
 
     @Bean
-    fun clientHttpRequestFactory(httpClient: CloseableHttpClient): ClientHttpRequestFactory {
-        return HttpComponentsClientHttpRequestFactory(httpClient)
-            .also {
-                it.setConnectTimeout(Duration.ofSeconds(1).toMillis().toInt())
-            }
-    }
-
-    @Bean
     fun httpClient(): CloseableHttpClient {
         val connectionManager = PoolingHttpClientConnectionManager()
         connectionManager.defaultMaxPerRoute = 50
         connectionManager.maxTotal = 50
-        // Erstatter HttpComponentsClientHttpRequestFactory.setReadTimeout
+        // Erstatter deprecated HttpComponentsClientHttpRequestFactory.setReadTimeout()
         connectionManager.defaultSocketConfig = SocketConfig.custom()
             .setSoTimeout(Timeout.of(1, java.util.concurrent.TimeUnit.SECONDS))
             .build()
@@ -54,7 +45,6 @@ class AadRestTemplateConfiguration {
         httpClient: CloseableHttpClient,
         clientConfigurationProperties: ClientConfigurationProperties,
         oAuth2AccessTokenService: OAuth2AccessTokenService,
-        clientHttpRequestFactory: ClientHttpRequestFactory
     ): RestTemplate {
         val registrationName = "pdl-api-client-credentials"
         val clientProperties = clientConfigurationProperties.registration[registrationName]
@@ -62,9 +52,8 @@ class AadRestTemplateConfiguration {
 
         return restTemplateBuilder
             // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
-            .requestFactory(Supplier { clientHttpRequestFactory })
+            .requestFactory(Supplier { HttpComponentsClientHttpRequestFactory(httpClient) })
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-            .setReadTimeout(Duration.ofSeconds(1))
             .setConnectTimeout(Duration.ofSeconds(1))
             .build()
     }
