@@ -19,26 +19,11 @@ import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
+import java.util.function.Supplier
 
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
 class AadRestTemplateConfiguration {
-
-    @Bean
-    fun pdlRestTemplate(
-        restTemplateBuilder: RestTemplateBuilder,
-        clientConfigurationProperties: ClientConfigurationProperties,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
-        httpClient: CloseableHttpClient,
-
-    ): RestTemplate =
-        downstreamRestTemplate(
-            registrationName = "pdl-api-client-credentials",
-            restTemplateBuilder = restTemplateBuilder,
-            clientConfigurationProperties = clientConfigurationProperties,
-            oAuth2AccessTokenService = oAuth2AccessTokenService,
-            httpClient = httpClient,
-        )
 
     @Bean
     fun clientHttpRequestFactory(httpClient: CloseableHttpClient): ClientHttpRequestFactory {
@@ -63,18 +48,21 @@ class AadRestTemplateConfiguration {
             .build()
     }
 
-    private fun downstreamRestTemplate(
+    @Bean
+    fun pdlRestTemplate(
         restTemplateBuilder: RestTemplateBuilder,
+        httpClient: CloseableHttpClient,
         clientConfigurationProperties: ClientConfigurationProperties,
         oAuth2AccessTokenService: OAuth2AccessTokenService,
-        httpClient: CloseableHttpClient,
-        registrationName: String
+        clientHttpRequestFactory: ClientHttpRequestFactory
     ): RestTemplate {
+        val registrationName = "pdl-api-client-credentials"
         val clientProperties = clientConfigurationProperties.registration[registrationName]
-            ?: throw RuntimeException("Fant ikke config for $registrationName")
+            ?: throw RuntimeException("Fant ikke config for $registrationName.")
 
         return restTemplateBuilder
-            .requestFactory { HttpComponentsClientHttpRequestFactory(httpClient) }
+            // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
+            .requestFactory(Supplier { clientHttpRequestFactory })
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
             .build()
     }
