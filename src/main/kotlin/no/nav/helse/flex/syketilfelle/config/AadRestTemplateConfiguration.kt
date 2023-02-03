@@ -20,6 +20,9 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.util.function.Supplier
 
+const val PDL_REST_TEMPLATE_CONNECT_TIMEOUT = 1L
+const val PDL_REST_TEMPLATE_READ_TIMEOUT = 1L
+
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
 class AadRestTemplateConfiguration {
@@ -31,7 +34,7 @@ class AadRestTemplateConfiguration {
         connectionManager.maxTotal = 50
         // Erstatter deprecated HttpComponentsClientHttpRequestFactory.setReadTimeout()
         connectionManager.defaultSocketConfig = SocketConfig.custom()
-            .setSoTimeout(Timeout.of(1, java.util.concurrent.TimeUnit.SECONDS))
+            .setSoTimeout(Timeout.of(PDL_REST_TEMPLATE_READ_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS))
             .build()
 
         return HttpClientBuilder.create()
@@ -54,7 +57,7 @@ class AadRestTemplateConfiguration {
             // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
             .requestFactory(Supplier { HttpComponentsClientHttpRequestFactory(httpClient) })
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-            .setConnectTimeout(Duration.ofSeconds(1))
+            .setConnectTimeout(Duration.ofSeconds(PDL_REST_TEMPLATE_CONNECT_TIMEOUT))
             .build()
     }
 
