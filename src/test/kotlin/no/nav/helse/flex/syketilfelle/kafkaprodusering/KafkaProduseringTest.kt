@@ -52,7 +52,7 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den eldste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = false,
+                publisert = false
             ).tilSyketilfellebitDbRecord()
         )
         syketilfellebitRepository.save(
@@ -65,7 +65,7 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den eldste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = true,
+                publisert = true
             ).tilSyketilfellebitDbRecord()
         )
         syketilfellebitRepository.save(
@@ -78,7 +78,7 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den nyeste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = false,
+                publisert = false
             ).tilSyketilfellebitDbRecord()
         )
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(2)
@@ -112,7 +112,7 @@ class KafkaProduseringTest : Testoppsett() {
                     ressursId = UUID.randomUUID().toString(),
                     fom = LocalDate.now().minusWeeks(1),
                     tom = LocalDate.now(),
-                    publisert = false,
+                    publisert = false
                 ).tilSyketilfellebitDbRecord()
             )
         }

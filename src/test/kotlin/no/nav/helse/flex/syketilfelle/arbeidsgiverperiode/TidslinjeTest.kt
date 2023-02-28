@@ -33,7 +33,7 @@ class TidslinjeTest {
                 ressursId = "ressursId",
                 fom = LocalDate.now().minusDays(16),
                 tom = LocalDate.now().minusDays(16),
-                fnr = "fnr",
+                fnr = "fnr"
             ),
             Syketilfellebit(
                 id = "id",
@@ -44,7 +44,7 @@ class TidslinjeTest {
                 ressursId = "ressursId",
                 fom = LocalDate.now(),
                 tom = LocalDate.now(),
-                fnr = "fnr",
+                fnr = "fnr"
             )
         )
 
@@ -65,7 +65,7 @@ class TidslinjeTest {
                 ressursId = "ressursId",
                 fom = LocalDate.now().minusDays(17),
                 tom = LocalDate.now().minusDays(17),
-                fnr = "fnr",
+                fnr = "fnr"
             ),
             Syketilfellebit(
                 id = "id",
@@ -76,7 +76,7 @@ class TidslinjeTest {
                 ressursId = "ressursId",
                 fom = LocalDate.now(),
                 tom = LocalDate.now(),
-                fnr = "fnr",
+                fnr = "fnr"
             )
         )
 

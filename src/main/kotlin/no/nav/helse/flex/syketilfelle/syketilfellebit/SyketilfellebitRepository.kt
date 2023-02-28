@@ -12,6 +12,7 @@ interface SyketilfellebitRepository : CrudRepository<SyketilfellebitDbRecord, St
     fun findBySyketilfellebitId(syketilfellebitId: String): SyketilfellebitDbRecord?
     fun findByFnr(fnr: String): List<SyketilfellebitDbRecord>
     fun findFirst300ByPublisertOrderByOpprettetAsc(publisert: Boolean): List<SyketilfellebitDbRecord>
+
     @Modifying
     @Query("delete from Syketilfellebit s where s.fnr = :fnr")
     fun deleteByFnr(fnr: String): Long

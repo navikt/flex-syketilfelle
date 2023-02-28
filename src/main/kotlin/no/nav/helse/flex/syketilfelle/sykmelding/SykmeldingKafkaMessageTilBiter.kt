@@ -25,7 +25,6 @@ private val objectMapper = ObjectMapper()
 private class Periode(val tom: LocalDate, val fom: LocalDate)
 
 fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
-
     val sykmeldingsperioderBiter = this.sykmelding
         .sykmeldingsperioder
         .map {

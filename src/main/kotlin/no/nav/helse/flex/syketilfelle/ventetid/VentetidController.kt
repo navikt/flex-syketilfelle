@@ -26,7 +26,7 @@ class VentetidController(
     override val pdlClient: PdlClient,
 
     @Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
-    val sykmeldingerFrontendClientId: String,
+    val sykmeldingerFrontendClientId: String
 
 ) : MedPdlClient {
     val log = logger()
@@ -47,7 +47,7 @@ class VentetidController(
         clientIdValidation.validateClientId(
             NamespaceAndApp(
                 namespace = "flex",
-                app = "sykepengesoknad-backend",
+                app = "sykepengesoknad-backend"
             )
         )
         with(erUtenforVentetidRequest) {
@@ -60,7 +60,7 @@ class VentetidController(
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
             sykmeldingId = sykmeldingId,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
-            fnrs = alleFnrs,
+            fnrs = alleFnrs
         )
     }
 

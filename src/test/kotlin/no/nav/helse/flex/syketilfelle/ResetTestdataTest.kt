@@ -29,7 +29,7 @@ class ResetTestdataTest : Testoppsett() {
             opprettet = OffsetDateTime.now().plusHours(3),
             ressursId = UUID.randomUUID().toString(),
             tags = "SENDT",
-            publisert = true,
+            publisert = true
         )
         syketilfellebitRepository.save(bit)
         syketilfellebitRepository.save(bit.copy(fnr = "annet", syketilfellebitId = UUID.randomUUID().toString()))

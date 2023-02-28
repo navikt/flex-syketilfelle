@@ -21,7 +21,7 @@ class SyketilfellebitKafkaProducer(
     fun produserMelding(kafkaSyketilfellebit: KafkaSyketilfellebit) {
         try {
             producer.send(
-                ProducerRecord(SYKETILFELLEBIT_TOPIC, null, kafkaSyketilfellebit.fnr, kafkaSyketilfellebit, headers),
+                ProducerRecord(SYKETILFELLEBIT_TOPIC, null, kafkaSyketilfellebit.fnr, kafkaSyketilfellebit, headers)
             ).get()
         } catch (e: Throwable) {
             log.error(

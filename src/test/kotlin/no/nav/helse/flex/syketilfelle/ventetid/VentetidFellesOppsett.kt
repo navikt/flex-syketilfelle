@@ -28,7 +28,6 @@ interface VentetidFellesOppsett {
         harRedusertArbeidsgiverperiode: Boolean = false,
         type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG
     ): MottattSykmeldingKafkaMessage {
-
         val sykmeldingId = UUID.randomUUID().toString()
         return MottattSykmeldingKafkaMessage(
             sykmelding = skapArbeidsgiverSykmelding(
@@ -36,7 +35,7 @@ interface VentetidFellesOppsett {
                 tom = tom,
                 sykmeldingId = sykmeldingId,
                 harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
-                type = type,
+                type = type
 
             ),
             kafkaMetadata = KafkaMetadataDTO(
@@ -55,11 +54,11 @@ interface VentetidFellesOppsett {
         type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
         sporsmals: List<SporsmalOgSvarDTO>? = null
     ): SykmeldingKafkaMessage {
-
         val apen = skapApenSykmeldingKafkaMessage(fom, tom, harRedusertArbeidsgiverperiode, type)
 
         return SykmeldingKafkaMessage(
-            sykmelding = apen.sykmelding, kafkaMetadata = apen.kafkaMetadata,
+            sykmelding = apen.sykmelding,
+            kafkaMetadata = apen.kafkaMetadata,
             event = SykmeldingStatusKafkaEventDTO(
                 sykmeldingId = apen.sykmelding.id,
                 timestamp = OffsetDateTime.now(),

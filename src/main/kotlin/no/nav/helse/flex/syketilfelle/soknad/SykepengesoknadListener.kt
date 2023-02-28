@@ -13,7 +13,7 @@ const val SYKEPENGESOKNAD_TOPIC = "flex." + "sykepengesoknad"
 @Component
 class AivenSykepengesoknadListener(
 
-    private val sykepengesoknadLagring: SykepengesoknadLagring,
+    private val sykepengesoknadLagring: SykepengesoknadLagring
 ) {
 
     @KafkaListener(

@@ -15,7 +15,8 @@ class GrupperOppfolgingstilfellerTest {
     val mandagMorgen = mandag.osloStartOfDay()
     fun createSyketilfelleDag(dag: LocalDate, syketilfellebit: Syketilfellebit?): Syketilfelledag =
         Syketilfelledag(
-            dag, syketilfellebit,
+            dag,
+            syketilfellebit,
             syketilfellebit?.let { listOf(it) }
                 ?: emptyList()
         )

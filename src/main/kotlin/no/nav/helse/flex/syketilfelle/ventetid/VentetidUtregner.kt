@@ -32,7 +32,6 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         fnrs: List<String>,
         erUtenforVentetidRequest: ErUtenforVentetidRequest
     ): Boolean {
-
         val biter = syketilfellebitRepository
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }
@@ -63,7 +62,9 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         fun Periode.kuttBitSomErLengreEnnAktuellTom(): Periode {
             return if (this.tom.isAfter(sykmeldingSisteTom)) {
                 this.copy(tom = sykmeldingSisteTom)
-            } else this
+            } else {
+                this
+            }
         }
 
         return syketilfellebiter
@@ -222,7 +223,7 @@ private fun Tilleggsopplysninger.mapTilBiter(ressursId: String, fnr: String): Li
             tags = setOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.ANNET_FRAVAR),
             ressursId = ressursId,
             fnr = fnr,
-            orgnummer = null,
+            orgnummer = null
         )
     } ?: emptyList()
 }

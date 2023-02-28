@@ -12,7 +12,7 @@ import java.util.ArrayList
 
 @Component
 class SykeforloepUtregner(
-    private val syketilfellebitRepository: SyketilfellebitRepository,
+    private val syketilfellebitRepository: SyketilfellebitRepository
 ) {
 
     fun hentSykeforloep(fnrs: List<String>, inkluderPapirsykmelding: Boolean): List<Sykeforloep> {

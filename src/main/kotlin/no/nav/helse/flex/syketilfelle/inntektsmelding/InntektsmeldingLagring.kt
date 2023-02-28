@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 
 @Service
 class InntektsmeldingLagring(
-    private val syketilfellebitLagring: SyketilfellebitLagring,
+    private val syketilfellebitLagring: SyketilfellebitLagring
 ) {
 
     val log = logger()

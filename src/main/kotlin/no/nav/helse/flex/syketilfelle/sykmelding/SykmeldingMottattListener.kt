@@ -12,17 +12,16 @@ const val SYKMELDINGMOTTATT_TOPIC = "teamsykmelding." + "syfo-mottatt-sykmelding
 
 @Component
 class AivenSykmeldingMottattListener(
-    private val sykmeldingLagring: SykmeldingLagring,
+    private val sykmeldingLagring: SykmeldingLagring
 ) {
 
     @KafkaListener(
         topics = [SYKMELDINGMOTTATT_TOPIC],
         id = "sykmelding-mottatt",
         idIsGroup = false,
-        containerFactory = "syketilfelleKafkaListenerContainerFactory",
+        containerFactory = "syketilfelleKafkaListenerContainerFactory"
     )
     fun listen(cr: ConsumerRecord<String, String?>, acknowledgment: Acknowledgment) {
-
         cr.value()?.let {
             sykmeldingLagring.handterMottattSykmelding(cr.key(), it.tilSykmeldingDTO())
         }

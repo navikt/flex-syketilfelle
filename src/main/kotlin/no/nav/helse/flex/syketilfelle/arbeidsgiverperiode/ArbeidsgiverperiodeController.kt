@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 class ArbeidsgiverperiodeController(
     private val clientIdValidation: ClientIdValidation,
     private val oppfolgingstilfelleService: ArbeidsgiverperiodeUtregner,
-    override val pdlClient: PdlClient,
+    override val pdlClient: PdlClient
 ) : MedPdlClient {
 
     @PostMapping(
@@ -35,7 +35,7 @@ class ArbeidsgiverperiodeController(
         clientIdValidation.validateClientId(
             NamespaceAndApp(
                 namespace = "flex",
-                app = "sykepengesoknad-backend",
+                app = "sykepengesoknad-backend"
             )
         )
 
@@ -48,7 +48,7 @@ class ArbeidsgiverperiodeController(
                 fnrs = alleFnrs,
                 andreKorrigerteRessurser = andreKorrigerteRessurser,
                 soknad = soknad,
-                forelopig = forelopig,
+                forelopig = forelopig
             )
 
         return (

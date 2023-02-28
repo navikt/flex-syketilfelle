@@ -18,7 +18,6 @@ fun Testoppsett.hentSykeforloep(
     inkluderPapirsykmelding: Boolean = true,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id")
 ): List<Sykeforloep> {
-
     val json = mockMvc.perform(
         get("/api/v1/sykeforloep")
             .header("Authorization", "Bearer $token")
@@ -33,9 +32,8 @@ fun Testoppsett.hentSykeforloep(
 
 fun Testoppsett.erUtenforVentetidSomBrukerTokenX(
     fnr: String,
-    sykmeldingId: String,
+    sykmeldingId: String
 ): ErUtenforVentetidResponse {
-
     val json = mockMvc.perform(
         get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
             .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
@@ -52,7 +50,6 @@ fun Testoppsett.erUtenforVentetid(
     erUtenforVentetidRequest: ErUtenforVentetidRequest,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id")
 ): Boolean {
-
     val json = mockMvc.perform(
         post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
             .header("Authorization", "Bearer $token")
@@ -70,7 +67,6 @@ fun MockOAuth2Server.azureToken(
     issuer: String = "azureator",
     audience: String = "flex-syketilfelle-client-id"
 ): String {
-
     val claims = HashMap<String, String>()
 
     return this.issueToken(
@@ -95,10 +91,9 @@ fun MockOAuth2Server.tokenxToken(
         "acr" to "Level4",
         "idp" to "idporten",
         "client_id" to clientId,
-        "pid" to fnr,
-    ),
+        "pid" to fnr
+    )
 ): String {
-
     return issueToken(
         issuerId,
         clientId,

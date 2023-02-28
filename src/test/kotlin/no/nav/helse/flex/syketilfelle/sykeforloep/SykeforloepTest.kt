@@ -41,7 +41,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `beregner for det enkleste tilfellet`() {
-
         val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
 
         opprettMottattSykmelding(sykmelding, fnr)
@@ -68,7 +67,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `beregner for et forloep med mange etterfølgende sykmeldinger`() {
-
         val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
         val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato.minusDays(13))
         val sykmelding3 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(40), tom = basisDato.minusDays(25))
@@ -109,7 +107,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `15 dager i mellom er samme forloep`() {
-
         val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
         val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(16))
 
@@ -128,7 +125,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `16 dager i mellom er to forloep`() {
-
         val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
         val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(17))
 
@@ -155,7 +151,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `sykmelding med flere perioder settes korrekt sammen`() {
-
         val sykmelding = skapArbeidsgiverSykmelding().copy(
             sykmeldingsperioder = listOf(
                 SykmeldingsperiodeAGDTO(
@@ -203,7 +198,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `kan inkludere papirsykmelding om konsument ønsker det`() {
-
         syketilfellebitRepository.save(
             Syketilfellebit(
                 fnr = fnr,
@@ -226,7 +220,7 @@ class SykeforloepTest : Testoppsett() {
                 opprettet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20),
+                tom = LocalDate.of(2019, 2, 20)
             ).tilSyketilfellebitDbRecord()
         )
 
@@ -311,7 +305,6 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `sletting av syketilfellebit splitter sykeforløpet`() {
-
         val sykmelding1 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 10), tom = LocalDate.of(2022, 11, 20))
 
         opprettMottattSykmelding(sykmelding1, fnr)

@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 @Component
 class SyketilfellebitLagring(
-    val syketilfellebitRepository: SyketilfellebitRepository,
+    val syketilfellebitRepository: SyketilfellebitRepository
 ) {
 
     fun lagreBiter(syketilfellebiter: List<Syketilfellebit>) {
@@ -29,7 +29,7 @@ fun SyketilfellebitDbRecord.tilSammenlikner(): SyketilfellebitSammenlikner {
         tags = tags.tagsFromString(),
         ressursId = ressursId,
         fom = fom,
-        tom = tom,
+        tom = tom
     )
 }
 

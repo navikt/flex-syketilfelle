@@ -65,7 +65,7 @@ class SykepengesoknadMottakTest : Testoppsett() {
                 )
             ),
             sporsmal = null,
-            fnr = fnr,
+            fnr = fnr
         )
 
         produserPåSøknadTopic(soknad)
@@ -85,7 +85,6 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `soknad sendt alle relevante felter fylt ut`() {
-
         val soknad = SykepengesoknadDTO(
             id = "id",
             type = SoknadstypeDTO.ARBEIDSTAKERE,
@@ -183,7 +182,7 @@ class SykepengesoknadMottakTest : Testoppsett() {
                 )
             ),
             sporsmal = null,
-            fnr = fnr,
+            fnr = fnr
         )
 
         produserPåSøknadTopic(soknad)
@@ -244,7 +243,7 @@ class SykepengesoknadMottakTest : Testoppsett() {
                 )
             ),
             sporsmal = null,
-            fnr = fnr,
+            fnr = fnr
         )
 
         produserPåSøknadTopic(soknad)
@@ -296,7 +295,7 @@ class SykepengesoknadMottakTest : Testoppsett() {
                 )
             ),
             sporsmal = null,
-            fnr = "fnr",
+            fnr = "fnr"
         )
 
         produserPåSøknadTopic(soknad)
@@ -338,12 +337,11 @@ class SykepengesoknadMottakTest : Testoppsett() {
         egenmeldinger = emptyList(),
         papirsykmeldinger = emptyList(),
         andreInntektskilder = emptyList(),
-        fnr = fnr,
+        fnr = fnr
     )
 
     @Test
     fun `behandlingsdagsøknad sendt ingen ekstra felter`() {
-
         produserPåSøknadTopic(behandlingsdagSøknad)
 
         await().atMost(10, TimeUnit.SECONDS).until {
@@ -356,7 +354,6 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `behandlingsdagsøknad sendt med alle relevante felter fyllt ut`() {
-
         val soknadMedFelter = behandlingsdagSøknad.copy(
             id = UUID.randomUUID().toString(),
             behandlingsdager = listOf(
