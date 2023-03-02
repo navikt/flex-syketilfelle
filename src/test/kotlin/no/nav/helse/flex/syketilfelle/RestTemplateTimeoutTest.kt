@@ -43,7 +43,8 @@ class RestTemplateTimeoutTest {
             assertThrows<ResourceAccessException> {
                 pdlRestTemplate.getForEntity(
                     // Non-routable IP addresse. så vi får ikke opprettet en connection.
-                    "http://172.0.0.1", String::class.java
+                    "http://172.0.0.1",
+                    String::class.java
                 )
             }
         }

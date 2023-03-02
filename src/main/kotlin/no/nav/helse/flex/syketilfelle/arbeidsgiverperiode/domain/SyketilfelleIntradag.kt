@@ -11,7 +11,6 @@ class SyketilfelleIntradag(
 ) {
 
     fun velgSyketilfelledag(): Syketilfelledag {
-
         return biter
             .groupBy { it.inntruffet.toLocalDate() }
             .toSortedMap()

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class SykmeldingLagring(
-    private val syketilfellebitLagring: SyketilfellebitLagring,
+    private val syketilfellebitLagring: SyketilfellebitLagring
 ) {
 
     val log = logger()

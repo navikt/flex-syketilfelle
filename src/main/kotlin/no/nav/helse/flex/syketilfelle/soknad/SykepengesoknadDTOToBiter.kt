@@ -42,7 +42,7 @@ fun SykepengesoknadDTO.mapSoknadTilBiter(): List<Syketilfellebit> {
             fom = fom!!,
             tom = tom!!,
             fnr = fnr,
-            korrigererSendtSoknad = korrigerer,
+            korrigererSendtSoknad = korrigerer
 
         )
     )
@@ -85,7 +85,7 @@ private fun SykepengesoknadDTO.fravar(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it.fom!!,
                 tom = (it.tom ?: tom)!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -100,7 +100,7 @@ private fun SykepengesoknadDTO.arbeidGjenopptatt(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it,
                 tom = tom!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -116,7 +116,7 @@ private fun SykepengesoknadDTO.korrigertArbeidstid(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it.fom!!,
                 tom = it.tom!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -131,7 +131,7 @@ private fun SykepengesoknadDTO.behandingsdagBiter(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it,
                 tom = it,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -164,7 +164,7 @@ private fun SykepengesoknadDTO.egenmelding(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it.fom!!,
                 tom = it.tom!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -179,7 +179,7 @@ private fun SykepengesoknadDTO.fravarForSykmelding(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it.fom!!,
                 tom = it.tom!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }
 
@@ -194,6 +194,6 @@ private fun SykepengesoknadDTO.papirsykmelding(opprettet: OffsetDateTime) =
                 ressursId = id,
                 fom = it.fom!!,
                 tom = it.tom!!,
-                fnr = fnr,
+                fnr = fnr
             )
         }

@@ -54,7 +54,7 @@ class JuridiskVurderingKafkaProducer(
         versjon = "1.0.0",
         kilde = naisAppName,
         versjonAvKode = naisAppImage,
-        tidsstempel = Instant.now(),
+        tidsstempel = Instant.now()
     )
 }
 

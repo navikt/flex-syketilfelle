@@ -12,7 +12,7 @@ fun skapArbeidsgiverSykmelding(
     tom: LocalDate = LocalDate.now(),
     sykmeldingId: String = UUID.randomUUID().toString(),
     harRedusertArbeidsgiverperiode: Boolean = false,
-    type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+    type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG
 
 ): ArbeidsgiverSykmelding {
     return ArbeidsgiverSykmelding(
@@ -56,6 +56,6 @@ fun skapArbeidsgiverSykmelding(
         prognose = null,
         papirsykmelding = false,
         merknader = null,
-        utenlandskSykmelding = null,
+        utenlandskSykmelding = null
     )
 }

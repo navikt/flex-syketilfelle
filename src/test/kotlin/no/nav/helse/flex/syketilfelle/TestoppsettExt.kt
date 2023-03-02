@@ -20,7 +20,7 @@ fun Testoppsett.kallArbeidsgiverperiodeApi(
     soknad: SykepengesoknadDTO,
     expectNoContent: Boolean = false,
     forelopig: Boolean = true,
-    fnr: String,
+    fnr: String
 ): Arbeidsgiverperiode? {
     val result = mockMvc.perform(
         MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
@@ -32,8 +32,11 @@ fun Testoppsett.kallArbeidsgiverperiodeApi(
     )
         .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
         .andExpect(
-            if (expectNoContent) MockMvcResultMatchers.status().isNoContent else
+            if (expectNoContent) {
+                MockMvcResultMatchers.status().isNoContent
+            } else {
                 MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+            }
         )
         .andReturn()
     return result.response.contentAsString.takeIf { it.isNotBlank() }
@@ -45,14 +48,12 @@ fun Testoppsett.opprettSendtSykmelding(
     fnr: String,
     orgnummer: String? = null
 ): String {
-
     val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding, fnr, orgnummer)
     producerPåSendtBekreftetTopic(kafkaMessage)
     return sykmelding.id
 }
 
 fun Testoppsett.opprettMottattSykmelding(sykmelding: ArbeidsgiverSykmelding, fnr: String): String {
-
     val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding = sykmelding, fnr = fnr)
     val apenSykmeldingKafkaMessage = MottattSykmeldingKafkaMessage(
         sykmelding = kafkaMessage.sykmelding,
@@ -67,7 +68,6 @@ private fun opprettSykmeldingKafkaMessage(
     fnr: String,
     orgnummer: String? = null
 ): SykmeldingKafkaMessage {
-
     val kafkaMetadata = KafkaMetadataDTO(
         sykmeldingId = sykmelding.id,
         fnr = fnr,

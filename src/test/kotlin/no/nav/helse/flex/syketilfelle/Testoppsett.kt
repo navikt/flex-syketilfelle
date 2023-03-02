@@ -109,6 +109,7 @@ abstract class Testoppsett {
         syketilfelleBitConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
         syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
     }
+
     @AfterAll
     fun `Vi leser topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
         syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()

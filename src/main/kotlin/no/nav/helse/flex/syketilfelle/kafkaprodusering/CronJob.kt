@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 @Profile("default")
 class CronJob(
     val kafkaProduseringJob: KafkaProduseringJob,
-    val leaderElection: LeaderElection,
+    val leaderElection: LeaderElection
 ) {
     val log = logger()
 

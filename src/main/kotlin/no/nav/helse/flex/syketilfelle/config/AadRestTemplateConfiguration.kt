@@ -47,7 +47,7 @@ class AadRestTemplateConfiguration {
         restTemplateBuilder: RestTemplateBuilder,
         httpClient: CloseableHttpClient,
         clientConfigurationProperties: ClientConfigurationProperties,
-        oAuth2AccessTokenService: OAuth2AccessTokenService,
+        oAuth2AccessTokenService: OAuth2AccessTokenService
     ): RestTemplate {
         val registrationName = "pdl-api-client-credentials"
         val clientProperties = clientConfigurationProperties.registration[registrationName]

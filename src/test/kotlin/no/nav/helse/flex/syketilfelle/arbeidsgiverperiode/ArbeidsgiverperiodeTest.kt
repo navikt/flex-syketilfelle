@@ -71,15 +71,15 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
         vurdering.input `should be equal to` mapOf(
             "soknad" to soknad.id,
-            "versjon" to "2022-02-01",
+            "versjon" to "2022-02-01"
         )
         vurdering.output `should be equal to` mapOf(
             "arbeidsgiverperiode" to mapOf(
                 "fom" to "2019-03-01",
-                "tom" to "2019-03-16",
+                "tom" to "2019-03-16"
             ),
             "oppbruktArbeidsgiverperiode" to false,
-            "versjon" to "2022-02-01",
+            "versjon" to "2022-02-01"
         )
     }
 
@@ -464,8 +464,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
             fravar = (
                 listOf(
-                    FravarDTO
-                    (
+                    FravarDTO(
                         type = (FravarstypeDTO.FERIE),
                         fom = (LocalDate.of(2019, 3, 11)),
                         tom = (LocalDate.of(2019, 3, 27))
@@ -491,7 +490,6 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     @Test
     fun `førstegangssøknad på 17 dager har brukt opp arbeidsgiverperioden`() {
-
         val soknad = SykepengesoknadDTO(
             id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
             arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
@@ -538,7 +536,6 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     @Test
     fun `førstegangssøknad på 15 dager og etterfølgende søknad på 3 dager bruker opp arbeidsgiverperioden`() {
-
         lagreBitSomRecord(
             Syketilfellebit(
                 fnr = fnr,
@@ -726,7 +723,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             fnr = fnr,
             status = SoknadsstatusDTO.SENDT,
             type = SoknadstypeDTO.ARBEIDSTAKERE,
-            sykmeldingId = UUID.randomUUID().toString(),
+            sykmeldingId = UUID.randomUUID().toString()
         )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
@@ -869,7 +866,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             egenmeldinger = (emptyList()),
             fnr = fnr,
             sykmeldingId = UUID.randomUUID().toString(),
-            status = SoknadsstatusDTO.SENDT,
+            status = SoknadsstatusDTO.SENDT
         )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)

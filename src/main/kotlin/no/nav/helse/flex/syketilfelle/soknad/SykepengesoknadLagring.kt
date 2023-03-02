@@ -8,13 +8,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class SykepengesoknadLagring(
-    private val syketilfellebitLagring: SyketilfellebitLagring,
+    private val syketilfellebitLagring: SyketilfellebitLagring
 ) {
 
     val log = logger()
 
     fun lagreBiterFraSoknad(soknad: SykepengesoknadDTO) {
-
         if (soknad.skalBehandles()) {
             log.info("Behandler soknad ${soknad.id}")
             if (soknad.status == SoknadsstatusDTO.SENDT) {

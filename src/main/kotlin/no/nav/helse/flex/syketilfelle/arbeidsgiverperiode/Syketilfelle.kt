@@ -62,7 +62,6 @@ fun genererOppfolgingstilfelle(
     tilleggsbiter: List<Syketilfellebit> = emptyList(),
     grense: LocalDateTime? = null
 ): List<Oppfolgingstilfelle>? {
-
     val korrigerteBiter = biter.finnBiterSomTilleggsbiterVilKorrigere(andreKorrigerteRessurser, tilleggsbiter)
 
     val merge = ArrayList(biter)
@@ -96,7 +95,7 @@ fun genererOppfolgingstilfelle(
                 SYKMELDING and NY and PERIODE and BEHANDLINGSDAGER,
                 SYKMELDING and NY and PERIODE and FULL_AKTIVITET,
                 SYKMELDING and NY and PERIODE and (GRADERT_AKTIVITET or INGEN_AKTIVITET),
-                SYKMELDING and NY and PERIODE and REISETILSKUDD and UKJENT_AKTIVITET,
+                SYKMELDING and NY and PERIODE and REISETILSKUDD and UKJENT_AKTIVITET
 
             ),
             biter = merge
@@ -158,6 +157,6 @@ private fun List<Syketilfellebit>.finnBiterSomTilleggsbiterVilKorrigere(
                 ressursId = bitSomSkalKorrigeres.ressursId,
                 fom = bitSomSkalKorrigeres.fom,
                 tom = bitSomSkalKorrigeres.tom,
-                fnr = bitSomSkalKorrigeres.fnr,
+                fnr = bitSomSkalKorrigeres.fnr
             )
         }

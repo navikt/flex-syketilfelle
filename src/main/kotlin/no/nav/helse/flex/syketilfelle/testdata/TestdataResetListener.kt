@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 @Profile("testdatareset")
 class TestdataResetListener(
-    private val syketilfellebitRepository: SyketilfellebitRepository,
+    private val syketilfellebitRepository: SyketilfellebitRepository
 ) {
 
     val log = logger()
@@ -21,7 +21,7 @@ class TestdataResetListener(
         containerFactory = "aivenKafkaListenerContainerFactory",
         properties = ["auto.offset.reset = earliest"],
         id = "testdata-reset",
-        idIsGroup = false,
+        idIsGroup = false
     )
     fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
         val fnr = cr.value()

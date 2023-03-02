@@ -33,7 +33,6 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : Testoppsett() {
 
     @Test
     fun `arbrbeidsgiverperioden regnes ut per arbeidsgiver`() {
-
         val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
         val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato)
 
