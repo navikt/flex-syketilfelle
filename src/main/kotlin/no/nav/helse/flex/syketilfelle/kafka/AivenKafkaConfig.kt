@@ -95,6 +95,7 @@ class AivenKafkaConfig(
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonKafkaSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
             ProducerConfig.RETRIES_CONFIG to 10,
+            ProducerConfig.PARTITIONER_CLASS_CONFIG to KafkaSyketilfellebitPartitioner::class.java,
             ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100
         ) + commonConfig()
         return KafkaProducer<String, KafkaSyketilfellebit>(kafkaConfig)
