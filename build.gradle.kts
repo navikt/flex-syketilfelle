@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("org.springframework.boot") version "3.0.4"
+    id("org.springframework.boot") version "3.0.5"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
     kotlin("plugin.spring") version "1.8.10"
@@ -36,7 +36,7 @@ val logstashEncoderVersion = "7.3"
 val testContainersVersion = "1.17.6"
 val kluentVersion = "1.72"
 val sykepengesoknadKafkaVersion = "2022.10.28-10.24-aa0eced7"
-val syfoSmCommon = "1.4d2de6e"
+val syfoSmCommon = "1.9df1108"
 val jsonSchemaValidatorVersion = "1.0.78"
 val inntektsmeldingKontrakt = "2022.05.25-03-25-807e7"
 val httpClientVersion = "5.2.1"

@@ -28,8 +28,9 @@ import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
+import kotlin.concurrent.thread
 
-private class PostgreSQLContainer12 : PostgreSQLContainer<PostgreSQLContainer12>("postgres:12-alpine")
+private class PostgreSQLContainer14 : PostgreSQLContainer<PostgreSQLContainer14>("postgres:14-alpine")
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -52,23 +53,33 @@ abstract class Testoppsett {
         var pdlMockWebserver: MockWebServer
 
         init {
-            PostgreSQLContainer12().also {
-                it.start()
-                System.setProperty("spring.datasource.url", "${it.jdbcUrl}&reWriteBatchedInserts=true")
-                System.setProperty("spring.datasource.username", it.username)
-                System.setProperty("spring.datasource.password", it.password)
-            }
+            val threads = mutableListOf<Thread>()
 
-            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.1.1")).also {
-                it.start()
-                System.setProperty("KAFKA_BROKERS", it.bootstrapServers)
-            }
+            thread {
+                KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.2")).apply {
+                    start()
+                    System.setProperty("KAFKA_BROKERS", bootstrapServers)
+                }
+            }.also { threads.add(it) }
+
+            thread {
+                PostgreSQLContainer14().apply {
+                    // Cloud SQL har wal_level = 'logical' på grunn av flagget cloudsql.logical_decoding i
+                    // naiserator.yaml. Vi må sette det samme lokalt for at flyway migrering skal fungere.
+                    withCommand("postgres", "-c", "wal_level=logical")
+                    start()
+                    System.setProperty("spring.datasource.url", "$jdbcUrl&reWriteBatchedInserts=true")
+                    System.setProperty("spring.datasource.username", username)
+                    System.setProperty("spring.datasource.password", password)
+                }
+            }.also { threads.add(it) }
 
             pdlMockWebserver = MockWebServer()
                 .also {
                     System.setProperty("PDL_BASE_URL", "http://localhost:${it.port}")
                 }
                 .also { it.dispatcher = PdlMockDispatcher }
+            threads.forEach { it.join() }
         }
     }
 

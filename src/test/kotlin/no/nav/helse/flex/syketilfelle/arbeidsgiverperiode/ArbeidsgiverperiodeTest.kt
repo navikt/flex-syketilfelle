@@ -8,18 +8,27 @@ import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.tilJuridiskVurdering
 import no.nav.helse.flex.syketilfelle.ventPåRecords
+import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
+import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.model.sykmeldingstatus.*
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be null`
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class ArbeidsgiverperiodeTest : Testoppsett() {
 
@@ -874,5 +883,80 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2020, 1, 27))
         assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2020, 2, 11))
+    }
+
+    @Test
+    fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden`() {
+        val sykmelding = skapArbeidsgiverSykmelding()
+
+        val kafkaMetadata = KafkaMetadataDTO(
+            sykmeldingId = sykmelding.id,
+            fnr = fnr,
+            timestamp = OffsetDateTime.now(),
+            source = "Denne testen"
+        )
+
+        val event = SykmeldingStatusKafkaEventDTO(
+            sykmeldingId = sykmelding.id,
+            timestamp = OffsetDateTime.now(),
+            statusEvent = STATUS_SENDT,
+            arbeidsgiver = null,
+            sporsmals = emptyList()
+        )
+
+        val kafkaMessage = SykmeldingKafkaMessage(
+            sykmelding = sykmelding.copy(
+                sykmeldingsperioder = listOf(
+                    SykmeldingsperiodeAGDTO(
+                        fom = LocalDate.of(2023, 3, 14),
+                        tom = LocalDate.of(2023, 3, 26),
+                        reisetilskudd = false,
+                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                        aktivitetIkkeMulig = null,
+                        behandlingsdager = null,
+                        gradert = null,
+                        innspillTilArbeidsgiver = null
+                    )
+                )
+            ),
+            kafkaMetadata = kafkaMetadata,
+            event = event.copy(
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        tekst = "Velg dagene du brukte egenmelding",
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                        svartype = SvartypeDTO.DAGER
+                    )
+                )
+            )
+        )
+        producerPåSendtBekreftetTopic(kafkaMessage)
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 4
+        }
+
+        val soknad = SykepengesoknadDTO(
+            id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
+            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
+            fravar = emptyList(),
+            startSyketilfelle = LocalDate.of(2023, 3, 14),
+            andreInntektskilder = emptyList(),
+            fom = LocalDate.of(2023, 3, 14),
+            tom = LocalDate.of(2023, 3, 26),
+            arbeidGjenopptatt = null,
+            egenmeldinger = emptyList(),
+            fnr = fnr,
+            status = SoknadsstatusDTO.SENDT,
+            type = SoknadstypeDTO.ARBEIDSTAKERE,
+            sykmeldingId = UUID.randomUUID().toString()
+        )
+
+        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
+
+        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
+        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 24))
+        assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
     }
 }

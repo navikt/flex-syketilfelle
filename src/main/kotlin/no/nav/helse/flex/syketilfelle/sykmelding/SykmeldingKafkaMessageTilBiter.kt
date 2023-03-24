@@ -1,9 +1,9 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
@@ -22,7 +22,7 @@ private val objectMapper = ObjectMapper()
     .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE, true)
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-private class Periode(val tom: LocalDate, val fom: LocalDate)
+class Periode(val fom: LocalDate, val tom: LocalDate)
 
 fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
     val sykmeldingsperioderBiter = this.sykmelding
@@ -48,7 +48,7 @@ fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
         ?.firstOrNull { it.shortName == ShortNameDTO.PERIODE }
         ?.svar
         ?.let {
-            return@let objectMapper.readValue<List<Periode>>(it, object : TypeReference<List<Periode>>() {})
+            return@let objectMapper.readValue(it) as List<Periode>
         }
         ?.map {
             Syketilfellebit(
@@ -64,10 +64,42 @@ fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
         }
         ?: emptyList()
 
+    val egenmeldingsdager = this.event.sporsmals
+        ?.firstOrNull { it.shortName == ShortNameDTO.EGENMELDINGSDAGER }
+        ?.svar
+        ?.let { objectMapper.readValue(it) as List<String> }
+        ?.map { LocalDate.parse(it) }
+        ?.groupConsecutiveDays()
+        ?.map {
+            Syketilfellebit(
+                orgnummer = this.event.arbeidsgiver?.orgnummer,
+                inntruffet = this.event.timestamp.tilOsloZone(),
+                fom = it.fom,
+                tom = it.tom,
+                opprettet = OffsetDateTime.now().tilOsloZone(),
+                ressursId = this.sykmelding.id,
+                tags = setOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING),
+                fnr = this.kafkaMetadata.fnr
+            )
+        }
+        ?: emptyList()
+
     return ArrayList<Syketilfellebit>().also {
         it.addAll(sykmeldingsperioderBiter)
         it.addAll(periodeSvar)
+        it.addAll(egenmeldingsdager)
     }
+}
+
+fun List<LocalDate>.groupConsecutiveDays(): List<Periode> {
+    return this.sorted()
+        .fold(emptyList()) { perioder, dato ->
+            if (perioder.isEmpty() || perioder.last().tom.plusDays(1) != dato) {
+                perioder + Periode(dato, dato)
+            } else {
+                perioder.dropLast(1) + Periode(fom = perioder.last().fom, tom = dato)
+            }
+        }
 }
 
 private fun SykmeldingsperiodeAGDTO.finnTagsForPeriode(sykmeldingKafkaMessage: SykmeldingKafkaMessage): Set<Tag> {
