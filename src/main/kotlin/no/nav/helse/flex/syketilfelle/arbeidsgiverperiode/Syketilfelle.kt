@@ -90,6 +90,7 @@ fun genererOppfolgingstilfelle(
                 SYKMELDING and (SENDT or BEKREFTET) and PERIODE and BEHANDLINGSDAGER,
                 SYKMELDING and (SENDT or BEKREFTET) and PERIODE and FULL_AKTIVITET,
                 SYKMELDING and (SENDT or BEKREFTET) and PERIODE and (GRADERT_AKTIVITET or INGEN_AKTIVITET),
+                SYKMELDING and (SENDT or BEKREFTET) and EGENMELDING,
                 SYKMELDING and BEKREFTET and ANNET_FRAVAR,
                 SYKMELDING and SENDT and PERIODE and REISETILSKUDD and UKJENT_AKTIVITET,
                 SYKMELDING and NY and PERIODE and BEHANDLINGSDAGER,

@@ -12,6 +12,9 @@ import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.*
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldContainAll
+import org.amshove.kluent.shouldHaveSize
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
@@ -82,7 +85,16 @@ class SykmeldingMottakTest : Testoppsett() {
         assertThat(biter[0].fom).isEqualTo(LocalDate.of(2020, 3, 12))
         assertThat(biter[0].tom).isEqualTo(LocalDate.of(2020, 6, 19))
         assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
-        biter[0].inntruffet `should be equal to ignoring nano and zone` OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC)
+        biter[0].inntruffet `should be equal to ignoring nano and zone` OffsetDateTime.of(
+            2020,
+            6,
+            20,
+            6,
+            34,
+            4,
+            0,
+            ZoneOffset.UTC
+        )
         assertThat(biter[0].orgnummer).isNull()
         assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.INGEN_AKTIVITET))
     }
@@ -150,7 +162,15 @@ class SykmeldingMottakTest : Testoppsett() {
         assertThat(biter[0].tom).isEqualTo(LocalDate.of(2020, 6, 19))
         assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
         assertThat(biter[0].orgnummer).isNull()
-        assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET, Tag.REDUSERT_ARBEIDSGIVERPERIODE))
+        assertThat(biter[0].tags).isEqualTo(
+            setOf(
+                Tag.SYKMELDING,
+                Tag.NY,
+                Tag.PERIODE,
+                Tag.INGEN_AKTIVITET,
+                Tag.REDUSERT_ARBEIDSGIVERPERIODE
+            )
+        )
     }
 
     @Test
@@ -216,7 +236,15 @@ class SykmeldingMottakTest : Testoppsett() {
         assertThat(biter[2].tom).isEqualTo(LocalDate.of(2020, 6, 29))
         assertThat(biter[2].ressursId).isEqualTo(sykmelding.id)
         assertThat(biter[2].orgnummer).isEqualTo("12344")
-        assertThat(biter[2].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.AVVENTENDE, Tag.UKJENT_AKTIVITET))
+        assertThat(biter[2].tags).isEqualTo(
+            setOf(
+                Tag.SYKMELDING,
+                Tag.SENDT,
+                Tag.PERIODE,
+                Tag.AVVENTENDE,
+                Tag.UKJENT_AKTIVITET
+            )
+        )
     }
 
     @Test
@@ -299,6 +327,80 @@ class SykmeldingMottakTest : Testoppsett() {
         assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
         assertThat(biter[0].orgnummer).isEqualTo("12344")
         biter[0].inntruffet `should be equal to ignoring nano and zone` event.timestamp
-        assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.REISETILSKUDD, Tag.UKJENT_AKTIVITET))
+        assertThat(biter[0].tags).isEqualTo(
+            setOf(
+                Tag.SYKMELDING,
+                Tag.SENDT,
+                Tag.PERIODE,
+                Tag.REISETILSKUDD,
+                Tag.UKJENT_AKTIVITET
+            )
+        )
+    }
+
+    @Test
+    fun `tar imot sykmelding med egenmeldingsdager `() {
+        val kafkaMessage = SykmeldingKafkaMessage(
+            sykmelding = sykmelding.copy(
+                sykmeldingsperioder = listOf(
+                    SykmeldingsperiodeAGDTO(
+                        fom = LocalDate.of(2020, 3, 12),
+                        tom = LocalDate.of(2020, 6, 19),
+                        reisetilskudd = false,
+                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                        aktivitetIkkeMulig = null,
+                        behandlingsdager = null,
+                        gradert = null,
+                        innspillTilArbeidsgiver = null
+                    )
+                )
+            ),
+            kafkaMetadata = kafkaMetadata,
+            event = event.copy(
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        tekst = "Velg dagene du brukte egenmelding",
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                        svartype = SvartypeDTO.DAGER
+                    )
+                )
+            )
+        )
+        producerPåSendtBekreftetTopic(kafkaMessage)
+        await().atMost(10, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 4
+        }
+        val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }.sortedBy { it.fom }
+
+        biter.shouldHaveSize(4)
+        biter[0].fom.shouldBeEqualTo(LocalDate.of(2020, 3, 12))
+        biter[0].tom.shouldBeEqualTo(LocalDate.of(2020, 6, 19))
+        biter[0].ressursId.shouldBeEqualTo(sykmelding.id)
+        biter[0].orgnummer.shouldBeEqualTo("12344")
+        biter[0].inntruffet `should be equal to ignoring nano and zone` event.timestamp
+        biter[0].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.INGEN_AKTIVITET))
+
+        biter[1].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 1))
+        biter[1].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 1))
+        biter[1].ressursId.shouldBeEqualTo(sykmelding.id)
+        biter[1].orgnummer.shouldBeEqualTo("12344")
+        biter[1].inntruffet `should be equal to ignoring nano and zone` event.timestamp
+        biter[1].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
+
+        biter[2].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 8))
+        biter[2].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 10))
+        biter[2].ressursId.shouldBeEqualTo(sykmelding.id)
+        biter[2].orgnummer.shouldBeEqualTo("12344")
+        biter[2].inntruffet `should be equal to ignoring nano and zone` event.timestamp
+        biter[2].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
+
+        biter[3].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 13))
+        biter[3].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 13))
+        biter[3].ressursId.shouldBeEqualTo(sykmelding.id)
+        biter[3].orgnummer.shouldBeEqualTo("12344")
+        biter[3].inntruffet `should be equal to ignoring nano and zone` event.timestamp
+        biter[3].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
     }
 }
