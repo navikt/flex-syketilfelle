@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
+import no.nav.helse.flex.syketilfelle.kafkaprodusering.kalkulerPartisjon
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
@@ -15,7 +16,7 @@ class FnrPartitionerTest {
 
         repeat(REPETER_TEST_ANTALL_GANGER) {
             syntetiskeFnr.forEach {
-                FnrPartitioner.kalkulerPartisjon(it.toByteArray(), ANTALL_PARTISJONER)
+                kalkulerPartisjon(it.toByteArray(), ANTALL_PARTISJONER)
                     .also { partisjon ->
                         partisjoneringsResultat.getOrPut(it) { mutableListOf() }?.add(partisjon)
                     }

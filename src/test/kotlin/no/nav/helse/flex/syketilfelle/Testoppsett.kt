@@ -84,7 +84,7 @@ abstract class Testoppsett {
     }
 
     @Autowired
-    lateinit var syketilfelleBitConsumer: Consumer<String, String>
+    lateinit var syketilfelleBitConsumer: Consumer<String, String?>
 
     @Autowired
     lateinit var juridiskVurderingKafkaConsumer: Consumer<String, String>

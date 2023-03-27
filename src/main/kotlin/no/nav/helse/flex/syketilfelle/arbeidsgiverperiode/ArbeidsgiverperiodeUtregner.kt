@@ -93,5 +93,6 @@ class ArbeidsgiverperiodeUtregner(
     private fun finnBiter(fnrs: List<String>) = syketilfellebitRepository
         .findByFnrIn(fnrs)
         .map { it.tilSyketilfellebit() }
+        .filter { it.slettet == null }
         .utenKorrigerteSoknader()
 }

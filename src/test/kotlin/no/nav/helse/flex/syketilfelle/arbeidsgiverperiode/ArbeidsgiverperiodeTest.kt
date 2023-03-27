@@ -4,6 +4,8 @@ import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.Testoppsett
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
+import no.nav.helse.flex.syketilfelle.kafkaprodusering.KafkaProduseringJob
+import no.nav.helse.flex.syketilfelle.kafkaprodusering.TombsstoneProduseringJob
 import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
@@ -18,11 +20,13 @@ import no.nav.syfo.model.sykmeldingstatus.*
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be null`
+import org.amshove.kluent.shouldHaveSize
 import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.Awaitility
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,6 +35,12 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class ArbeidsgiverperiodeTest : Testoppsett() {
+
+    @Autowired
+    lateinit var kafkaProduseringJob: KafkaProduseringJob
+
+    @Autowired
+    lateinit var tombsstoneProduseringJob: TombsstoneProduseringJob
 
     private final val fnr = "12345432123"
 
@@ -933,7 +943,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             )
         )
         producerPåSendtBekreftetTopic(kafkaMessage)
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
+        await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
 
@@ -953,10 +963,53 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
             sykmeldingId = UUID.randomUUID().toString()
         )
 
-        val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
+        kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr).let {
+            assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
+            assertThat(it?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 24))
+            assertThat(it?.oppbruktArbeidsgiverperiode).isEqualTo(true)
+        }
 
-        assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
-        assertThat(res?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 24))
-        assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
+        // Korrigerer egenmeldingsdager
+        val kafkaMessage2 = kafkaMessage.copy(
+            event = event.copy(
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        tekst = "Velg dagene du brukte egenmelding",
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "[\"2023-03-13\",\"2023-03-12\"]",
+                        svartype = SvartypeDTO.DAGER
+                    )
+                ),
+                erSvarOppdatering = true
+            )
+        )
+
+        producerPåSendtBekreftetTopic(kafkaMessage2)
+        await().atMost(10, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 5
+        }
+        val slettedeBiter = syketilfellebitRepository.findByFnr(fnr).filter { it.slettet != null }
+        slettedeBiter.shouldHaveSize(3)
+
+        kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr).let {
+            assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 12))
+            assertThat(it?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 26))
+            assertThat(it?.oppbruktArbeidsgiverperiode).isEqualTo(false)
+        }
+
+        // 3 tombstones klare for publisering
+        syketilfellebitRepository.findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc().shouldHaveSize(3)
+
+        tombsstoneProduseringJob.publiser()
+        syketilfelleBitConsumer.ventPåRecords(antall = 0) // Ingen publisering av tombstones før vi har publisert de vanlige bitene
+
+        // Publiserer de vanlige bitene
+        kafkaProduseringJob.publiser()
+        syketilfelleBitConsumer.ventPåRecords(antall = 5)
+
+        tombsstoneProduseringJob.publiser()
+        val tombstones = syketilfelleBitConsumer.ventPåRecords(antall = 3)
+        slettedeBiter.map { it.id }.toSet() `should be equal to` tombstones.map { it.key() }.toSet()
     }
 }

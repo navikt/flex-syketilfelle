@@ -17,5 +17,5 @@ class JacksonKafkaSerializer<T : Any> : Serializer<T> {
         it.setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
-    override fun serialize(topic: String?, data: T): ByteArray = objectMapper.writeValueAsBytes(data)
+    override fun serialize(topic: String?, data: T?): ByteArray = objectMapper.writeValueAsBytes(data)
 }

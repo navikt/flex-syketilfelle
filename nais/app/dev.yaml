@@ -5,7 +5,7 @@ environment: dev
 replicas_min: 2
 replicas_max: 2
 env:
-  SPRING_PROFILES_ACTIVE: default,testdatareset
+  SPRING_PROFILES_ACTIVE: default,testdatareset,tombstoneprodusering
   PDL_BASE_URL: https://pdl-api.dev-fss-pub.nais.io
   PDL_API_AAD_CLIENT_ID: dev-fss.pdl.pdl-api
   SYKMELDINGER_FRONTEND_CLIENT_ID: dev-gcp:teamsykmelding:sykmeldinger

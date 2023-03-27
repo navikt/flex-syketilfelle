@@ -87,8 +87,8 @@ class KafkaProduseringTest : Testoppsett() {
 
         val records = syketilfelleBitConsumer.ventPåRecords(antall = 2).map { it.deserialisert() }
 
-        records[0].second.ressursId `should be equal to` "den eldste"
-        records[1].second.ressursId `should be equal to` "den nyeste"
+        records[0].second!!.ressursId `should be equal to` "den eldste"
+        records[1].second!!.ressursId `should be equal to` "den nyeste"
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldBeEmpty()
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(3)
 
@@ -130,7 +130,7 @@ class KafkaProduseringTest : Testoppsett() {
     }
 }
 
-fun ConsumerRecord<String, String>.deserialisert(): Pair<String, KafkaSyketilfellebit> =
-    Pair(key(), value().tilKafkaSyketilfellebit())
+fun ConsumerRecord<String, String?>.deserialisert(): Pair<String, KafkaSyketilfellebit?> =
+    Pair(key(), value()?.tilKafkaSyketilfellebit())
 
 fun String.tilKafkaSyketilfellebit(): KafkaSyketilfellebit = objectMapper.readValue(this)
