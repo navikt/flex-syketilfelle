@@ -21,7 +21,8 @@ data class SyketilfellebitDbRecord(
     val tom: LocalDate,
     val korrigererSendtSoknad: String?,
     val publisert: Boolean,
-    val slettet: OffsetDateTime? = null
+    val slettet: OffsetDateTime? = null,
+    val tombstonePublistert: OffsetDateTime? = null
 )
 
 fun SyketilfellebitDbRecord.tilSyketilfellebit(): Syketilfellebit = Syketilfellebit(

@@ -89,16 +89,15 @@ class AivenKafkaConfig(
     }
 
     @Bean
-    fun producer(): KafkaProducer<String, KafkaSyketilfellebit> {
+    fun producer(): KafkaProducer<String, KafkaSyketilfellebit?> {
         val kafkaConfig = mapOf(
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonKafkaSerializer::class.java,
             ProducerConfig.ACKS_CONFIG to "all",
             ProducerConfig.RETRIES_CONFIG to 10,
-            ProducerConfig.PARTITIONER_CLASS_CONFIG to KafkaSyketilfellebitPartitioner::class.java,
             ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100
         ) + commonConfig()
-        return KafkaProducer<String, KafkaSyketilfellebit>(kafkaConfig)
+        return KafkaProducer<String, KafkaSyketilfellebit?>(kafkaConfig)
     }
 
     @Bean
@@ -110,6 +109,7 @@ class AivenKafkaConfig(
             ProducerConfig.RETRIES_CONFIG to 10,
             ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100
         ) + commonConfig()
+
         return KafkaProducer<String, JuridiskVurderingKafkaDto>(kafkaConfig)
     }
 }

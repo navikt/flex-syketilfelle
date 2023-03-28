@@ -24,6 +24,28 @@ private val objectMapper = ObjectMapper()
 
 class Periode(val fom: LocalDate, val tom: LocalDate)
 
+fun SykmeldingKafkaMessage.mapTilEgenmeldingBiter(): List<Syketilfellebit> {
+    return event.sporsmals
+        ?.firstOrNull { it.shortName == ShortNameDTO.EGENMELDINGSDAGER }
+        ?.svar
+        ?.let { objectMapper.readValue(it) as List<String> }
+        ?.map { LocalDate.parse(it) }
+        ?.groupConsecutiveDays()
+        ?.map {
+            Syketilfellebit(
+                orgnummer = this.event.arbeidsgiver?.orgnummer,
+                inntruffet = this.event.timestamp.tilOsloZone(),
+                fom = it.fom,
+                tom = it.tom,
+                opprettet = OffsetDateTime.now().tilOsloZone(),
+                ressursId = this.sykmelding.id,
+                tags = setOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING),
+                fnr = this.kafkaMetadata.fnr
+            )
+        }
+        ?: emptyList()
+}
+
 fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
     val sykmeldingsperioderBiter = this.sykmelding
         .sykmeldingsperioder
@@ -64,30 +86,10 @@ fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
         }
         ?: emptyList()
 
-    val egenmeldingsdager = this.event.sporsmals
-        ?.firstOrNull { it.shortName == ShortNameDTO.EGENMELDINGSDAGER }
-        ?.svar
-        ?.let { objectMapper.readValue(it) as List<String> }
-        ?.map { LocalDate.parse(it) }
-        ?.groupConsecutiveDays()
-        ?.map {
-            Syketilfellebit(
-                orgnummer = this.event.arbeidsgiver?.orgnummer,
-                inntruffet = this.event.timestamp.tilOsloZone(),
-                fom = it.fom,
-                tom = it.tom,
-                opprettet = OffsetDateTime.now().tilOsloZone(),
-                ressursId = this.sykmelding.id,
-                tags = setOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING),
-                fnr = this.kafkaMetadata.fnr
-            )
-        }
-        ?: emptyList()
-
     return ArrayList<Syketilfellebit>().also {
         it.addAll(sykmeldingsperioderBiter)
         it.addAll(periodeSvar)
-        it.addAll(egenmeldingsdager)
+        it.addAll(mapTilEgenmeldingBiter())
     }
 }
 
