@@ -4,6 +4,8 @@ kafkaPool: nav-dev
 environment: dev
 replicas_min: 2
 replicas_max: 2
+external-host:
+  - pdl-api.dev-fss-pub.nais.io
 env:
   SPRING_PROFILES_ACTIVE: default,testdatareset,tombstoneprodusering
   PDL_BASE_URL: https://pdl-api.dev-fss-pub.nais.io
