@@ -13,6 +13,8 @@ import no.nav.helse.flex.syketilfelle.soknad.mapSoknadTilBiter
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.utenKorrigerteSoknader
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
@@ -26,11 +28,18 @@ class ArbeidsgiverperiodeUtregner(
         fnrs: List<String>,
         andreKorrigerteRessurser: List<String>,
         soknad: SykepengesoknadDTO,
-        forelopig: Boolean
+        forelopig: Boolean,
+        sykmelding: SykmeldingKafkaMessage?
     ): Arbeidsgiverperiode? {
+        val biter = finnBiter(fnrs)
+            .filter { it.orgnummer == soknad.arbeidsgiver?.orgnummer }
+            .filterNot { it.ressursId == sykmelding?.sykmelding?.id }
+            .toMutableList()
+            .also { it.addAll(sykmelding?.mapTilBiter() ?: emptyList()) }
+
         return genererOppfolgingstilfelle(
             fnrs = fnrs,
-            biter = finnBiter(fnrs).filter { it.orgnummer == soknad.arbeidsgiver?.orgnummer },
+            biter = biter,
             andreKorrigerteRessurser = andreKorrigerteRessurser,
             tilleggsbiter = soknad.mapSoknadTilBiter(),
             grense = soknad.tom!!.atStartOfDay(),
