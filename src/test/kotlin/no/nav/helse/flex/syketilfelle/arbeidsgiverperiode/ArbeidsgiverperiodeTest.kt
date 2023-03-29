@@ -896,7 +896,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
     }
 
     @Test
-    fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden`() {
+    fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden og sletter tidligere biter`() {
         val sykmelding = skapArbeidsgiverSykmelding()
 
         val kafkaMetadata = KafkaMetadataDTO(
@@ -1011,5 +1011,105 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         tombsstoneProduseringJob.publiser()
         val tombstones = syketilfelleBitConsumer.ventPåRecords(antall = 3)
         slettedeBiter.map { it.id }.toSet() `should be equal to` tombstones.map { it.key() }.toSet()
+    }
+
+    @Test
+    fun `egenmeldingsdager fra sykmeldingen i request erstatter tidligere biter uten å slette de`() {
+        val sykmelding = skapArbeidsgiverSykmelding()
+
+        val kafkaMetadata = KafkaMetadataDTO(
+            sykmeldingId = sykmelding.id,
+            fnr = fnr,
+            timestamp = OffsetDateTime.now(),
+            source = "Denne testen"
+        )
+
+        val event = SykmeldingStatusKafkaEventDTO(
+            sykmeldingId = sykmelding.id,
+            timestamp = OffsetDateTime.now(),
+            statusEvent = STATUS_SENDT,
+            arbeidsgiver = null,
+            sporsmals = emptyList()
+        )
+
+        val kafkaMessage = SykmeldingKafkaMessage(
+            sykmelding = sykmelding.copy(
+                sykmeldingsperioder = listOf(
+                    SykmeldingsperiodeAGDTO(
+                        fom = LocalDate.of(2023, 3, 14),
+                        tom = LocalDate.of(2023, 3, 26),
+                        reisetilskudd = false,
+                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                        aktivitetIkkeMulig = null,
+                        behandlingsdager = null,
+                        gradert = null,
+                        innspillTilArbeidsgiver = null
+                    )
+                )
+            ),
+            kafkaMetadata = kafkaMetadata,
+            event = event.copy(
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        tekst = "Velg dagene du brukte egenmelding",
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                        svartype = SvartypeDTO.DAGER
+                    )
+                )
+            )
+        )
+        producerPåSendtBekreftetTopic(kafkaMessage)
+        await().atMost(10, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 4
+        }
+
+        val soknad = SykepengesoknadDTO(
+            id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
+            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
+            fravar = emptyList(),
+            startSyketilfelle = LocalDate.of(2023, 3, 14),
+            andreInntektskilder = emptyList(),
+            fom = LocalDate.of(2023, 3, 14),
+            tom = LocalDate.of(2023, 3, 26),
+            arbeidGjenopptatt = null,
+            egenmeldinger = emptyList(),
+            fnr = fnr,
+            status = SoknadsstatusDTO.SENDT,
+            type = SoknadstypeDTO.ARBEIDSTAKERE,
+            sykmeldingId = UUID.randomUUID().toString()
+        )
+
+        kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr).let {
+            assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
+            assertThat(it?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 24))
+            assertThat(it?.oppbruktArbeidsgiverperiode).isEqualTo(true)
+        }
+
+        // Korrigerer egenmeldingsdager
+        val kafkaMessage2 = kafkaMessage.copy(
+            event = event.copy(
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        tekst = "Velg dagene du brukte egenmelding",
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "[\"2023-03-13\",\"2023-03-12\"]",
+                        svartype = SvartypeDTO.DAGER
+                    )
+                ),
+                erSvarOppdatering = true
+            )
+        )
+
+        kallArbeidsgiverperiodeApi(soknad = soknad, sykmelding = kafkaMessage2, fnr = fnr).let {
+            assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 12))
+            assertThat(it?.arbeidsgiverPeriode?.tom).isEqualTo(LocalDate.of(2023, 3, 26))
+            assertThat(it?.oppbruktArbeidsgiverperiode).isEqualTo(false)
+        }
+
+        // Ingen tombstones klare for publisering
+        syketilfellebitRepository.findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc().shouldHaveSize(0)
     }
 }
