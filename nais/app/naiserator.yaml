@@ -77,3 +77,8 @@ spec:
           cluster: {{environment}}-gcp
         - application: dinesykmeldte-kafka
           namespace: teamsykmelding
+    outbound:
+      external:
+  {{#each external-host}}
+        - host: {{this}}
+  {{/each}}
