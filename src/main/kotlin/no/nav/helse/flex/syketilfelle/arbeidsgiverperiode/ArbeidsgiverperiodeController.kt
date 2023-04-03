@@ -18,49 +18,6 @@ class ArbeidsgiverperiodeController(
     private val oppfolgingstilfelleService: ArbeidsgiverperiodeUtregner,
     override val pdlClient: PdlClient
 ) : MedPdlClient {
-
-    @Deprecated("Erstattes av /api/v2/arbeidsgiverperiode")
-    @PostMapping(
-        value = ["/api/v1/arbeidsgiverperiode"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
-    )
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "azureator")
-    fun beregnArbeidsgiverperiode(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @RequestHeader(required = false) forelopig: Boolean = false,
-        @RequestParam(defaultValue = "") andreKorrigerteRessurser: List<String>,
-        @RequestBody sykepengesoknadDTO: SykepengesoknadDTO
-    ): ResponseEntity<Arbeidsgiverperiode> {
-        clientIdValidation.validateClientId(
-            NamespaceAndApp(
-                namespace = "flex",
-                app = "sykepengesoknad-backend"
-            )
-        )
-
-        val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
-
-        val soknad = sykepengesoknadDTO.copy(status = SoknadsstatusDTO.SENDT)
-
-        val arbeidsgiverperiode =
-            oppfolgingstilfelleService.beregnArbeidsgiverperiode(
-                fnrs = alleFnrs,
-                andreKorrigerteRessurser = andreKorrigerteRessurser,
-                soknad = soknad,
-                forelopig = forelopig,
-                sykmelding = null
-            )
-
-        return (
-            arbeidsgiverperiode
-                ?.let { ResponseEntity.ok(it) }
-                ?: ResponseEntity.noContent().build()
-            )
-    }
-
     @PostMapping(
         value = ["/api/v2/arbeidsgiverperiode"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
