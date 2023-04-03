@@ -2,6 +2,7 @@ package no.nav.helse.flex.syketilfelle
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
+import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.SoknadOgSykmelding
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
@@ -18,17 +19,19 @@ import java.time.ZoneOffset
 
 fun Testoppsett.kallArbeidsgiverperiodeApi(
     soknad: SykepengesoknadDTO,
+    sykmelding: SykmeldingKafkaMessage? = null,
     expectNoContent: Boolean = false,
     forelopig: Boolean = true,
     fnr: String
 ): Arbeidsgiverperiode? {
+    val requestBody = SoknadOgSykmelding(soknad, sykmelding)
     val result = mockMvc.perform(
-        MockMvcRequestBuilders.post("/api/v1/arbeidsgiverperiode")
+        MockMvcRequestBuilders.post("/api/v2/arbeidsgiverperiode")
             .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
             .header("fnr", fnr)
             .header("forelopig", forelopig.toString())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(soknad))
+            .content(objectMapper.writeValueAsString(requestBody))
     )
         .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
         .andExpect(
