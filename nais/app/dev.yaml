@@ -4,6 +4,8 @@ kafkaPool: nav-dev
 environment: dev
 replicas_min: 2
 replicas_max: 2
+cpu: 200m
+memory: 400Mi
 external-host:
   - pdl-api.dev-fss-pub.nais.io
 env:
