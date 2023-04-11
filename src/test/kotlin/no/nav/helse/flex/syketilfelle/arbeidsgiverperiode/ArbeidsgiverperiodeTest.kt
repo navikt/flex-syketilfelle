@@ -1010,7 +1010,7 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
         tombsstoneProduseringJob.publiser()
         val tombstones = syketilfelleBitConsumer.ventPåRecords(antall = 3)
-        slettedeBiter.map { it.id }.toSet() `should be equal to` tombstones.map { it.key() }.toSet()
+        slettedeBiter.map { it.syketilfellebitId }.toSet() `should be equal to` tombstones.map { it.key() }.toSet()
     }
 
     @Test

@@ -17,7 +17,7 @@ class TombsstoneProduseringJob(
         syketilfellebitRepository.findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc()
             .filter { it.publisert } // Tombstone skal kun produseres for publiserte syketilfellebiter
             .forEach {
-                syketilfellebitKafkaProducer.produserTombstone(it.id!!, it.fnr)
+                syketilfellebitKafkaProducer.produserTombstone(it.syketilfellebitId, it.fnr)
                 syketilfellebitRepository.save(it.copy(tombstonePublistert = OffsetDateTime.now()))
                 publisertSyketilfellebit.increment()
             }
