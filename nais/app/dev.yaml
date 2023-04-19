@@ -5,7 +5,7 @@ environment: dev
 replicas_min: 2
 replicas_max: 2
 cpu: 200m
-memory: 400Mi
+memory: 500Mi
 external-host:
   - pdl-api.dev-fss-pub.nais.io
 env:
