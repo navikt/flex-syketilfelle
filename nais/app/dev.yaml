@@ -9,7 +9,7 @@ memory: 500Mi
 external-host:
   - pdl-api.dev-fss-pub.nais.io
 env:
-  SPRING_PROFILES_ACTIVE: default,testdatareset,tombstoneprodusering
+  SPRING_PROFILES_ACTIVE: default,testdatareset
   PDL_BASE_URL: https://pdl-api.dev-fss-pub.nais.io
   PDL_API_AAD_CLIENT_ID: dev-fss.pdl.pdl-api
   SYKMELDINGER_FRONTEND_CLIENT_ID: dev-gcp:teamsykmelding:sykmeldinger
