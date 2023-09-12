@@ -88,7 +88,7 @@ fun MockOAuth2Server.tokenxToken(
     issuerId: String = "tokenx",
     clientId: String = "frontend-client-id",
     claims: Map<String, Any> = mapOf(
-        "acr" to "Level4",
+        "acr" to "idporten-loa-high",
         "idp" to "idporten",
         "client_id" to clientId,
         "pid" to fnr

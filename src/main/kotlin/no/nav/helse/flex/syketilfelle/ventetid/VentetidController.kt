@@ -69,7 +69,7 @@ class VentetidController(
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
     @ResponseBody
-    @ProtectedWithClaims(issuer = "tokenx", claimMap = ["acr=Level4"])
+    @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun erUtenforVentetid(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         return erUtenforVentetidResponse(fnr, sykmeldingId)
