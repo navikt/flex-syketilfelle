@@ -56,7 +56,7 @@ abstract class Testoppsett {
             val threads = mutableListOf<Thread>()
 
             thread {
-                KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.3.2")).apply {
+                KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.1")).apply {
                     start()
                     System.setProperty("KAFKA_BROKERS", bootstrapServers)
                 }
