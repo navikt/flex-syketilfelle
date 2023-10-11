@@ -52,7 +52,9 @@ class InntektsmeldingMottakTest : Testoppsett() {
         ferieperioder = listOf(),
         foersteFravaersdag = null,
         mottattDato = LocalDateTime.now(),
-        naerRelasjon = null
+        naerRelasjon = null,
+        innsenderFulltNavn = "Dagfinn",
+        innsenderTelefon = "123"
     )
 
     @BeforeEach
