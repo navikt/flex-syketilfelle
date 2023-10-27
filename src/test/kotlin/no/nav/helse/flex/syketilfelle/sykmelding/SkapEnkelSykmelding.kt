@@ -56,6 +56,7 @@ fun skapArbeidsgiverSykmelding(
         prognose = null,
         papirsykmelding = false,
         merknader = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
+        signaturDato = null
     )
 }
