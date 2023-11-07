@@ -21,6 +21,3 @@ spec:
     - team: teamsykefravr
       application: isoppfolgingstilfelle
       access: read
-    - team: team-esyfo
-      application: esyfovarsel
-      access: read
