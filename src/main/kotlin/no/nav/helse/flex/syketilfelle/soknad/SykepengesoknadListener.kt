@@ -12,17 +12,18 @@ const val SYKEPENGESOKNAD_TOPIC = "flex." + "sykepengesoknad"
 
 @Component
 class AivenSykepengesoknadListener(
-
-    private val sykepengesoknadLagring: SykepengesoknadLagring
+    private val sykepengesoknadLagring: SykepengesoknadLagring,
 ) {
-
     @KafkaListener(
         topics = [SYKEPENGESOKNAD_TOPIC],
         id = "sykepengesoknad",
         idIsGroup = false,
-        containerFactory = "syketilfelleKafkaListenerContainerFactory"
+        containerFactory = "syketilfelleKafkaListenerContainerFactory",
     )
-    fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
+    fun listen(
+        cr: ConsumerRecord<String, String>,
+        acknowledgment: Acknowledgment,
+    ) {
         sykepengesoknadLagring.lagreBiterFraSoknad(cr.value().tilSykepengesoknadDTO())
         acknowledgment.acknowledge()
     }

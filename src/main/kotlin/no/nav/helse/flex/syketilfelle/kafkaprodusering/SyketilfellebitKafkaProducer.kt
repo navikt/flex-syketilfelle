@@ -13,9 +13,8 @@ const val SYKETILFELLEBIT_TOPIC = "flex.syketilfellebiter"
 
 @Component
 class SyketilfellebitKafkaProducer(
-    private val producer: KafkaProducer<String, KafkaSyketilfellebit?>
+    private val producer: KafkaProducer<String, KafkaSyketilfellebit?>,
 ) {
-
     val antallPartisjoner = producer.partitionsFor(SYKETILFELLEBIT_TOPIC).size
 
     private val log = logger()
@@ -28,32 +27,44 @@ class SyketilfellebitKafkaProducer(
     fun produserMelding(kafkaSyketilfellebit: KafkaSyketilfellebit) {
         try {
             producer.send(
-                ProducerRecord(SYKETILFELLEBIT_TOPIC, kalkulerPartisjonForFnr(kafkaSyketilfellebit.fnr), kafkaSyketilfellebit.id, kafkaSyketilfellebit, headers)
+                ProducerRecord(
+                    SYKETILFELLEBIT_TOPIC,
+                    kalkulerPartisjonForFnr(kafkaSyketilfellebit.fnr),
+                    kafkaSyketilfellebit.id,
+                    kafkaSyketilfellebit,
+                    headers,
+                ),
             ).get()
         } catch (e: Throwable) {
             log.error(
                 "Feil ved sending av syketilfellebit id: ${kafkaSyketilfellebit.id} til topic: $SYKETILFELLEBIT_TOPIC.",
-                e
+                e,
             )
             throw e
         }
     }
 
-    fun produserTombstone(key: String, fnr: String) {
+    fun produserTombstone(
+        key: String,
+        fnr: String,
+    ) {
         try {
             producer.send(
-                ProducerRecord(SYKETILFELLEBIT_TOPIC, kalkulerPartisjonForFnr(fnr), key, null, headers)
+                ProducerRecord(SYKETILFELLEBIT_TOPIC, kalkulerPartisjonForFnr(fnr), key, null, headers),
             ).get()
         } catch (e: Throwable) {
             log.error(
                 "Feil ved sending av tombstone for key: $key til topic: $SYKETILFELLEBIT_TOPIC.",
-                e
+                e,
             )
             throw e
         }
     }
 }
 
-fun kalkulerPartisjon(keyBytes: ByteArray, antallPartisjoner: Int): Int {
+fun kalkulerPartisjon(
+    keyBytes: ByteArray,
+    antallPartisjoner: Int,
+): Int {
     return Utils.toPositive(Utils.murmur2(keyBytes)) % (antallPartisjoner)
 }

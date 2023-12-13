@@ -12,17 +12,19 @@ const val INNTEKTSMELDING_TOPIC = "helsearbeidsgiver." + "privat-sykepenger-innt
 
 @Component
 class InntektsmeldingListener(
-    private val inntektsmeldingLagring: InntektsmeldingLagring
+    private val inntektsmeldingLagring: InntektsmeldingLagring,
 ) {
-
     @KafkaListener(
         topics = [INNTEKTSMELDING_TOPIC],
         id = "inntektsmelding-mottatt",
         idIsGroup = false,
         properties = ["auto.offset.reset = earliest"],
-        containerFactory = "aivenKafkaListenerContainerFactory"
+        containerFactory = "aivenKafkaListenerContainerFactory",
     )
-    fun listen(cr: ConsumerRecord<String, String>, acknowledgment: Acknowledgment) {
+    fun listen(
+        cr: ConsumerRecord<String, String>,
+        acknowledgment: Acknowledgment,
+    ) {
         inntektsmeldingLagring.mottaInntektsmelding(cr.value().tilInntektsmelding())
         acknowledgment.acknowledge()
     }

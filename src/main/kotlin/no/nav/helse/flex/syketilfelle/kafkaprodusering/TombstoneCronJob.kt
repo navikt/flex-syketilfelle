@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 @Component
 class TombstoneCronJob(
     val tombsstoneProduseringJob: TombsstoneProduseringJob,
-    val leaderElection: LeaderElection
+    val leaderElection: LeaderElection,
 ) {
     val log = logger()
 

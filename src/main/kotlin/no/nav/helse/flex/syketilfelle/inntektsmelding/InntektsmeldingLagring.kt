@@ -13,9 +13,8 @@ import java.time.OffsetDateTime
 
 @Service
 class InntektsmeldingLagring(
-    private val syketilfellebitLagring: SyketilfellebitLagring
+    private val syketilfellebitLagring: SyketilfellebitLagring,
 ) {
-
     val log = logger()
 
     fun mottaInntektsmelding(inntektsmelding: Inntektsmelding) {
@@ -30,15 +29,16 @@ class InntektsmeldingLagring(
     }
 }
 
-private fun Inntektsmelding.mapTilBiter(): List<Syketilfellebit> = this.arbeidsgiverperioder.map {
-    Syketilfellebit(
-        fnr = this.arbeidstakerFnr,
-        opprettet = OffsetDateTime.now(),
-        inntruffet = this.mottattDato.tilOsloZone(),
-        fom = it.fom,
-        tom = it.tom,
-        orgnummer = this.virksomhetsnummer,
-        ressursId = this.inntektsmeldingId,
-        tags = setOf(Tag.INNTEKTSMELDING, Tag.ARBEIDSGIVERPERIODE)
-    )
-}
+private fun Inntektsmelding.mapTilBiter(): List<Syketilfellebit> =
+    this.arbeidsgiverperioder.map {
+        Syketilfellebit(
+            fnr = this.arbeidstakerFnr,
+            opprettet = OffsetDateTime.now(),
+            inntruffet = this.mottattDato.tilOsloZone(),
+            fom = it.fom,
+            tom = it.tom,
+            orgnummer = this.virksomhetsnummer,
+            ressursId = this.inntektsmeldingId,
+            tags = setOf(Tag.INNTEKTSMELDING, Tag.ARBEIDSGIVERPERIODE),
+        )
+    }

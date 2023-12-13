@@ -21,21 +21,21 @@ import java.time.LocalDate
 @Component
 class ArbeidsgiverperiodeUtregner(
     private val syketilfellebitRepository: SyketilfellebitRepository,
-    private val juridiskVurderingKafkaProducer: JuridiskVurderingKafkaProducer
+    private val juridiskVurderingKafkaProducer: JuridiskVurderingKafkaProducer,
 ) {
-
     fun beregnArbeidsgiverperiode(
         fnrs: List<String>,
         andreKorrigerteRessurser: List<String>,
         soknad: SykepengesoknadDTO,
         forelopig: Boolean,
-        sykmelding: SykmeldingKafkaMessage?
+        sykmelding: SykmeldingKafkaMessage?,
     ): Arbeidsgiverperiode? {
-        val biter = finnBiter(fnrs)
-            .filter { it.orgnummer == soknad.arbeidsgiver?.orgnummer }
-            .filterNot { it.ressursId == sykmelding?.sykmelding?.id }
-            .toMutableList()
-            .also { it.addAll(sykmelding?.mapTilBiter() ?: emptyList()) }
+        val biter =
+            finnBiter(fnrs)
+                .filter { it.orgnummer == soknad.arbeidsgiver?.orgnummer }
+                .filterNot { it.ressursId == sykmelding?.sykmelding?.id }
+                .toMutableList()
+                .also { it.addAll(sykmelding?.mapTilBiter() ?: emptyList()) }
 
         return genererOppfolgingstilfelle(
             fnrs = fnrs,
@@ -43,7 +43,7 @@ class ArbeidsgiverperiodeUtregner(
             andreKorrigerteRessurser = andreKorrigerteRessurser,
             tilleggsbiter = soknad.mapSoknadTilBiter(),
             grense = soknad.tom!!.atStartOfDay(),
-            startSyketilfelle = soknad.startSyketilfelle
+            startSyketilfelle = soknad.startSyketilfelle,
         )
             ?.lastOrNull {
                 if (it.sisteSykedagEllerFeriedag == null) {
@@ -55,39 +55,42 @@ class ArbeidsgiverperiodeUtregner(
                 Arbeidsgiverperiode(
                     it.dagerAvArbeidsgiverperiode,
                     it.oppbruktArbeidsgvierperiode(),
-                    it.arbeidsgiverperiode().let { p -> PeriodeDTO(p.first, p.second) }
+                    it.arbeidsgiverperiode().let { p -> PeriodeDTO(p.first, p.second) },
                 )
             }?.also { arbeidsgiverperiode ->
                 if (!forelopig) {
                     juridiskVurderingKafkaProducer.produserMelding(
                         JuridiskVurdering(
                             fodselsnummer = fnrs.first(),
-                            sporing = hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
-                                .also { map ->
-                                    soknad.sykmeldingId?.let {
-                                        map[SYKMELDING] = listOf(it)
-                                    }
-                                    soknad.arbeidsgiver?.orgnummer?.let {
-                                        map[ORGANISASJONSNUMMER] = listOf(it)
-                                    }
-                                },
-                            input = mapOf(
-                                "soknad" to soknad.id,
-                                "versjon" to LocalDate.of(2022, 2, 1)
-                            ),
-                            output = hashMapOf(
-                                "versjon" to LocalDate.of(2022, 2, 1),
-                                "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
-                                "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode
-                            ),
+                            sporing =
+                                hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
+                                    .also { map ->
+                                        soknad.sykmeldingId?.let {
+                                            map[SYKMELDING] = listOf(it)
+                                        }
+                                        soknad.arbeidsgiver?.orgnummer?.let {
+                                            map[ORGANISASJONSNUMMER] = listOf(it)
+                                        }
+                                    },
+                            input =
+                                mapOf(
+                                    "soknad" to soknad.id,
+                                    "versjon" to LocalDate.of(2022, 2, 1),
+                                ),
+                            output =
+                                hashMapOf(
+                                    "versjon" to LocalDate.of(2022, 2, 1),
+                                    "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
+                                    "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
+                                ),
                             lovverk = "folketrygdloven",
                             paragraf = "8-19",
                             bokstav = null,
                             ledd = null,
                             punktum = null,
                             lovverksversjon = LocalDate.of(2001, 1, 1),
-                            utfall = Utfall.VILKAR_BEREGNET
-                        )
+                            utfall = Utfall.VILKAR_BEREGNET,
+                        ),
                     )
                 }
             }
@@ -99,9 +102,10 @@ class ArbeidsgiverperiodeUtregner(
             ?: fom!!
     }
 
-    private fun finnBiter(fnrs: List<String>) = syketilfellebitRepository
-        .findByFnrIn(fnrs)
-        .map { it.tilSyketilfellebit() }
-        .filter { it.slettet == null }
-        .utenKorrigerteSoknader()
+    private fun finnBiter(fnrs: List<String>) =
+        syketilfellebitRepository
+            .findByFnrIn(fnrs)
+            .map { it.tilSyketilfellebit() }
+            .filter { it.slettet == null }
+            .utenKorrigerteSoknader()
 }

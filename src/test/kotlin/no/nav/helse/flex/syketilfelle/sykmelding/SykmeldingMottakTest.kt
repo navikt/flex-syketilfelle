@@ -23,11 +23,9 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit.SECONDS
 import java.util.concurrent.TimeUnit
 
 class SykmeldingMottakTest : Testoppsett() {
-
     private final val fnr = "12345432123"
 
     @BeforeEach
@@ -38,41 +36,46 @@ class SykmeldingMottakTest : Testoppsett() {
 
     final val sykmelding = skapArbeidsgiverSykmelding()
 
-    final val kafkaMetadata = KafkaMetadataDTO(
-        sykmeldingId = sykmelding.id,
-        fnr = fnr,
-        timestamp = OffsetDateTime.now(),
-        source = "Denne testen"
-    )
+    final val kafkaMetadata =
+        KafkaMetadataDTO(
+            sykmeldingId = sykmelding.id,
+            fnr = fnr,
+            timestamp = OffsetDateTime.now(),
+            source = "Denne testen",
+        )
 
-    final val event = SykmeldingStatusKafkaEventDTO(
-        sykmeldingId = sykmelding.id,
-        timestamp = OffsetDateTime.now(),
-        statusEvent = STATUS_SENDT,
-        arbeidsgiver = null,
-        sporsmals = emptyList()
-    )
+    final val event =
+        SykmeldingStatusKafkaEventDTO(
+            sykmeldingId = sykmelding.id,
+            timestamp = OffsetDateTime.now(),
+            statusEvent = STATUS_SENDT,
+            arbeidsgiver = null,
+            sporsmals = emptyList(),
+        )
 
     @Test
     fun `tar imot vanlig sykmelding`() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC))
-        )
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC)),
+            )
 
         producerPåSendtBekreftetTopic(kafkaMessage)
 
@@ -85,40 +88,44 @@ class SykmeldingMottakTest : Testoppsett() {
         assertThat(biter[0].fom).isEqualTo(LocalDate.of(2020, 3, 12))
         assertThat(biter[0].tom).isEqualTo(LocalDate.of(2020, 6, 19))
         assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
-        biter[0].inntruffet `should be equal to ignoring nano and zone` OffsetDateTime.of(
-            2020,
-            6,
-            20,
-            6,
-            34,
-            4,
-            0,
-            ZoneOffset.UTC
-        )
+        biter[0].inntruffet `should be equal to ignoring nano and zone`
+            OffsetDateTime.of(
+                2020,
+                6,
+                20,
+                6,
+                34,
+                4,
+                0,
+                ZoneOffset.UTC,
+            )
         assertThat(biter[0].orgnummer).isNull()
         assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.INGEN_AKTIVITET))
     }
 
     @Test
     fun `tar imot vanlig sykmelding sendt til arbeidsgiver`() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"))
-        )
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
+            )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
@@ -134,24 +141,27 @@ class SykmeldingMottakTest : Testoppsett() {
 
     @Test
     fun `tar imot åpen sykmelding og redusert arbeidsgiverperiode`() {
-        val kafkaMessage = MottattSykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                ),
-                harRedusertArbeidsgiverperiode = true
-            ),
-            kafkaMetadata = kafkaMetadata
-        )
+        val kafkaMessage =
+            MottattSykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                        harRedusertArbeidsgiverperiode = true,
+                    ),
+                kafkaMetadata = kafkaMetadata,
+            )
         producerPåMottattTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
@@ -168,52 +178,54 @@ class SykmeldingMottakTest : Testoppsett() {
                 Tag.NY,
                 Tag.PERIODE,
                 Tag.INGEN_AKTIVITET,
-                Tag.REDUSERT_ARBEIDSGIVERPERIODE
-            )
+                Tag.REDUSERT_ARBEIDSGIVERPERIODE,
+            ),
         )
     }
 
     @Test
     fun `tar imot behandlingsdag, gradert og ukjent sendt til arbeidsgiver`() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 6, 20),
+                                    tom = LocalDate.of(2020, 6, 25),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.GRADERT,
+                                    gradert = GradertDTO(3, false),
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 6, 26),
+                                    tom = LocalDate.of(2020, 6, 29),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AVVENTENDE,
+                                    gradert = null,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
                     ),
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 6, 20),
-                        tom = LocalDate.of(2020, 6, 25),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.GRADERT,
-                        gradert = GradertDTO(3, false),
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        innspillTilArbeidsgiver = null
-                    ),
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 6, 26),
-                        tom = LocalDate.of(2020, 6, 29),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AVVENTENDE,
-                        gradert = null,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"))
-        )
+                kafkaMetadata = kafkaMetadata,
+                event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
+            )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 3
@@ -242,41 +254,46 @@ class SykmeldingMottakTest : Testoppsett() {
                 Tag.SENDT,
                 Tag.PERIODE,
                 Tag.AVVENTENDE,
-                Tag.UKJENT_AKTIVITET
-            )
+                Tag.UKJENT_AKTIVITET,
+            ),
         )
     }
 
     @Test
     fun `tar imot bekreftet sykmelding med egenmeldingsperioder`() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(
-                statusEvent = STATUS_BEKREFTET,
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
-                        shortName = ShortNameDTO.PERIODE,
-                        svar = "[{\"fom\":\"2020-02-03\",\"tom\":\"2020-02-06\"}]",
-                        svartype = SvartypeDTO.PERIODER
-                    )
-                )
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event =
+                    event.copy(
+                        statusEvent = STATUS_BEKREFTET,
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                    shortName = ShortNameDTO.PERIODE,
+                                    svar = "[{\"fom\":\"2020-02-03\",\"tom\":\"2020-02-06\"}]",
+                                    svartype = SvartypeDTO.PERIODER,
+                                ),
+                            ),
+                    ),
             )
-        )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 2
@@ -298,24 +315,27 @@ class SykmeldingMottakTest : Testoppsett() {
 
     @Test
     fun `tar imot reisetilskudd sykmelding sendt til arbeidsgiver`() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = true,
-                        type = PeriodetypeDTO.REISETILSKUDD,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"))
-        )
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = true,
+                                    type = PeriodetypeDTO.REISETILSKUDD,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
+            )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
@@ -333,41 +353,46 @@ class SykmeldingMottakTest : Testoppsett() {
                 Tag.SENDT,
                 Tag.PERIODE,
                 Tag.REISETILSKUDD,
-                Tag.UKJENT_AKTIVITET
-            )
+                Tag.UKJENT_AKTIVITET,
+            ),
         )
     }
 
     @Test
     fun `tar imot sykmelding med egenmeldingsdager `() {
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2020, 3, 12),
-                        tom = LocalDate.of(2020, 6, 19),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Velg dagene du brukte egenmelding",
-                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
-                        svartype = SvartypeDTO.DAGER
-                    )
-                )
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2020, 3, 12),
+                                    tom = LocalDate.of(2020, 6, 19),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                    ),
             )
-        )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4

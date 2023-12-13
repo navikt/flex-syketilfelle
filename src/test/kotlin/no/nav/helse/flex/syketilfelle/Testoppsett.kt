@@ -74,11 +74,12 @@ abstract class Testoppsett {
                 }
             }.also { threads.add(it) }
 
-            pdlMockWebserver = MockWebServer()
-                .also {
-                    System.setProperty("PDL_BASE_URL", "http://localhost:${it.port}")
-                }
-                .also { it.dispatcher = PdlMockDispatcher }
+            pdlMockWebserver =
+                MockWebServer()
+                    .also {
+                        System.setProperty("PDL_BASE_URL", "http://localhost:${it.port}")
+                    }
+                    .also { it.dispatcher = PdlMockDispatcher }
             threads.forEach { it.join() }
         }
     }
@@ -94,7 +95,12 @@ abstract class Testoppsett {
         syketilfellebitRepository.deleteAll()
     }
 
-    fun sendKafkaMelding(key: String, value: String, topic: String, headers: Headers = RecordHeaders()) {
+    fun sendKafkaMelding(
+        key: String,
+        value: String,
+        topic: String,
+        headers: Headers = RecordHeaders(),
+    ) {
         kafkaProducer.send(
             ProducerRecord(
                 topic,
@@ -102,10 +108,11 @@ abstract class Testoppsett {
                 null,
                 key,
                 value,
-                headers
-            )
+                headers,
+            ),
         ).get()
     }
+
     fun producerPåInntektsmeldingTopic(inntektsmelding: Inntektsmelding) =
         sendKafkaMelding(inntektsmelding.arbeidstakerFnr, inntektsmelding.serialisertTilString(), INNTEKTSMELDING_TOPIC)
 

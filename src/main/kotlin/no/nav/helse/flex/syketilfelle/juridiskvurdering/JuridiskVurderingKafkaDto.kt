@@ -21,7 +21,7 @@ data class JuridiskVurderingKafkaDto(
     val bokstav: String?,
     val input: Map<String, Any>,
     val output: Map<String, Any>?,
-    val utfall: Utfall
+    val utfall: Utfall,
 )
 
 enum class Utfall {
@@ -29,7 +29,7 @@ enum class Utfall {
     VILKAR_DELVIS_OPPFYLT,
     VILKAR_IKKE_OPPFYLT,
     VILKAR_UAVKLART,
-    VILKAR_BEREGNET
+    VILKAR_BEREGNET,
 }
 
 enum class SporingType {
@@ -49,5 +49,5 @@ enum class SporingType {
     INNTEKTSMELDING,
 
     @JsonProperty("utbetaling")
-    UTBETALING
+    UTBETALING,
 }

@@ -13,5 +13,5 @@ data class KafkaSyketilfellebit(
     val ressursId: String,
     val fom: LocalDate,
     val tom: LocalDate,
-    val korrigererSendtSoknad: String?
+    val korrigererSendtSoknad: String?,
 )

@@ -48,13 +48,14 @@ fun grupperIOppfolgingstilfeller(tidslinje: List<Syketilfelledag>): List<Oppfolg
         }
 
         if (ikkeSykedagerSidenForrigeSykedag >= 16 && gjeldendeSyketilfelledagListe.isNotEmpty()) {
-            val nyttOppfolgingstilfelle = Oppfolgingstilfelle(
-                tidslinje = gjeldendeSyketilfelledagListe,
-                sisteDagIArbeidsgiverperiode = sisteDagIArbeidsgiverperiode ?: it,
-                dagerAvArbeidsgiverperiode = dagerAvArbeidsgiverperiode,
-                behandlingsdager = behandlingsdager,
-                sisteSykedagEllerFeriedag = sisteSykedagEllerFeriedagIOppfolgingstilfelle
-            )
+            val nyttOppfolgingstilfelle =
+                Oppfolgingstilfelle(
+                    tidslinje = gjeldendeSyketilfelledagListe,
+                    sisteDagIArbeidsgiverperiode = sisteDagIArbeidsgiverperiode ?: it,
+                    dagerAvArbeidsgiverperiode = dagerAvArbeidsgiverperiode,
+                    behandlingsdager = behandlingsdager,
+                    sisteSykedagEllerFeriedag = sisteSykedagEllerFeriedagIOppfolgingstilfelle,
+                )
             oppfolgingstilfelleListe.add(nyttOppfolgingstilfelle)
 
             // Resett variabler
@@ -68,13 +69,14 @@ fun grupperIOppfolgingstilfeller(tidslinje: List<Syketilfelledag>): List<Oppfolg
     }
 
     if (gjeldendeSyketilfelledagListe.isNotEmpty()) {
-        val sisteOppfolgingstilfelle = Oppfolgingstilfelle(
-            tidslinje = gjeldendeSyketilfelledagListe,
-            sisteDagIArbeidsgiverperiode = sisteDagIArbeidsgiverperiode ?: tidslinje.last(),
-            dagerAvArbeidsgiverperiode = dagerAvArbeidsgiverperiode,
-            behandlingsdager = behandlingsdager,
-            sisteSykedagEllerFeriedag = sisteSykedagEllerFeriedagIOppfolgingstilfelle
-        )
+        val sisteOppfolgingstilfelle =
+            Oppfolgingstilfelle(
+                tidslinje = gjeldendeSyketilfelledagListe,
+                sisteDagIArbeidsgiverperiode = sisteDagIArbeidsgiverperiode ?: tidslinje.last(),
+                dagerAvArbeidsgiverperiode = dagerAvArbeidsgiverperiode,
+                behandlingsdager = behandlingsdager,
+                sisteSykedagEllerFeriedag = sisteSykedagEllerFeriedagIOppfolgingstilfelle,
+            )
         oppfolgingstilfelleListe.add(sisteOppfolgingstilfelle)
     }
 
@@ -96,10 +98,10 @@ fun Syketilfelledag.erArbeidsdag() =
             it in (
                 (Tag.SYKMELDING and Tag.PERIODE and Tag.FULL_AKTIVITET)
                     or
-                        (Tag.SYKEPENGESOKNAD and Tag.ARBEID_GJENNOPPTATT)
+                    (Tag.SYKEPENGESOKNAD and Tag.ARBEID_GJENNOPPTATT)
                     or
-                        (Tag.SYKEPENGESOKNAD and Tag.BEHANDLINGSDAGER)
-                )
+                    (Tag.SYKEPENGESOKNAD and Tag.BEHANDLINGSDAGER)
+            )
         }
         ?: true
 

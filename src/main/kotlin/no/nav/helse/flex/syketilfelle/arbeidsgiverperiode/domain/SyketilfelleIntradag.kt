@@ -7,9 +7,8 @@ import java.time.LocalDate
 class SyketilfelleIntradag(
     private val dag: LocalDate,
     private val biter: List<Syketilfellebit>,
-    private val prioriteringsliste: List<ListContainsPredicate<Tag>>
+    private val prioriteringsliste: List<ListContainsPredicate<Tag>>,
 ) {
-
     fun velgSyketilfelledag(): Syketilfelledag {
         return biter
             .groupBy { it.inntruffet.toLocalDate() }
@@ -34,6 +33,6 @@ class SyketilfelleIntradag(
         Syketilfelledag(
             dag = this@SyketilfelleIntradag.dag,
             prioritertSyketilfellebit = this,
-            syketilfellebiter = this@SyketilfelleIntradag.biter
+            syketilfellebiter = this@SyketilfelleIntradag.biter,
         )
 }

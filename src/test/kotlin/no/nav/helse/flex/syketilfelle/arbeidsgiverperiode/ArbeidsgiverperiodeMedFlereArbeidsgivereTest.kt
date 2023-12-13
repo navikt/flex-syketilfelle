@@ -19,7 +19,6 @@ import java.time.LocalDate
 import java.util.*
 
 class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : Testoppsett() {
-
     private final val fnr = "11111555555"
     private final val orgnr1 = "888888888"
     private final val orgnr2 = "999999999"
@@ -41,40 +40,42 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : Testoppsett() {
         opprettSendtSykmelding(sykmelding = sykmelding, fnr = fnr, orgnummer = orgnr1)
         opprettSendtSykmelding(sykmelding = sykmelding2, fnr = fnr, orgnummer = orgnr2)
 
-        val soknad1 = SykepengesoknadDTO(
-            id = UUID.randomUUID().toString(),
-            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = orgnr1),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            fom = basisDato.minusDays(12),
-            tom = basisDato,
-            arbeidGjenopptatt = null,
-            egenmeldinger = emptyList(),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = sykmelding.id,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad1 =
+            SykepengesoknadDTO(
+                id = UUID.randomUUID().toString(),
+                arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = orgnr1),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                fom = basisDato.minusDays(12),
+                tom = basisDato,
+                arbeidGjenopptatt = null,
+                egenmeldinger = emptyList(),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = sykmelding.id,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val ag1 = kallArbeidsgiverperiodeApi(soknad = soknad1, forelopig = false, fnr = fnr)!!
         assertThat(ag1.oppbruktArbeidsgiverperiode).isEqualTo(false)
         assertThat(ag1.arbeidsgiverPeriode.fom).isEqualTo(soknad1.fom)
         assertThat(ag1.arbeidsgiverPeriode.tom).isEqualTo(soknad1.tom)
 
-        val soknad2 = SykepengesoknadDTO(
-            id = UUID.randomUUID().toString(),
-            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = orgnr2),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            fom = basisDato.minusDays(24),
-            tom = basisDato,
-            arbeidGjenopptatt = null,
-            egenmeldinger = emptyList(),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = sykmelding2.id,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad2 =
+            SykepengesoknadDTO(
+                id = UUID.randomUUID().toString(),
+                arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = orgnr2),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                fom = basisDato.minusDays(24),
+                tom = basisDato,
+                arbeidGjenopptatt = null,
+                egenmeldinger = emptyList(),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = sykmelding2.id,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val ag2 = kallArbeidsgiverperiodeApi(soknad = soknad2, forelopig = false, fnr = fnr)!!
         assertThat(ag2.oppbruktArbeidsgiverperiode).isEqualTo(true)

@@ -35,7 +35,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class ArbeidsgiverperiodeTest : Testoppsett() {
-
     @Autowired
     lateinit var kafkaProduseringJob: KafkaProduseringJob
 
@@ -56,30 +55,32 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     @Test
     fun `juridisk vurdering publiserers ved utregning av arbeidsgiver perioden når det ikke er en foreløpig beregning`() {
-        val soknad = SykepengesoknadDTO(
-            id = UUID.randomUUID().toString(),
-            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "orgnummer"),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            fom = LocalDate.of(2019, 3, 1),
-            tom = LocalDate.of(2019, 3, 16),
-            arbeidGjenopptatt = null,
-            egenmeldinger = emptyList(),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = UUID.randomUUID().toString(),
+                arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "orgnummer"),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                fom = LocalDate.of(2019, 3, 1),
+                tom = LocalDate.of(2019, 3, 16),
+                arbeidGjenopptatt = null,
+                egenmeldinger = emptyList(),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, forelopig = false, fnr = fnr)!!
         assertThat(res.oppbruktArbeidsgiverperiode).isEqualTo(false)
         assertThat(res.arbeidsgiverPeriode.fom).isEqualTo(soknad.fom)
         assertThat(res.arbeidsgiverPeriode.tom).isEqualTo(soknad.tom)
 
-        val vurdering = juridiskVurderingKafkaConsumer
-            .ventPåRecords(antall = 1, duration = Duration.ofSeconds(5))
-            .tilJuridiskVurdering()
-            .first { it.paragraf == "8-19" }
+        val vurdering =
+            juridiskVurderingKafkaConsumer
+                .ventPåRecords(antall = 1, duration = Duration.ofSeconds(5))
+                .tilJuridiskVurdering()
+                .first { it.paragraf == "8-19" }
 
         vurdering.ledd.`should be null`()
         vurdering.bokstav.`should be null`()
@@ -88,18 +89,21 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         vurdering.versjonAvKode `should be equal to` "flex-syketilfelle-12432536"
 
         vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
-        vurdering.input `should be equal to` mapOf(
-            "soknad" to soknad.id,
-            "versjon" to "2022-02-01"
-        )
-        vurdering.output `should be equal to` mapOf(
-            "arbeidsgiverperiode" to mapOf(
-                "fom" to "2019-03-01",
-                "tom" to "2019-03-16"
-            ),
-            "oppbruktArbeidsgiverperiode" to false,
-            "versjon" to "2022-02-01"
-        )
+        vurdering.input `should be equal to`
+            mapOf(
+                "soknad" to soknad.id,
+                "versjon" to "2022-02-01",
+            )
+        vurdering.output `should be equal to`
+            mapOf(
+                "arbeidsgiverperiode" to
+                    mapOf(
+                        "fom" to "2019-03-01",
+                        "tom" to "2019-03-16",
+                    ),
+                "oppbruktArbeidsgiverperiode" to false,
+                "versjon" to "2022-02-01",
+            )
     }
 
     @Test
@@ -113,8 +117,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -126,8 +130,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -139,8 +143,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 43, 55).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
         lagreBitSomRecord(
@@ -152,8 +156,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 22).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -165,22 +169,23 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 45, 19).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 11)),
-            tom = (LocalDate.of(2019, 3, 13)),
-            arbeidGjenopptatt = (LocalDate.of(2019, 3, 11)),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 11)),
+                tom = (LocalDate.of(2019, 3, 13)),
+                arbeidGjenopptatt = (LocalDate.of(2019, 3, 11)),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         kallArbeidsgiverperiodeApi(soknad = soknad, expectNoContent = true, fnr = fnr)
     }
@@ -196,8 +201,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 3, 6)
-            )
+                tom = LocalDate.of(2019, 3, 6),
+            ),
         )
 
         lagreBitSomRecord(
@@ -209,8 +214,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 22).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 3, 6)
-            )
+                tom = LocalDate.of(2019, 3, 6),
+            ),
         )
 
         lagreBitSomRecord(
@@ -222,8 +227,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 3, 6)
-            )
+                tom = LocalDate.of(2019, 3, 6),
+            ),
         )
 
         lagreBitSomRecord(
@@ -235,8 +240,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 43, 55).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
         lagreBitSomRecord(
@@ -248,23 +253,24 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 45, 19).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 11)),
-            tom = (LocalDate.of(2019, 3, 13)),
-            arbeidGjenopptatt = (LocalDate.of(2019, 3, 11)),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 11)),
+                tom = (LocalDate.of(2019, 3, 13)),
+                arbeidGjenopptatt = (LocalDate.of(2019, 3, 11)),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
@@ -282,8 +288,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -295,8 +301,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -308,8 +314,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 43, 55).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
         lagreBitSomRecord(
@@ -321,8 +327,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 22).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -334,23 +340,24 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 45, 19).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 11)),
-            tom = (LocalDate.of(2019, 3, 13)),
-            arbeidGjenopptatt = (LocalDate.of(2019, 3, 12)),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 11)),
+                tom = (LocalDate.of(2019, 3, 13)),
+                arbeidGjenopptatt = (LocalDate.of(2019, 3, 12)),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 3, 11))
@@ -368,8 +375,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -381,8 +388,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -394,8 +401,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 43, 55).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
         lagreBitSomRecord(
@@ -407,8 +414,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 22).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -420,30 +427,31 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 45, 19).tilOsloZone(),
                 ressursId = "469637ce-4be2-4c02-b5b0-52a599bd8efc",
                 fom = LocalDate.of(2019, 3, 11),
-                tom = LocalDate.of(2019, 3, 13)
-            )
+                tom = LocalDate.of(2019, 3, 13),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 11)),
-            tom = (LocalDate.of(2019, 3, 13)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (
-                listOf(
-                    PeriodeDTO(
-                        fom = (LocalDate.of(2019, 3, 1)),
-                        tom = (LocalDate.of(2019, 3, 10))
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 11)),
+                tom = (LocalDate.of(2019, 3, 13)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (
+                    listOf(
+                        PeriodeDTO(
+                            fom = (LocalDate.of(2019, 3, 1)),
+                            tom = (LocalDate.of(2019, 3, 10)),
+                        ),
                     )
-                )
                 ),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2019, 2, 1))
@@ -461,8 +469,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -474,32 +482,33 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 21),
-                tom = LocalDate.of(2019, 3, 10)
-            )
+                tom = LocalDate.of(2019, 3, 10),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (
-                listOf(
-                    FravarDTO(
-                        type = (FravarstypeDTO.FERIE),
-                        fom = (LocalDate.of(2019, 3, 11)),
-                        tom = (LocalDate.of(2019, 3, 27))
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (
+                    listOf(
+                        FravarDTO(
+                            type = (FravarstypeDTO.FERIE),
+                            fom = (LocalDate.of(2019, 3, 11)),
+                            tom = (LocalDate.of(2019, 3, 27)),
+                        ),
                     )
-                )
                 ),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 11)),
-            tom = (LocalDate.of(2019, 3, 27)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 11)),
+                tom = (LocalDate.of(2019, 3, 27)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
@@ -509,20 +518,21 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     @Test
     fun `førstegangssøknad på 17 dager har brukt opp arbeidsgiverperioden`() {
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 1)),
-            tom = (LocalDate.of(2019, 3, 17)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            sykmeldingId = UUID.randomUUID().toString(),
-            status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 1)),
+                tom = (LocalDate.of(2019, 3, 17)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                sykmeldingId = UUID.randomUUID().toString(),
+                status = SoknadsstatusDTO.SENDT,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
@@ -532,20 +542,21 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
 
     @Test
     fun `førstegangssøknad på 16 dager har ikke brukt opp arbeidsgiverperioden`() {
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 1)),
-            tom = (LocalDate.of(2019, 3, 16)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 1)),
+                tom = (LocalDate.of(2019, 3, 16)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
@@ -564,24 +575,25 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 3, 1),
-                tom = LocalDate.of(2019, 3, 15)
-            )
+                tom = LocalDate.of(2019, 3, 15),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 16)),
-            tom = (LocalDate.of(2019, 3, 19)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 16)),
+                tom = (LocalDate.of(2019, 3, 19)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(true)
@@ -600,8 +612,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -613,8 +625,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff153",
                 fom = LocalDate.of(2019, 2, 21),
-                tom = LocalDate.of(2019, 2, 21)
-            )
+                tom = LocalDate.of(2019, 2, 21),
+            ),
         )
 
         lagreBitSomRecord(
@@ -626,24 +638,25 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 22),
-                tom = LocalDate.of(2019, 3, 15)
-            )
+                tom = LocalDate.of(2019, 3, 15),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = ("navn"), orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 16)),
-            tom = (LocalDate.of(2019, 3, 18)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = ("navn"), orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 16)),
+                tom = (LocalDate.of(2019, 3, 18)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.oppbruktArbeidsgiverperiode).isEqualTo(false)
@@ -662,8 +675,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            )
+                tom = LocalDate.of(2019, 2, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -675,8 +688,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 44, 38).tilOsloZone(),
                 ressursId = "0db8e867-bffa-41fe-8f6c-900729156ac5",
                 fom = LocalDate.of(2019, 2, 21),
-                tom = LocalDate.of(2019, 3, 14)
-            )
+                tom = LocalDate.of(2019, 3, 14),
+            ),
         )
 
         lagreBitSomRecord(
@@ -688,24 +701,25 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff153",
                 fom = LocalDate.of(2019, 3, 15),
-                tom = LocalDate.of(2019, 3, 15)
-            )
+                tom = LocalDate.of(2019, 3, 15),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 3, 16)),
-            tom = (LocalDate.of(2019, 3, 18)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = UUID.randomUUID().toString(),
-            type = SoknadstypeDTO.ARBEIDSTAKERE
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 3, 16)),
+                tom = (LocalDate.of(2019, 3, 18)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = UUID.randomUUID().toString(),
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
 
@@ -725,25 +739,26 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 2, 1, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 10),
-                tom = LocalDate.of(2019, 2, 23)
-            )
+                tom = LocalDate.of(2019, 2, 23),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            fravar = (emptyList()),
-            startSyketilfelle = (LocalDate.of(2019, 2, 5)),
-            andreInntektskilder = (emptyList()),
-            fom = (LocalDate.of(2019, 2, 10)),
-            tom = (LocalDate.of(2019, 2, 23)),
-            arbeidGjenopptatt = (null),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE,
-            sykmeldingId = UUID.randomUUID().toString()
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efd"),
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                fravar = (emptyList()),
+                startSyketilfelle = (LocalDate.of(2019, 2, 5)),
+                andreInntektskilder = (emptyList()),
+                fom = (LocalDate.of(2019, 2, 10)),
+                tom = (LocalDate.of(2019, 2, 23)),
+                arbeidGjenopptatt = (null),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+                sykmeldingId = UUID.randomUUID().toString(),
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
 
@@ -763,8 +778,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 34).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2020, 1, 27),
-                tom = LocalDate.of(2020, 2, 16)
-            )
+                tom = LocalDate.of(2020, 2, 16),
+            ),
         )
 
         lagreBitSomRecord(
@@ -776,8 +791,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 35).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2020, 1, 27),
-                tom = LocalDate.of(2020, 2, 16)
-            )
+                tom = LocalDate.of(2020, 2, 16),
+            ),
         )
 
         lagreBitSomRecord(
@@ -789,8 +804,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 36).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff153",
                 fom = LocalDate.of(2020, 2, 21),
-                tom = LocalDate.of(2020, 3, 20)
-            )
+                tom = LocalDate.of(2020, 3, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -802,8 +817,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff153",
                 fom = LocalDate.of(2020, 2, 21),
-                tom = LocalDate.of(2020, 3, 20)
-            )
+                tom = LocalDate.of(2020, 3, 20),
+            ),
         )
 
         lagreBitSomRecord(
@@ -815,8 +830,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 38).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff154",
                 fom = LocalDate.of(2020, 1, 27),
-                tom = LocalDate.of(2020, 2, 16)
-            )
+                tom = LocalDate.of(2020, 2, 16),
+            ),
         )
 
         lagreBitSomRecord(
@@ -828,8 +843,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff155",
                 fom = LocalDate.of(2020, 2, 21),
-                tom = LocalDate.of(2020, 3, 8)
-            )
+                tom = LocalDate.of(2020, 3, 8),
+            ),
         )
 
         lagreBitSomRecord(
@@ -841,8 +856,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff155",
                 fom = LocalDate.of(2020, 2, 21),
-                tom = LocalDate.of(2020, 2, 21)
-            )
+                tom = LocalDate.of(2020, 2, 21),
+            ),
         )
 
         lagreBitSomRecord(
@@ -854,8 +869,8 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff155",
                 fom = LocalDate.of(2020, 2, 28),
-                tom = LocalDate.of(2020, 2, 28)
-            )
+                tom = LocalDate.of(2020, 2, 28),
+            ),
         )
 
         lagreBitSomRecord(
@@ -867,26 +882,28 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
                 opprettet = LocalDateTime.of(2019, 3, 20, 8, 42, 37).tilOsloZone(),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff155",
                 fom = LocalDate.of(2020, 3, 6),
-                tom = LocalDate.of(2020, 3, 6)
-            )
+                tom = LocalDate.of(2020, 3, 6),
+            ),
         )
 
-        val soknad = SykepengesoknadDTO(
-            id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
-            type = SoknadstypeDTO.BEHANDLINGSDAGER,
-            arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
-            andreInntektskilder = (emptyList()),
-            behandlingsdager = listOf(
-                LocalDate.of(2020, 3, 13),
-                LocalDate.of(2020, 3, 20)
-            ),
-            tom = (LocalDate.of(2020, 3, 20)),
-            fom = (LocalDate.of(2020, 3, 9)),
-            egenmeldinger = (emptyList()),
-            fnr = fnr,
-            sykmeldingId = UUID.randomUUID().toString(),
-            status = SoknadsstatusDTO.SENDT
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = ("469637ce-4be2-4c02-b5b0-52a599bd8efc"),
+                type = SoknadstypeDTO.BEHANDLINGSDAGER,
+                arbeidsgiver = (ArbeidsgiverDTO(navn = "navn", orgnummer = ("orgnummer"))),
+                andreInntektskilder = (emptyList()),
+                behandlingsdager =
+                    listOf(
+                        LocalDate.of(2020, 3, 13),
+                        LocalDate.of(2020, 3, 20),
+                    ),
+                tom = (LocalDate.of(2020, 3, 20)),
+                fom = (LocalDate.of(2020, 3, 9)),
+                egenmeldinger = (emptyList()),
+                fnr = fnr,
+                sykmeldingId = UUID.randomUUID().toString(),
+                status = SoknadsstatusDTO.SENDT,
+            )
 
         val res = kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr)
         assertThat(res?.antallBrukteDager).isEqualTo(26)
@@ -899,69 +916,77 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
     fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden og sletter tidligere biter`() {
         val sykmelding = skapArbeidsgiverSykmelding()
 
-        val kafkaMetadata = KafkaMetadataDTO(
-            sykmeldingId = sykmelding.id,
-            fnr = fnr,
-            timestamp = OffsetDateTime.now(),
-            source = "Denne testen"
-        )
-
-        val event = SykmeldingStatusKafkaEventDTO(
-            sykmeldingId = sykmelding.id,
-            timestamp = OffsetDateTime.now(),
-            statusEvent = STATUS_SENDT,
-            arbeidsgiver = null,
-            sporsmals = emptyList()
-        )
-
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2023, 3, 14),
-                        tom = LocalDate.of(2023, 3, 26),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Velg dagene du brukte egenmelding",
-                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
-                        svartype = SvartypeDTO.DAGER
-                    )
-                )
+        val kafkaMetadata =
+            KafkaMetadataDTO(
+                sykmeldingId = sykmelding.id,
+                fnr = fnr,
+                timestamp = OffsetDateTime.now(),
+                source = "Denne testen",
             )
-        )
+
+        val event =
+            SykmeldingStatusKafkaEventDTO(
+                sykmeldingId = sykmelding.id,
+                timestamp = OffsetDateTime.now(),
+                statusEvent = STATUS_SENDT,
+                arbeidsgiver = null,
+                sporsmals = emptyList(),
+            )
+
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2023, 3, 14),
+                                    tom = LocalDate.of(2023, 3, 26),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                    ),
+            )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
 
-        val soknad = SykepengesoknadDTO(
-            id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
-            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
-            fravar = emptyList(),
-            startSyketilfelle = LocalDate.of(2023, 3, 14),
-            andreInntektskilder = emptyList(),
-            fom = LocalDate.of(2023, 3, 14),
-            tom = LocalDate.of(2023, 3, 26),
-            arbeidGjenopptatt = null,
-            egenmeldinger = emptyList(),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE,
-            sykmeldingId = UUID.randomUUID().toString()
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
+                arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
+                fravar = emptyList(),
+                startSyketilfelle = LocalDate.of(2023, 3, 14),
+                andreInntektskilder = emptyList(),
+                fom = LocalDate.of(2023, 3, 14),
+                tom = LocalDate.of(2023, 3, 26),
+                arbeidGjenopptatt = null,
+                egenmeldinger = emptyList(),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+                sykmeldingId = UUID.randomUUID().toString(),
+            )
 
         kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr).let {
             assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
@@ -970,20 +995,23 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         }
 
         // Korrigerer egenmeldingsdager
-        val kafkaMessage2 = kafkaMessage.copy(
-            event = event.copy(
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Velg dagene du brukte egenmelding",
-                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                        svar = "[\"2023-03-13\",\"2023-03-12\"]",
-                        svartype = SvartypeDTO.DAGER
-                    )
-                ),
-                erSvarOppdatering = true
+        val kafkaMessage2 =
+            kafkaMessage.copy(
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2023-03-13\",\"2023-03-12\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                        erSvarOppdatering = true,
+                    ),
             )
-        )
 
         producerPåSendtBekreftetTopic(kafkaMessage2)
         await().atMost(10, TimeUnit.SECONDS).until {
@@ -1017,69 +1045,77 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
     fun `egenmeldingsdager fra sykmeldingen i request erstatter tidligere biter uten å slette de`() {
         val sykmelding = skapArbeidsgiverSykmelding()
 
-        val kafkaMetadata = KafkaMetadataDTO(
-            sykmeldingId = sykmelding.id,
-            fnr = fnr,
-            timestamp = OffsetDateTime.now(),
-            source = "Denne testen"
-        )
-
-        val event = SykmeldingStatusKafkaEventDTO(
-            sykmeldingId = sykmelding.id,
-            timestamp = OffsetDateTime.now(),
-            statusEvent = STATUS_SENDT,
-            arbeidsgiver = null,
-            sporsmals = emptyList()
-        )
-
-        val kafkaMessage = SykmeldingKafkaMessage(
-            sykmelding = sykmelding.copy(
-                sykmeldingsperioder = listOf(
-                    SykmeldingsperiodeAGDTO(
-                        fom = LocalDate.of(2023, 3, 14),
-                        tom = LocalDate.of(2023, 3, 26),
-                        reisetilskudd = false,
-                        type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                        aktivitetIkkeMulig = null,
-                        behandlingsdager = null,
-                        gradert = null,
-                        innspillTilArbeidsgiver = null
-                    )
-                )
-            ),
-            kafkaMetadata = kafkaMetadata,
-            event = event.copy(
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Velg dagene du brukte egenmelding",
-                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                        svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
-                        svartype = SvartypeDTO.DAGER
-                    )
-                )
+        val kafkaMetadata =
+            KafkaMetadataDTO(
+                sykmeldingId = sykmelding.id,
+                fnr = fnr,
+                timestamp = OffsetDateTime.now(),
+                source = "Denne testen",
             )
-        )
+
+        val event =
+            SykmeldingStatusKafkaEventDTO(
+                sykmeldingId = sykmelding.id,
+                timestamp = OffsetDateTime.now(),
+                statusEvent = STATUS_SENDT,
+                arbeidsgiver = null,
+                sporsmals = emptyList(),
+            )
+
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = LocalDate.of(2023, 3, 14),
+                                    tom = LocalDate.of(2023, 3, 26),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2023-03-01\",\"2023-03-10\",\"2023-03-09\",\"2023-03-13\",\"2023-03-08\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                    ),
+            )
         producerPåSendtBekreftetTopic(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
 
-        val soknad = SykepengesoknadDTO(
-            id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
-            arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
-            fravar = emptyList(),
-            startSyketilfelle = LocalDate.of(2023, 3, 14),
-            andreInntektskilder = emptyList(),
-            fom = LocalDate.of(2023, 3, 14),
-            tom = LocalDate.of(2023, 3, 26),
-            arbeidGjenopptatt = null,
-            egenmeldinger = emptyList(),
-            fnr = fnr,
-            status = SoknadsstatusDTO.SENDT,
-            type = SoknadstypeDTO.ARBEIDSTAKERE,
-            sykmeldingId = UUID.randomUUID().toString()
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "469637ce-4be2-4c02-b5b0-52a599bd8efd",
+                arbeidsgiver = ArbeidsgiverDTO(navn = "navn", orgnummer = "12344"),
+                fravar = emptyList(),
+                startSyketilfelle = LocalDate.of(2023, 3, 14),
+                andreInntektskilder = emptyList(),
+                fom = LocalDate.of(2023, 3, 14),
+                tom = LocalDate.of(2023, 3, 26),
+                arbeidGjenopptatt = null,
+                egenmeldinger = emptyList(),
+                fnr = fnr,
+                status = SoknadsstatusDTO.SENDT,
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+                sykmeldingId = UUID.randomUUID().toString(),
+            )
 
         kallArbeidsgiverperiodeApi(soknad = soknad, fnr = fnr).let {
             assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 1))
@@ -1088,20 +1124,23 @@ class ArbeidsgiverperiodeTest : Testoppsett() {
         }
 
         // Korrigerer egenmeldingsdager
-        val kafkaMessage2 = kafkaMessage.copy(
-            event = event.copy(
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
-                sporsmals = listOf(
-                    SporsmalOgSvarDTO(
-                        tekst = "Velg dagene du brukte egenmelding",
-                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                        svar = "[\"2023-03-13\",\"2023-03-12\"]",
-                        svartype = SvartypeDTO.DAGER
-                    )
-                ),
-                erSvarOppdatering = true
+        val kafkaMessage2 =
+            kafkaMessage.copy(
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2023-03-13\",\"2023-03-12\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                        erSvarOppdatering = true,
+                    ),
             )
-        )
 
         kallArbeidsgiverperiodeApi(soknad = soknad, sykmelding = kafkaMessage2, fnr = fnr).let {
             assertThat(it?.arbeidsgiverPeriode?.fom).isEqualTo(LocalDate.of(2023, 3, 12))

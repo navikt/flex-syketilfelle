@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class ApplicationHealth {
-
     val log = logger()
 
     @EventListener

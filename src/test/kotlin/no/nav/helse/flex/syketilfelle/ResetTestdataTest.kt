@@ -11,26 +11,26 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class ResetTestdataTest : Testoppsett() {
-
     @Test
     fun `Kan slette en bit`() {
         syketilfellebitRepository.count() `should be equal to` 0
 
         val fnr = "12345678987"
-        val bit = SyketilfellebitDbRecord(
-            id = null,
-            syketilfellebitId = UUID.randomUUID().toString(),
-            fnr = fnr,
-            orgnummer = "org",
-            fom = LocalDate.now().minusDays(2),
-            tom = LocalDate.now(),
-            korrigererSendtSoknad = UUID.randomUUID().toString(),
-            inntruffet = OffsetDateTime.now().plusMinutes(2),
-            opprettet = OffsetDateTime.now().plusHours(3),
-            ressursId = UUID.randomUUID().toString(),
-            tags = "SENDT",
-            publisert = true
-        )
+        val bit =
+            SyketilfellebitDbRecord(
+                id = null,
+                syketilfellebitId = UUID.randomUUID().toString(),
+                fnr = fnr,
+                orgnummer = "org",
+                fom = LocalDate.now().minusDays(2),
+                tom = LocalDate.now(),
+                korrigererSendtSoknad = UUID.randomUUID().toString(),
+                inntruffet = OffsetDateTime.now().plusMinutes(2),
+                opprettet = OffsetDateTime.now().plusHours(3),
+                ressursId = UUID.randomUUID().toString(),
+                tags = "SENDT",
+                publisert = true,
+            )
         syketilfellebitRepository.save(bit)
         syketilfellebitRepository.save(bit.copy(fnr = "annet", syketilfellebitId = UUID.randomUUID().toString()))
         syketilfellebitRepository.count() `should be equal to` 2

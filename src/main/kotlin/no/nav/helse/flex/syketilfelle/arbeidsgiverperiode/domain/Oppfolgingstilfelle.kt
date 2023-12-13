@@ -11,17 +11,18 @@ class Oppfolgingstilfelle(
     val sisteDagIArbeidsgiverperiode: Syketilfelledag,
     val dagerAvArbeidsgiverperiode: Int,
     val behandlingsdager: Int,
-    val sisteSykedagEllerFeriedag: LocalDate?
+    val sisteSykedagEllerFeriedag: LocalDate?,
 ) {
+    fun antallDager() =
+        tidslinje.count { syketilfelledag ->
+            (syketilfelledag.prioritertSyketilfellebit?.tags?.containsAll(listOf(Tag.SYKEPENGESOKNAD, Tag.FERIE))?.not())
+                ?: true
+        }
 
-    fun antallDager() = tidslinje.count { syketilfelledag ->
-        (syketilfelledag.prioritertSyketilfellebit?.tags?.containsAll(listOf(Tag.SYKEPENGESOKNAD, Tag.FERIE))?.not())
-            ?: true
-    }
-
-    fun antallSykedager() = tidslinje.count { syketilfelledag ->
-        syketilfelledag.erSendt() && !syketilfelledag.erArbeidsdag() && !syketilfelledag.erFeriedag()
-    }
+    fun antallSykedager() =
+        tidslinje.count { syketilfelledag ->
+            syketilfelledag.erSendt() && !syketilfelledag.erArbeidsdag() && !syketilfelledag.erFeriedag()
+        }
 
     fun oppbruktArbeidsgvierperiode() = dagerAvArbeidsgiverperiode > 16 || behandlingsdager > 12
 

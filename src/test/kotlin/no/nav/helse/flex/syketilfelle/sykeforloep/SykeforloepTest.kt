@@ -27,7 +27,6 @@ import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit.SECONDS
 
 class SykeforloepTest : Testoppsett() {
-
     private final val fnr = "12345432123"
     private final val nyttFnr = "22345432123"
 
@@ -58,10 +57,9 @@ class SykeforloepTest : Testoppsett() {
                 SimpleSykmelding(
                     fom = basisDato.minusDays(12),
                     tom = basisDato,
-                    id = sykmelding.id
-
-                )
-            )
+                    id = sykmelding.id,
+                ),
+            ),
         )
     }
 
@@ -85,23 +83,22 @@ class SykeforloepTest : Testoppsett() {
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(40))
         assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
             listOf(
-
                 SimpleSykmelding(
                     fom = basisDato.minusDays(40),
                     tom = basisDato.minusDays(25),
-                    id = sykmelding3.id
+                    id = sykmelding3.id,
                 ),
                 SimpleSykmelding(
                     fom = basisDato.minusDays(24),
                     tom = basisDato.minusDays(13),
-                    id = sykmelding2.id
+                    id = sykmelding2.id,
                 ),
                 SimpleSykmelding(
                     fom = basisDato.minusDays(12),
                     tom = basisDato,
-                    id = sykmelding.id
-                )
-            )
+                    id = sykmelding.id,
+                ),
+            ),
         )
     }
 
@@ -151,30 +148,32 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `sykmelding med flere perioder settes korrekt sammen`() {
-        val sykmelding = skapArbeidsgiverSykmelding().copy(
-            sykmeldingsperioder = listOf(
-                SykmeldingsperiodeAGDTO(
-                    fom = basisDato,
-                    tom = basisDato.plusDays(5),
-                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                    reisetilskudd = false,
-                    aktivitetIkkeMulig = null,
-                    behandlingsdager = null,
-                    gradert = null,
-                    innspillTilArbeidsgiver = null
-                ),
-                SykmeldingsperiodeAGDTO(
-                    fom = basisDato.minusDays(13),
-                    tom = basisDato.minusDays(1),
-                    type = PeriodetypeDTO.GRADERT,
-                    reisetilskudd = false,
-                    aktivitetIkkeMulig = null,
-                    behandlingsdager = null,
-                    gradert = null,
-                    innspillTilArbeidsgiver = null
-                )
+        val sykmelding =
+            skapArbeidsgiverSykmelding().copy(
+                sykmeldingsperioder =
+                    listOf(
+                        SykmeldingsperiodeAGDTO(
+                            fom = basisDato,
+                            tom = basisDato.plusDays(5),
+                            type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                            reisetilskudd = false,
+                            aktivitetIkkeMulig = null,
+                            behandlingsdager = null,
+                            gradert = null,
+                            innspillTilArbeidsgiver = null,
+                        ),
+                        SykmeldingsperiodeAGDTO(
+                            fom = basisDato.minusDays(13),
+                            tom = basisDato.minusDays(1),
+                            type = PeriodetypeDTO.GRADERT,
+                            reisetilskudd = false,
+                            aktivitetIkkeMulig = null,
+                            behandlingsdager = null,
+                            gradert = null,
+                            innspillTilArbeidsgiver = null,
+                        ),
+                    ),
             )
-        )
         opprettMottattSykmelding(sykmelding, fnr)
         opprettSendtSykmelding(sykmelding, fnr)
         await().atMost(10, SECONDS).until {
@@ -189,10 +188,9 @@ class SykeforloepTest : Testoppsett() {
                 SimpleSykmelding(
                     fom = basisDato.minusDays(13),
                     tom = basisDato.plusDays(5),
-                    id = sykmelding.id
-
-                )
-            )
+                    id = sykmelding.id,
+                ),
+            ),
         )
     }
 
@@ -207,8 +205,8 @@ class SykeforloepTest : Testoppsett() {
                 opprettet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff151",
                 fom = LocalDate.of(2019, 1, 25),
-                tom = LocalDate.of(2019, 1, 31)
-            ).tilSyketilfellebitDbRecord()
+                tom = LocalDate.of(2019, 1, 31),
+            ).tilSyketilfellebitDbRecord(),
         )
 
         syketilfellebitRepository.save(
@@ -220,8 +218,8 @@ class SykeforloepTest : Testoppsett() {
                 opprettet = OffsetDateTime.of(2019, 3, 20, 8, 42, 34, 0, ZoneOffset.UTC),
                 ressursId = "68093d7d-2c6e-4efb-ad9e-f215b2eff152",
                 fom = LocalDate.of(2019, 2, 1),
-                tom = LocalDate.of(2019, 2, 20)
-            ).tilSyketilfellebitDbRecord()
+                tom = LocalDate.of(2019, 2, 20),
+            ).tilSyketilfellebitDbRecord(),
         )
 
         val sykeforloepMedPapirsykmedling =
@@ -229,7 +227,7 @@ class SykeforloepTest : Testoppsett() {
                 listOf(nyttFnr),
                 hentAndreIdenter = true,
                 inkluderPapirsykmelding = true,
-                token = server.azureToken(subject = "sparenaproxy-client-id")
+                token = server.azureToken(subject = "sparenaproxy-client-id"),
             )
 
         assertThat(sykeforloepMedPapirsykmedling).hasSize(1)
@@ -240,7 +238,7 @@ class SykeforloepTest : Testoppsett() {
                 listOf(nyttFnr),
                 hentAndreIdenter = true,
                 inkluderPapirsykmelding = false,
-                token = server.azureToken(subject = "sparenaproxy-client-id")
+                token = server.azureToken(subject = "sparenaproxy-client-id"),
             )
 
         assertThat(sykeforloepUtenPapirsykmedling).hasSize(1)
@@ -251,55 +249,60 @@ class SykeforloepTest : Testoppsett() {
 
     @Test
     fun `Krever fnr header som input`() {
-        val json = mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+        val json =
+            mockMvc.perform(
+                get("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"Bad Request\"}"
     }
 
     @Test
     fun `Krever riktig subject`() {
-        val json = mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "slem-app-client-id")}")
-                .header("fnr", fnr)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isForbidden).andReturn().response.contentAsString
+        val json =
+            mockMvc.perform(
+                get("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "slem-app-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isForbidden).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"UKJENT_CLIENT\"}"
     }
 
     @Test
     fun `Krever auth header`() {
-        val json = mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("fnr", fnr)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isUnauthorized).andReturn().response.contentAsString
+        val json =
+            mockMvc.perform(
+                get("/api/v1/sykeforloep")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isUnauthorized).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"Unauthorized\"}"
     }
 
     @Test
     fun `Krever gyldig fnr i input`() {
-        val json = mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                .header("fnr", "blah")
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+        val json =
+            mockMvc.perform(
+                get("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", "blah")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"UGYLDIG_FNR\"}"
     }
 
     @Test
     fun `Kan ikke hente identer fra PDL hvis det er flere enn en ident i requesten`() {
-        val json = mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                .header("fnr", "$fnr, $nyttFnr")
-                .queryParam("hentAndreIdenter", true.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+        val json =
+            mockMvc.perform(
+                get("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", "$fnr, $nyttFnr")
+                    .queryParam("hentAndreIdenter", true.toString())
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
         json `should be equal to` "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
     }
 

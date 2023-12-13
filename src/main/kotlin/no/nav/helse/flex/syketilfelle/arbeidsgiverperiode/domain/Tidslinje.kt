@@ -3,7 +3,6 @@ package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain
 import java.time.temporal.ChronoUnit
 
 class Tidslinje(private val syketilfellebiter: Syketilfellebiter) {
-
     private val tidslinjeliste: List<Syketilfelledag>
 
     init {
