@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("org.springframework.boot") version "3.1.5"
+    id("org.springframework.boot") version "3.2.0"
     id("io.spring.dependency-management") version "1.1.4"
     id("org.jlleitschuh.gradle.ktlint") version "12.0.3"
     kotlin("plugin.spring") version "1.9.21"
@@ -15,7 +15,7 @@ version = "1.0"
 description = "flex-syketilfelle"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-ext["okhttp3.version"] = "4.9.0" // For at token support testen kjører
+ext["okhttp3.version"] = "4.9.3" // For at token support testen kjører
 
 val githubUser: String by project
 val githubPassword: String by project

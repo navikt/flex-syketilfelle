@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
-import no.nav.helse.flex.syketilfelle.logger
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -8,6 +7,7 @@ import org.springframework.kafka.listener.*
 import org.springframework.stereotype.Component
 import org.springframework.util.backoff.ExponentialBackOff
 import java.lang.Exception
+import no.nav.helse.flex.syketilfelle.logger as slf4jLogger
 
 @Component
 class KafkaErrorHandler : DefaultErrorHandler(
@@ -16,7 +16,7 @@ class KafkaErrorHandler : DefaultErrorHandler(
         maxInterval = 60_000L * 8
     },
 ) {
-    val log = logger()
+    val log = slf4jLogger()
 
     override fun handleRemaining(
         thrownException: Exception,
