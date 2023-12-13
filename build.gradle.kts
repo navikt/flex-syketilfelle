@@ -15,7 +15,7 @@ version = "1.0"
 description = "flex-syketilfelle"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-ext["okhttp3.version"] = "4.9.0" // For at token support testen kjører
+ext["okhttp3.version"] = "4.9.3" // For at token support testen kjører
 
 val githubUser: String by project
 val githubPassword: String by project
