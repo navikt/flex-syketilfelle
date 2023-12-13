@@ -17,12 +17,14 @@ import java.time.OffsetDateTime
 class SykmeldingLagring(
     private val syketilfellebitLagring: SyketilfellebitLagring,
     private val pdlClient: PdlClient,
-    private val syketilfellebitRepository: SyketilfellebitRepository
+    private val syketilfellebitRepository: SyketilfellebitRepository,
 ) {
-
     val log = logger()
 
-    fun handterSykmelding(key: String, sykmeldingKafkaMessage: SykmeldingKafkaMessage?) {
+    fun handterSykmelding(
+        key: String,
+        sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
+    ) {
         if (sykmeldingKafkaMessage == null) {
             log.debug("Mottok tombstone event for sykmelding $key")
             return
@@ -32,10 +34,11 @@ class SykmeldingLagring(
         if (sykmeldingKafkaMessage.event.erSvarOppdatering == true) {
             // Slett de gamle som ikke lengre stemmer
             val identer = pdlClient.hentFolkeregisterIdenter(sykmeldingKafkaMessage.kafkaMetadata.fnr)
-            val biter = syketilfellebitRepository.findByFnrIn(identer)
-                .filter { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }
-                .filter { it.tags.tagsFromString().contains(Tag.EGENMELDING) }
-                .map { it.copy(slettet = OffsetDateTime.now()) }
+            val biter =
+                syketilfellebitRepository.findByFnrIn(identer)
+                    .filter { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }
+                    .filter { it.tags.tagsFromString().contains(Tag.EGENMELDING) }
+                    .map { it.copy(slettet = OffsetDateTime.now()) }
 
             syketilfellebitRepository.saveAll(biter)
 
@@ -49,20 +52,24 @@ class SykmeldingLagring(
         syketilfellebitLagring.lagreBiter(biter)
     }
 
-    fun handterMottattSykmelding(key: String, mottattSykmeldingKafkaMessage: MottattSykmeldingKafkaMessage) {
+    fun handterMottattSykmelding(
+        key: String,
+        mottattSykmeldingKafkaMessage: MottattSykmeldingKafkaMessage,
+    ) {
         handterSykmelding(
             key,
             SykmeldingKafkaMessage(
                 sykmelding = mottattSykmeldingKafkaMessage.sykmelding,
                 kafkaMetadata = mottattSykmeldingKafkaMessage.kafkaMetadata,
-                event = SykmeldingStatusKafkaEventDTO(
-                    sykmeldingId = key,
-                    timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
-                    arbeidsgiver = null,
-                    sporsmals = emptyList(),
-                    statusEvent = STATUS_APEN
-                )
-            )
+                event =
+                    SykmeldingStatusKafkaEventDTO(
+                        sykmeldingId = key,
+                        timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
+                        arbeidsgiver = null,
+                        sporsmals = emptyList(),
+                        statusEvent = STATUS_APEN,
+                    ),
+            ),
         )
     }
 }

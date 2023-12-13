@@ -21,7 +21,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class SykepengesoknadMottakTest : Testoppsett() {
-
     private final val fnr = "12345432123"
 
     @BeforeEach
@@ -32,41 +31,44 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `vanlig sendt soknad`() {
-        val soknad = SykepengesoknadDTO(
-            id = "id",
-            type = SoknadstypeDTO.ARBEIDSTAKERE,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = "sykmeldingId",
-            arbeidsgiver = ArbeidsgiverDTO(
-                navn = "arbeidsgivernavn",
-                orgnummer = "orgnummer"
-            ),
-            arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
-            korrigerer = "korrigerer",
-            korrigertAv = "korrigertAv",
-            soktUtenlandsopphold = null,
-            fom = LocalDate.now().minusWeeks(1),
-            tom = LocalDate.now(),
-            startSyketilfelle = LocalDate.now().minusWeeks(1),
-            sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
-            arbeidGjenopptatt = null,
-            opprettet = LocalDateTime.now().minusWeeks(1),
-            sendtNav = LocalDateTime.now(),
-            sendtArbeidsgiver = LocalDateTime.now(),
-            egenmeldinger = emptyList(),
-            papirsykmeldinger = emptyList(),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            soknadsperioder = listOf(
-                SoknadsperiodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now(),
-                    sykmeldingsgrad = 100
-                )
-            ),
-            sporsmal = null,
-            fnr = fnr
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "id",
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = "sykmeldingId",
+                arbeidsgiver =
+                    ArbeidsgiverDTO(
+                        navn = "arbeidsgivernavn",
+                        orgnummer = "orgnummer",
+                    ),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                korrigerer = "korrigerer",
+                korrigertAv = "korrigertAv",
+                soktUtenlandsopphold = null,
+                fom = LocalDate.now().minusWeeks(1),
+                tom = LocalDate.now(),
+                startSyketilfelle = LocalDate.now().minusWeeks(1),
+                sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
+                arbeidGjenopptatt = null,
+                opprettet = LocalDateTime.now().minusWeeks(1),
+                sendtNav = LocalDateTime.now(),
+                sendtArbeidsgiver = LocalDateTime.now(),
+                egenmeldinger = emptyList(),
+                papirsykmeldinger = emptyList(),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                soknadsperioder =
+                    listOf(
+                        SoknadsperiodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now(),
+                            sykmeldingsgrad = 100,
+                        ),
+                    ),
+                sporsmal = null,
+                fnr = fnr,
+            )
 
         produserPåSøknadTopic(soknad)
 
@@ -85,105 +87,110 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `soknad sendt alle relevante felter fylt ut`() {
-        val soknad = SykepengesoknadDTO(
-            id = "id",
-            type = SoknadstypeDTO.ARBEIDSTAKERE,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = "sykmeldingId",
-            arbeidsgiver = ArbeidsgiverDTO(
-                navn = "arbeidsgivernavn",
-                orgnummer = "orgnummer"
-            ),
-            arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
-            korrigerer = "korrigerer",
-            korrigertAv = "korrigertAv",
-            soktUtenlandsopphold = null,
-            fom = LocalDate.now().minusWeeks(1),
-            tom = LocalDate.now(),
-            startSyketilfelle = LocalDate.now().minusWeeks(1),
-            sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
-            opprettet = LocalDateTime.now().minusWeeks(1),
-            sendtNav = LocalDateTime.now(),
-            sendtArbeidsgiver = LocalDateTime.now(),
-            arbeidGjenopptatt = LocalDate.now().minusWeeks(1),
-            egenmeldinger = listOf(
-                PeriodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(1)
-                )
-            ),
-            fravarForSykmeldingen = listOf(
-                PeriodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(1)
-                )
-            ),
-            papirsykmeldinger = listOf(
-                PeriodeDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(2),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(3)
-                )
-            ),
-            fravar = listOf(
-                FravarDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now().minusWeeks(1),
-                    type = FravarstypeDTO.PERMISJON
-                ),
-                FravarDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(1),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(1),
-                    type = FravarstypeDTO.UTLANDSOPPHOLD
-                ),
-                FravarDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(2),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(2),
-                    type = FravarstypeDTO.UTDANNING_FULLTID
-                ),
-                FravarDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(3),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(3),
-                    type = FravarstypeDTO.UTDANNING_DELTID
-                ),
-                FravarDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(4),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(4),
-                    type = FravarstypeDTO.FERIE
-                )
-            ),
-            andreInntektskilder = emptyList(),
-            soknadsperioder = listOf(
-                SoknadsperiodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(1),
-                    sykmeldingsgrad = 100,
-                    faktiskGrad = 0
-                ),
-
-                SoknadsperiodeDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(2),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(3),
-                    sykmeldingsgrad = 100,
-                    faktiskGrad = 49
-                ),
-
-                SoknadsperiodeDTO(
-                    fom = (LocalDate.now().minusWeeks(1).plusDays(4)),
-                    tom = (LocalDate.now().minusWeeks(1).plusDays(5)),
-                    sykmeldingsgrad = (100),
-                    faktiskGrad = (100)
-                ),
-                SoknadsperiodeDTO(
-                    fom = (LocalDate.now().minusWeeks(1).plusDays(6)),
-                    tom = (LocalDate.now().minusWeeks(1).plusDays(7)),
-                    sykmeldingstype = (SykmeldingstypeDTO.BEHANDLINGSDAGER),
-                    sykmeldingsgrad = (100),
-                    faktiskGrad = (0)
-                )
-            ),
-            sporsmal = null,
-            fnr = fnr
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "id",
+                type = SoknadstypeDTO.ARBEIDSTAKERE,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = "sykmeldingId",
+                arbeidsgiver =
+                    ArbeidsgiverDTO(
+                        navn = "arbeidsgivernavn",
+                        orgnummer = "orgnummer",
+                    ),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                korrigerer = "korrigerer",
+                korrigertAv = "korrigertAv",
+                soktUtenlandsopphold = null,
+                fom = LocalDate.now().minusWeeks(1),
+                tom = LocalDate.now(),
+                startSyketilfelle = LocalDate.now().minusWeeks(1),
+                sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
+                opprettet = LocalDateTime.now().minusWeeks(1),
+                sendtNav = LocalDateTime.now(),
+                sendtArbeidsgiver = LocalDateTime.now(),
+                arbeidGjenopptatt = LocalDate.now().minusWeeks(1),
+                egenmeldinger =
+                    listOf(
+                        PeriodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(1),
+                        ),
+                    ),
+                fravarForSykmeldingen =
+                    listOf(
+                        PeriodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(1),
+                        ),
+                    ),
+                papirsykmeldinger =
+                    listOf(
+                        PeriodeDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(2),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(3),
+                        ),
+                    ),
+                fravar =
+                    listOf(
+                        FravarDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now().minusWeeks(1),
+                            type = FravarstypeDTO.PERMISJON,
+                        ),
+                        FravarDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(1),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(1),
+                            type = FravarstypeDTO.UTLANDSOPPHOLD,
+                        ),
+                        FravarDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(2),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(2),
+                            type = FravarstypeDTO.UTDANNING_FULLTID,
+                        ),
+                        FravarDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(3),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(3),
+                            type = FravarstypeDTO.UTDANNING_DELTID,
+                        ),
+                        FravarDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(4),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(4),
+                            type = FravarstypeDTO.FERIE,
+                        ),
+                    ),
+                andreInntektskilder = emptyList(),
+                soknadsperioder =
+                    listOf(
+                        SoknadsperiodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(1),
+                            sykmeldingsgrad = 100,
+                            faktiskGrad = 0,
+                        ),
+                        SoknadsperiodeDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(2),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(3),
+                            sykmeldingsgrad = 100,
+                            faktiskGrad = 49,
+                        ),
+                        SoknadsperiodeDTO(
+                            fom = (LocalDate.now().minusWeeks(1).plusDays(4)),
+                            tom = (LocalDate.now().minusWeeks(1).plusDays(5)),
+                            sykmeldingsgrad = (100),
+                            faktiskGrad = (100),
+                        ),
+                        SoknadsperiodeDTO(
+                            fom = (LocalDate.now().minusWeeks(1).plusDays(6)),
+                            tom = (LocalDate.now().minusWeeks(1).plusDays(7)),
+                            sykmeldingstype = (SykmeldingstypeDTO.BEHANDLINGSDAGER),
+                            sykmeldingsgrad = (100),
+                            faktiskGrad = (0),
+                        ),
+                    ),
+                sporsmal = null,
+                fnr = fnr,
+            )
 
         produserPåSøknadTopic(soknad)
 
@@ -210,41 +217,44 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `gradert reisetilskudd arbeidstaker soknad sendt lagres`() {
-        val soknad = SykepengesoknadDTO(
-            id = "id",
-            type = SoknadstypeDTO.GRADERT_REISETILSKUDD,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = "sykmeldingId",
-            arbeidsgiver = ArbeidsgiverDTO(
-                navn = "arbeidsgivernavn",
-                orgnummer = "orgnummer"
-            ),
-            arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
-            korrigerer = null,
-            korrigertAv = null,
-            soktUtenlandsopphold = null,
-            fom = LocalDate.now().minusWeeks(1),
-            tom = LocalDate.now(),
-            startSyketilfelle = LocalDate.now().minusWeeks(1),
-            sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
-            arbeidGjenopptatt = null,
-            opprettet = LocalDateTime.now().minusWeeks(1),
-            sendtNav = LocalDateTime.now(),
-            sendtArbeidsgiver = LocalDateTime.now(),
-            egenmeldinger = emptyList(),
-            papirsykmeldinger = emptyList(),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            soknadsperioder = listOf(
-                SoknadsperiodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now(),
-                    sykmeldingsgrad = 100
-                )
-            ),
-            sporsmal = null,
-            fnr = fnr
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "id",
+                type = SoknadstypeDTO.GRADERT_REISETILSKUDD,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = "sykmeldingId",
+                arbeidsgiver =
+                    ArbeidsgiverDTO(
+                        navn = "arbeidsgivernavn",
+                        orgnummer = "orgnummer",
+                    ),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                korrigerer = null,
+                korrigertAv = null,
+                soktUtenlandsopphold = null,
+                fom = LocalDate.now().minusWeeks(1),
+                tom = LocalDate.now(),
+                startSyketilfelle = LocalDate.now().minusWeeks(1),
+                sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
+                arbeidGjenopptatt = null,
+                opprettet = LocalDateTime.now().minusWeeks(1),
+                sendtNav = LocalDateTime.now(),
+                sendtArbeidsgiver = LocalDateTime.now(),
+                egenmeldinger = emptyList(),
+                papirsykmeldinger = emptyList(),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                soknadsperioder =
+                    listOf(
+                        SoknadsperiodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now(),
+                            sykmeldingsgrad = 100,
+                        ),
+                    ),
+                sporsmal = null,
+                fnr = fnr,
+            )
 
         produserPåSøknadTopic(soknad)
 
@@ -262,41 +272,44 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `gradert reisetilskudd arbeidsledig soknad sendt lagres ikke`() {
-        val soknad = SykepengesoknadDTO(
-            id = "id",
-            type = SoknadstypeDTO.GRADERT_REISETILSKUDD,
-            status = SoknadsstatusDTO.SENDT,
-            sykmeldingId = "sykmeldingId",
-            arbeidsgiver = ArbeidsgiverDTO(
-                navn = "arbeidsgivernavn",
-                orgnummer = "orgnummer"
-            ),
-            arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSLEDIG,
-            korrigerer = null,
-            korrigertAv = null,
-            soktUtenlandsopphold = null,
-            fom = LocalDate.now().minusWeeks(1),
-            tom = LocalDate.now(),
-            startSyketilfelle = LocalDate.now().minusWeeks(1),
-            sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
-            arbeidGjenopptatt = null,
-            opprettet = LocalDateTime.now().minusWeeks(1),
-            sendtNav = LocalDateTime.now(),
-            sendtArbeidsgiver = LocalDateTime.now(),
-            egenmeldinger = emptyList(),
-            papirsykmeldinger = emptyList(),
-            fravar = emptyList(),
-            andreInntektskilder = emptyList(),
-            soknadsperioder = listOf(
-                SoknadsperiodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now(),
-                    sykmeldingsgrad = 100
-                )
-            ),
-            sporsmal = null,
-            fnr = "fnr"
-        )
+        val soknad =
+            SykepengesoknadDTO(
+                id = "id",
+                type = SoknadstypeDTO.GRADERT_REISETILSKUDD,
+                status = SoknadsstatusDTO.SENDT,
+                sykmeldingId = "sykmeldingId",
+                arbeidsgiver =
+                    ArbeidsgiverDTO(
+                        navn = "arbeidsgivernavn",
+                        orgnummer = "orgnummer",
+                    ),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSLEDIG,
+                korrigerer = null,
+                korrigertAv = null,
+                soktUtenlandsopphold = null,
+                fom = LocalDate.now().minusWeeks(1),
+                tom = LocalDate.now(),
+                startSyketilfelle = LocalDate.now().minusWeeks(1),
+                sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
+                arbeidGjenopptatt = null,
+                opprettet = LocalDateTime.now().minusWeeks(1),
+                sendtNav = LocalDateTime.now(),
+                sendtArbeidsgiver = LocalDateTime.now(),
+                egenmeldinger = emptyList(),
+                papirsykmeldinger = emptyList(),
+                fravar = emptyList(),
+                andreInntektskilder = emptyList(),
+                soknadsperioder =
+                    listOf(
+                        SoknadsperiodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now(),
+                            sykmeldingsgrad = 100,
+                        ),
+                    ),
+                sporsmal = null,
+                fnr = "fnr",
+            )
 
         produserPåSøknadTopic(soknad)
 
@@ -305,40 +318,42 @@ class SykepengesoknadMottakTest : Testoppsett() {
         }
     }
 
-    private val behandlingsdagSøknad = SykepengesoknadDTO(
-        id = "id",
-        type = SoknadstypeDTO.BEHANDLINGSDAGER,
-        status = SoknadsstatusDTO.SENDT,
-        arbeidsgiver = ArbeidsgiverDTO(
-            navn = "arbeidsgivernavn",
-            orgnummer = "orgnummer"
-        ),
-        sporsmal = emptyList(),
-        arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
-        korrigerer = "korrigerer",
-        korrigertAv = "korrigertAv",
-
-        opprettet = LocalDateTime.now().minusWeeks(1),
-        sendtNav = LocalDateTime.now(),
-        sendtArbeidsgiver = LocalDateTime.now(),
-        sykmeldingId = "sykmeldingId",
-        fom = LocalDate.now().minusWeeks(1),
-        tom = LocalDate.now(),
-        startSyketilfelle = LocalDate.now().minusWeeks(1),
-        sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
-        soknadsperioder = listOf(
-            SoknadsperiodeDTO(
-                fom = LocalDate.now().minusWeeks(1),
-                tom = LocalDate.now(),
-                sykmeldingstype = SykmeldingstypeDTO.BEHANDLINGSDAGER
-            )
-        ),
-        behandlingsdager = emptyList(),
-        egenmeldinger = emptyList(),
-        papirsykmeldinger = emptyList(),
-        andreInntektskilder = emptyList(),
-        fnr = fnr
-    )
+    private val behandlingsdagSøknad =
+        SykepengesoknadDTO(
+            id = "id",
+            type = SoknadstypeDTO.BEHANDLINGSDAGER,
+            status = SoknadsstatusDTO.SENDT,
+            arbeidsgiver =
+                ArbeidsgiverDTO(
+                    navn = "arbeidsgivernavn",
+                    orgnummer = "orgnummer",
+                ),
+            sporsmal = emptyList(),
+            arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+            korrigerer = "korrigerer",
+            korrigertAv = "korrigertAv",
+            opprettet = LocalDateTime.now().minusWeeks(1),
+            sendtNav = LocalDateTime.now(),
+            sendtArbeidsgiver = LocalDateTime.now(),
+            sykmeldingId = "sykmeldingId",
+            fom = LocalDate.now().minusWeeks(1),
+            tom = LocalDate.now(),
+            startSyketilfelle = LocalDate.now().minusWeeks(1),
+            sykmeldingSkrevet = LocalDateTime.now().minusWeeks(1),
+            soknadsperioder =
+                listOf(
+                    SoknadsperiodeDTO(
+                        fom = LocalDate.now().minusWeeks(1),
+                        tom = LocalDate.now(),
+                        sykmeldingstype = SykmeldingstypeDTO.BEHANDLINGSDAGER,
+                    ),
+                ),
+            behandlingsdager = emptyList(),
+            egenmeldinger = emptyList(),
+            papirsykmeldinger = emptyList(),
+            andreInntektskilder = emptyList(),
+            fnr = fnr,
+        )
 
     @Test
     fun `behandlingsdagsøknad sendt ingen ekstra felter`() {
@@ -354,26 +369,29 @@ class SykepengesoknadMottakTest : Testoppsett() {
 
     @Test
     fun `behandlingsdagsøknad sendt med alle relevante felter fyllt ut`() {
-        val soknadMedFelter = behandlingsdagSøknad.copy(
-            id = UUID.randomUUID().toString(),
-            behandlingsdager = listOf(
-                LocalDate.of(2019, 3, 9),
-                LocalDate.of(2019, 3, 4)
-            ),
-            egenmeldinger = listOf(
-                PeriodeDTO(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(1)
-                )
-            ),
-            papirsykmeldinger = listOf(
-                PeriodeDTO(
-                    fom = LocalDate.now().minusWeeks(1).plusDays(2),
-                    tom = LocalDate.now().minusWeeks(1).plusDays(3)
-                )
+        val soknadMedFelter =
+            behandlingsdagSøknad.copy(
+                id = UUID.randomUUID().toString(),
+                behandlingsdager =
+                    listOf(
+                        LocalDate.of(2019, 3, 9),
+                        LocalDate.of(2019, 3, 4),
+                    ),
+                egenmeldinger =
+                    listOf(
+                        PeriodeDTO(
+                            fom = LocalDate.now().minusWeeks(1),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(1),
+                        ),
+                    ),
+                papirsykmeldinger =
+                    listOf(
+                        PeriodeDTO(
+                            fom = LocalDate.now().minusWeeks(1).plusDays(2),
+                            tom = LocalDate.now().minusWeeks(1).plusDays(3),
+                        ),
+                    ),
             )
-
-        )
         syketilfellebitRepository.findByFnr(fnr).shouldBeEmpty()
 
         produserPåSøknadTopic(soknadMedFelter)

@@ -12,44 +12,45 @@ fun skapArbeidsgiverSykmelding(
     tom: LocalDate = LocalDate.now(),
     sykmeldingId: String = UUID.randomUUID().toString(),
     harRedusertArbeidsgiverperiode: Boolean = false,
-    type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG
-
+    type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
 ): ArbeidsgiverSykmelding {
     return ArbeidsgiverSykmelding(
         id = sykmeldingId,
         mottattTidspunkt = OffsetDateTime.now(),
         arbeidsgiver = ArbeidsgiverAGDTO(null, null),
-        sykmeldingsperioder = listOf(
-            SykmeldingsperiodeAGDTO(
-                fom = fom,
-                tom = tom,
-                reisetilskudd = false,
-                type = type,
-                aktivitetIkkeMulig = null,
-                behandlingsdager = null,
-                gradert = null,
-                innspillTilArbeidsgiver = null
-
-            )
-        ),
+        sykmeldingsperioder =
+            listOf(
+                SykmeldingsperiodeAGDTO(
+                    fom = fom,
+                    tom = tom,
+                    reisetilskudd = false,
+                    type = type,
+                    aktivitetIkkeMulig = null,
+                    behandlingsdager = null,
+                    gradert = null,
+                    innspillTilArbeidsgiver = null,
+                ),
+            ),
         behandletTidspunkt = OffsetDateTime.now(),
         syketilfelleStartDato = null,
         egenmeldt = false,
         harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
-        behandler = BehandlerAGDTO(
-            fornavn = "Lege",
-            mellomnavn = null,
-            etternavn = "Legesen",
-            hpr = null,
-            adresse = AdresseDTO(
-                gate = null,
-                postnummer = null,
-                kommune = null,
-                postboks = null,
-                land = null
+        behandler =
+            BehandlerAGDTO(
+                fornavn = "Lege",
+                mellomnavn = null,
+                etternavn = "Legesen",
+                hpr = null,
+                adresse =
+                    AdresseDTO(
+                        gate = null,
+                        postnummer = null,
+                        kommune = null,
+                        postboks = null,
+                        land = null,
+                    ),
+                tlf = null,
             ),
-            tlf = null
-        ),
         kontaktMedPasient = KontaktMedPasientAGDTO(null),
         meldingTilArbeidsgiver = null,
         tiltakArbeidsplassen = null,
@@ -57,6 +58,6 @@ fun skapArbeidsgiverSykmelding(
         papirsykmelding = false,
         merknader = null,
         utenlandskSykmelding = null,
-        signaturDato = null
+        signaturDato = null,
     )
 }

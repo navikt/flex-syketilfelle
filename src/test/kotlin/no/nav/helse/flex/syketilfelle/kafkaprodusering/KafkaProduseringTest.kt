@@ -22,7 +22,6 @@ import java.time.OffsetDateTime
 import java.util.*
 
 class KafkaProduseringTest : Testoppsett() {
-
     @Autowired
     private lateinit var kafkaProduseringJob: KafkaProduseringJob
 
@@ -52,8 +51,8 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den eldste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = false
-            ).tilSyketilfellebitDbRecord()
+                publisert = false,
+            ).tilSyketilfellebitDbRecord(),
         )
         syketilfellebitRepository.save(
             Syketilfellebit(
@@ -65,8 +64,8 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den eldste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = true
-            ).tilSyketilfellebitDbRecord()
+                publisert = true,
+            ).tilSyketilfellebitDbRecord(),
         )
         syketilfellebitRepository.save(
             Syketilfellebit(
@@ -78,8 +77,8 @@ class KafkaProduseringTest : Testoppsett() {
                 ressursId = "den nyeste",
                 fom = LocalDate.now().minusWeeks(1),
                 tom = LocalDate.now(),
-                publisert = false
-            ).tilSyketilfellebitDbRecord()
+                publisert = false,
+            ).tilSyketilfellebitDbRecord(),
         )
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(2)
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(1)
@@ -112,8 +111,8 @@ class KafkaProduseringTest : Testoppsett() {
                     ressursId = UUID.randomUUID().toString(),
                     fom = LocalDate.now().minusWeeks(1),
                     tom = LocalDate.now(),
-                    publisert = false
-                ).tilSyketilfellebitDbRecord()
+                    publisert = false,
+                ).tilSyketilfellebitDbRecord(),
             )
         }
 
@@ -130,7 +129,6 @@ class KafkaProduseringTest : Testoppsett() {
     }
 }
 
-fun ConsumerRecord<String, String?>.deserialisert(): Pair<String, KafkaSyketilfellebit?> =
-    Pair(key(), value()?.tilKafkaSyketilfellebit())
+fun ConsumerRecord<String, String?>.deserialisert(): Pair<String, KafkaSyketilfellebit?> = Pair(key(), value()?.tilKafkaSyketilfellebit())
 
 fun String.tilKafkaSyketilfellebit(): KafkaSyketilfellebit = objectMapper.readValue(this)

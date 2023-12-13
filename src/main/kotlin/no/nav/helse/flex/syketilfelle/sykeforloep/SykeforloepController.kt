@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.*
 class SykeforloepController(
     private val clientIdValidation: ClientIdValidation,
     private val sykeforloepUtregner: SykeforloepUtregner,
-    override val pdlClient: PdlClient
+    override val pdlClient: PdlClient,
 ) : MedPdlClient {
-
     val log = logger()
 
     @GetMapping("/api/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -25,35 +24,35 @@ class SykeforloepController(
     fun hentSykeforloep(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false
+        @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false,
     ): List<Sykeforloep> {
         clientIdValidation.validateClientId(
             listOf(
                 NamespaceAndApp(
                     namespace = "flex",
-                    app = "sykepengesoknad-backend"
+                    app = "sykepengesoknad-backend",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
-                    app = "sparenaproxy"
+                    app = "sparenaproxy",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
-                    app = "syfosmregler"
+                    app = "syfosmregler",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
-                    app = "syfosmpapirregler"
+                    app = "syfosmpapirregler",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
-                    app = "dinesykmeldte-kafka"
+                    app = "dinesykmeldte-kafka",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
-                    app = "syfosminfotrygd"
-                )
-            )
+                    app = "syfosminfotrygd",
+                ),
+            ),
         )
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)

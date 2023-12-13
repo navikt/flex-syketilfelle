@@ -9,7 +9,7 @@ import java.time.OffsetDateTime
 class TombsstoneProduseringJob(
     val syketilfellebitRepository: SyketilfellebitRepository,
     val syketilfellebitKafkaProducer: SyketilfellebitKafkaProducer,
-    registry: MeterRegistry
+    registry: MeterRegistry,
 ) {
     val publisertSyketilfellebit = registry.counter("publisert_syketilfellebit_counter")
 

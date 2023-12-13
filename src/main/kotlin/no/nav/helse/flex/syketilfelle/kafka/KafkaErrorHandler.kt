@@ -14,21 +14,21 @@ class KafkaErrorHandler : DefaultErrorHandler(
     ExponentialBackOff(1000L, 1.5).apply {
         // 8 minutter, som er mindre enn max.poll.interval.ms på 10 minutter.
         maxInterval = 60_000L * 8
-    }
+    },
 ) {
-
     val log = logger()
 
     override fun handleRemaining(
         thrownException: Exception,
         records: MutableList<ConsumerRecord<*, *>>,
         consumer: Consumer<*, *>,
-        container: MessageListenerContainer
+        container: MessageListenerContainer,
     ) {
         records.forEach { record ->
             log.error(
-                "Feil i prossessering av record med offset: ${record.offset()}, partition: ${record.partition()} på topic ${record.topic()}",
-                thrownException
+                "Feil i prossessering av record med offset: ${record.offset()}, partition: ${record.partition()} på" +
+                    "topic ${record.topic()}",
+                thrownException,
             )
         }
         if (records.isEmpty()) {
@@ -42,12 +42,13 @@ class KafkaErrorHandler : DefaultErrorHandler(
         records: ConsumerRecords<*, *>,
         consumer: Consumer<*, *>,
         container: MessageListenerContainer,
-        invokeListener: Runnable
+        invokeListener: Runnable,
     ) {
         records.forEach { record ->
             log.error(
-                "Feil i prossessering av record med offset: ${record.offset()}, partition: ${record.partition()} på topic ${record.topic()}",
-                thrownException
+                "Feil i prossessering av record med offset: ${record.offset()}, partition: ${record.partition()} på" +
+                    "topic ${record.topic()}",
+                thrownException,
             )
         }
         if (records.isEmpty()) {

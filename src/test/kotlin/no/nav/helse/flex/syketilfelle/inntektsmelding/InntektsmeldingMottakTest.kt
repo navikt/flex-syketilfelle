@@ -10,7 +10,6 @@ import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.inntektsmeldingkontrakt.Periode
 import no.nav.inntektsmeldingkontrakt.Refusjon
 import no.nav.inntektsmeldingkontrakt.Status
-import no.nav.syfo.model.sykmeldingstatus.*
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
 import org.awaitility.Awaitility.await
@@ -19,43 +18,44 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class InntektsmeldingMottakTest : Testoppsett() {
-
     private final val fnr = "12345432123"
 
-    private final val inntektsmelding = Inntektsmelding(
-        inntektsmeldingId = UUID.randomUUID().toString(),
-        arbeidstakerFnr = fnr,
-        arbeidstakerAktorId = "",
-        virksomhetsnummer = "org123",
-        arbeidsgiverFnr = null,
-        arbeidsgiverAktorId = null,
-        begrunnelseForReduksjonEllerIkkeUtbetalt = null,
-        arbeidsgivertype = Arbeidsgivertype.VIRKSOMHET,
-        arbeidsforholdId = null,
-        beregnetInntekt = null,
-        refusjon = Refusjon(beloepPrMnd = null, opphoersdato = null),
-        endringIRefusjoner = listOf(),
-        opphoerAvNaturalytelser = listOf(),
-        gjenopptakelseNaturalytelser = listOf(),
-        arbeidsgiverperioder = listOf(
-            Periode(
-                fom = LocalDate.now().minusDays(10),
-                tom = LocalDate.now().minusDays(5)
-            )
-        ),
-        status = Status.GYLDIG,
-        arkivreferanse = "",
-        ferieperioder = listOf(),
-        foersteFravaersdag = null,
-        mottattDato = LocalDateTime.now(),
-        naerRelasjon = null,
-        innsenderFulltNavn = "Dagfinn",
-        innsenderTelefon = "123"
-    )
+    private final val inntektsmelding =
+        Inntektsmelding(
+            inntektsmeldingId = UUID.randomUUID().toString(),
+            arbeidstakerFnr = fnr,
+            arbeidstakerAktorId = "",
+            virksomhetsnummer = "org123",
+            arbeidsgiverFnr = null,
+            arbeidsgiverAktorId = null,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null,
+            arbeidsgivertype = Arbeidsgivertype.VIRKSOMHET,
+            arbeidsforholdId = null,
+            beregnetInntekt = null,
+            refusjon = Refusjon(beloepPrMnd = null, opphoersdato = null),
+            endringIRefusjoner = listOf(),
+            opphoerAvNaturalytelser = listOf(),
+            gjenopptakelseNaturalytelser = listOf(),
+            arbeidsgiverperioder =
+                listOf(
+                    Periode(
+                        fom = LocalDate.now().minusDays(10),
+                        tom = LocalDate.now().minusDays(5),
+                    ),
+                ),
+            status = Status.GYLDIG,
+            arkivreferanse = "",
+            ferieperioder = listOf(),
+            foersteFravaersdag = null,
+            mottattDato = LocalDateTime.now(),
+            naerRelasjon = null,
+            innsenderFulltNavn = "Dagfinn",
+            innsenderTelefon = "123",
+        )
 
     @BeforeEach
     @AfterEach

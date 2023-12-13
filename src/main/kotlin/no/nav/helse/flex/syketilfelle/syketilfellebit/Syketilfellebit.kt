@@ -22,56 +22,59 @@ data class SyketilfellebitDbRecord(
     val korrigererSendtSoknad: String?,
     val publisert: Boolean,
     val slettet: OffsetDateTime? = null,
-    val tombstonePublistert: OffsetDateTime? = null
+    val tombstonePublistert: OffsetDateTime? = null,
 )
 
-fun SyketilfellebitDbRecord.tilSyketilfellebit(): Syketilfellebit = Syketilfellebit(
-    id = null,
-    syketilfellebitId = syketilfellebitId,
-    fnr = fnr,
-    orgnummer = orgnummer,
-    opprettet = opprettet,
-    inntruffet = inntruffet,
-    tags = tags.tagsFromString(),
-    ressursId = ressursId,
-    fom = fom,
-    tom = tom,
-    korrigererSendtSoknad = korrigererSendtSoknad,
-    publisert = publisert,
-    slettet = slettet
+fun SyketilfellebitDbRecord.tilSyketilfellebit(): Syketilfellebit =
+    Syketilfellebit(
+        id = null,
+        syketilfellebitId = syketilfellebitId,
+        fnr = fnr,
+        orgnummer = orgnummer,
+        opprettet = opprettet,
+        inntruffet = inntruffet,
+        tags = tags.tagsFromString(),
+        ressursId = ressursId,
+        fom = fom,
+        tom = tom,
+        korrigererSendtSoknad = korrigererSendtSoknad,
+        publisert = publisert,
+        slettet = slettet,
+    )
 
-)
+fun SyketilfellebitDbRecord.tilKafkasyketilfellebit(): KafkaSyketilfellebit =
+    KafkaSyketilfellebit(
+        id = syketilfellebitId,
+        fnr = fnr,
+        orgnummer = orgnummer,
+        opprettet = opprettet,
+        inntruffet = inntruffet,
+        tags = tags.tagsFromString().map { it.name }.toSet(),
+        ressursId = ressursId,
+        fom = fom,
+        tom = tom,
+        korrigererSendtSoknad = korrigererSendtSoknad,
+    )
 
-fun SyketilfellebitDbRecord.tilKafkasyketilfellebit(): KafkaSyketilfellebit = KafkaSyketilfellebit(
-    id = syketilfellebitId,
-    fnr = fnr,
-    orgnummer = orgnummer,
-    opprettet = opprettet,
-    inntruffet = inntruffet,
-    tags = tags.tagsFromString().map { it.name }.toSet(),
-    ressursId = ressursId,
-    fom = fom,
-    tom = tom,
-    korrigererSendtSoknad = korrigererSendtSoknad
-)
-
-fun Syketilfellebit.tilSyketilfellebitDbRecord(): SyketilfellebitDbRecord = SyketilfellebitDbRecord(
-    id = null,
-    syketilfellebitId = syketilfellebitId,
-    fnr = fnr,
-    orgnummer = orgnummer,
-    opprettet = opprettet,
-    inntruffet = inntruffet,
-    tags = tags.somString(),
-    ressursId = ressursId,
-    fom = fom,
-    tom = tom,
-    korrigererSendtSoknad = korrigererSendtSoknad,
-    publisert = publisert,
-    slettet = slettet
-)
+fun Syketilfellebit.tilSyketilfellebitDbRecord(): SyketilfellebitDbRecord =
+    SyketilfellebitDbRecord(
+        id = null,
+        syketilfellebitId = syketilfellebitId,
+        fnr = fnr,
+        orgnummer = orgnummer,
+        opprettet = opprettet,
+        inntruffet = inntruffet,
+        tags = tags.somString(),
+        ressursId = ressursId,
+        fom = fom,
+        tom = tom,
+        korrigererSendtSoknad = korrigererSendtSoknad,
+        publisert = publisert,
+        slettet = slettet,
+    )
 
 fun Set<String>.asString() = this.joinToString(",")
+
 fun Set<Tag>.somString() = this.map { it.name }.toSet().asString()
 
 fun String.tagsFromString() = split(',').map(String::trim).map(Tag::valueOf).toSet()
@@ -89,7 +92,7 @@ data class Syketilfellebit(
     val tom: LocalDate,
     val korrigererSendtSoknad: String? = null,
     val publisert: Boolean = false,
-    val slettet: OffsetDateTime? = null
+    val slettet: OffsetDateTime? = null,
 )
 
 enum class Tag {
@@ -124,7 +127,7 @@ enum class Tag {
     REISETILSKUDD,
     AVVENTENDE,
     INNTEKTSMELDING,
-    ARBEIDSGIVERPERIODE
+    ARBEIDSGIVERPERIODE,
 }
 
 fun List<Syketilfellebit>.utenKorrigerteSoknader(): List<Syketilfellebit> {

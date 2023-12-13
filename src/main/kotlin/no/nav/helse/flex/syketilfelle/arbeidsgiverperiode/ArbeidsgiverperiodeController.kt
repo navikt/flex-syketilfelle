@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.*
 class ArbeidsgiverperiodeController(
     private val clientIdValidation: ClientIdValidation,
     private val oppfolgingstilfelleService: ArbeidsgiverperiodeUtregner,
-    override val pdlClient: PdlClient
+    override val pdlClient: PdlClient,
 ) : MedPdlClient {
     @PostMapping(
         value = ["/api/v2/arbeidsgiverperiode"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ResponseBody
     @ProtectedWithClaims(issuer = "azureator")
@@ -30,36 +30,37 @@ class ArbeidsgiverperiodeController(
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @RequestHeader(required = false) forelopig: Boolean = false,
         @RequestParam(defaultValue = "") andreKorrigerteRessurser: List<String>,
-        @RequestBody requestBody: SoknadOgSykmelding
+        @RequestBody requestBody: SoknadOgSykmelding,
     ): ResponseEntity<Arbeidsgiverperiode> {
         clientIdValidation.validateClientId(
             NamespaceAndApp(
                 namespace = "flex",
-                app = "sykepengesoknad-backend"
-            )
+                app = "sykepengesoknad-backend",
+            ),
         )
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
 
         val soknad = requestBody.soknad.copy(status = SoknadsstatusDTO.SENDT)
 
-        val arbeidsgiverperiode = oppfolgingstilfelleService.beregnArbeidsgiverperiode(
-            fnrs = alleFnrs,
-            andreKorrigerteRessurser = andreKorrigerteRessurser,
-            soknad = soknad,
-            forelopig = forelopig,
-            sykmelding = requestBody.sykmelding
-        )
+        val arbeidsgiverperiode =
+            oppfolgingstilfelleService.beregnArbeidsgiverperiode(
+                fnrs = alleFnrs,
+                andreKorrigerteRessurser = andreKorrigerteRessurser,
+                soknad = soknad,
+                forelopig = forelopig,
+                sykmelding = requestBody.sykmelding,
+            )
 
         return (
             arbeidsgiverperiode
                 ?.let { ResponseEntity.ok(it) }
                 ?: ResponseEntity.noContent().build()
-            )
+        )
     }
 }
 
 data class SoknadOgSykmelding(
     val soknad: SykepengesoknadDTO,
-    val sykmelding: SykmeldingKafkaMessage? = null
+    val sykmelding: SykmeldingKafkaMessage? = null,
 )

@@ -22,26 +22,27 @@ fun Testoppsett.kallArbeidsgiverperiodeApi(
     sykmelding: SykmeldingKafkaMessage? = null,
     expectNoContent: Boolean = false,
     forelopig: Boolean = true,
-    fnr: String
+    fnr: String,
 ): Arbeidsgiverperiode? {
     val requestBody = SoknadOgSykmelding(soknad, sykmelding)
-    val result = mockMvc.perform(
-        MockMvcRequestBuilders.post("/api/v2/arbeidsgiverperiode")
-            .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-            .header("fnr", fnr)
-            .header("forelopig", forelopig.toString())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(requestBody))
-    )
-        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-        .andExpect(
-            if (expectNoContent) {
-                MockMvcResultMatchers.status().isNoContent
-            } else {
-                MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-            }
+    val result =
+        mockMvc.perform(
+            MockMvcRequestBuilders.post("/api/v2/arbeidsgiverperiode")
+                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                .header("fnr", fnr)
+                .header("forelopig", forelopig.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestBody)),
         )
-        .andReturn()
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(
+                if (expectNoContent) {
+                    MockMvcResultMatchers.status().isNoContent
+                } else {
+                    MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+                },
+            )
+            .andReturn()
     return result.response.contentAsString.takeIf { it.isNotBlank() }
         ?.let { objectMapper.readValue(it) }
 }
@@ -49,19 +50,23 @@ fun Testoppsett.kallArbeidsgiverperiodeApi(
 fun Testoppsett.opprettSendtSykmelding(
     sykmelding: ArbeidsgiverSykmelding,
     fnr: String,
-    orgnummer: String? = null
+    orgnummer: String? = null,
 ): String {
     val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding, fnr, orgnummer)
     producerPåSendtBekreftetTopic(kafkaMessage)
     return sykmelding.id
 }
 
-fun Testoppsett.opprettMottattSykmelding(sykmelding: ArbeidsgiverSykmelding, fnr: String): String {
+fun Testoppsett.opprettMottattSykmelding(
+    sykmelding: ArbeidsgiverSykmelding,
+    fnr: String,
+): String {
     val kafkaMessage = opprettSykmeldingKafkaMessage(sykmelding = sykmelding, fnr = fnr)
-    val apenSykmeldingKafkaMessage = MottattSykmeldingKafkaMessage(
-        sykmelding = kafkaMessage.sykmelding,
-        kafkaMetadata = kafkaMessage.kafkaMetadata
-    )
+    val apenSykmeldingKafkaMessage =
+        MottattSykmeldingKafkaMessage(
+            sykmelding = kafkaMessage.sykmelding,
+            kafkaMetadata = kafkaMessage.kafkaMetadata,
+        )
     producerPåMottattTopic(apenSykmeldingKafkaMessage)
     return sykmelding.id
 }
@@ -69,31 +74,34 @@ fun Testoppsett.opprettMottattSykmelding(sykmelding: ArbeidsgiverSykmelding, fnr
 private fun opprettSykmeldingKafkaMessage(
     sykmelding: ArbeidsgiverSykmelding,
     fnr: String,
-    orgnummer: String? = null
+    orgnummer: String? = null,
 ): SykmeldingKafkaMessage {
-    val kafkaMetadata = KafkaMetadataDTO(
-        sykmeldingId = sykmelding.id,
-        fnr = fnr,
-        timestamp = OffsetDateTime.now(),
-        source = "Denne testen"
-    )
+    val kafkaMetadata =
+        KafkaMetadataDTO(
+            sykmeldingId = sykmelding.id,
+            fnr = fnr,
+            timestamp = OffsetDateTime.now(),
+            source = "Denne testen",
+        )
 
-    val arbeidsgiver = if (orgnummer != null) {
-        ArbeidsgiverStatusDTO(orgnummer = orgnummer, orgNavn = "$orgnummer sitt navn")
-    } else {
-        null
-    }
+    val arbeidsgiver =
+        if (orgnummer != null) {
+            ArbeidsgiverStatusDTO(orgnummer = orgnummer, orgNavn = "$orgnummer sitt navn")
+        } else {
+            null
+        }
 
-    val event = SykmeldingStatusKafkaEventDTO(
-        sykmeldingId = sykmelding.id,
-        timestamp = OffsetDateTime.now(),
-        statusEvent = STATUS_SENDT,
-        arbeidsgiver = arbeidsgiver,
-        sporsmals = emptyList()
-    )
+    val event =
+        SykmeldingStatusKafkaEventDTO(
+            sykmeldingId = sykmelding.id,
+            timestamp = OffsetDateTime.now(),
+            statusEvent = STATUS_SENDT,
+            arbeidsgiver = arbeidsgiver,
+            sporsmals = emptyList(),
+        )
     return SykmeldingKafkaMessage(
         sykmelding = sykmelding,
         kafkaMetadata = kafkaMetadata,
-        event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC))
+        event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC)),
     )
 }

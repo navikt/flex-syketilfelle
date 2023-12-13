@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class KafkaProduseringJob(
     val syketilfellebitRepository: SyketilfellebitRepository,
     val syketilfellebitKafkaProducer: SyketilfellebitKafkaProducer,
-    registry: MeterRegistry
+    registry: MeterRegistry,
 ) {
     val publisertSyketilfellebit = registry.counter("publisert_syketilfellebit_counter")
 

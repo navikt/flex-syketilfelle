@@ -12,7 +12,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 class TidslinjeTest {
-
     val prioriteringsliste = listOf(of(SYKEPENGESOKNAD) and KORRIGERT_ARBEIDSTID and (of(GRADERT_AKTIVITET) or INGEN_AKTIVITET))
 
     @Test
@@ -23,30 +22,31 @@ class TidslinjeTest {
 
     @Test
     internal fun beregnOppfolgingstilfelleEttTilfelle() {
-        val biter = listOf(
-            Syketilfellebit(
-                id = "id",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
-                ressursId = "ressursId",
-                fom = LocalDate.now().minusDays(16),
-                tom = LocalDate.now().minusDays(16),
-                fnr = "fnr"
-            ),
-            Syketilfellebit(
-                id = "id",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET),
-                ressursId = "ressursId",
-                fom = LocalDate.now(),
-                tom = LocalDate.now(),
-                fnr = "fnr"
+        val biter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now().minusDays(16),
+                    tom = LocalDate.now().minusDays(16),
+                    fnr = "fnr",
+                ),
+                Syketilfellebit(
+                    id = "id",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now(),
+                    tom = LocalDate.now(),
+                    fnr = "fnr",
+                ),
             )
-        )
 
         val tidslinje = Tidslinje(Syketilfellebiter(biter, prioriteringsliste))
 
@@ -55,30 +55,31 @@ class TidslinjeTest {
 
     @Test
     internal fun beregnOppfolgingstilfelleToTilfeller() {
-        val biter = listOf(
-            Syketilfellebit(
-                id = "id",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
-                ressursId = "ressursId",
-                fom = LocalDate.now().minusDays(17),
-                tom = LocalDate.now().minusDays(17),
-                fnr = "fnr"
-            ),
-            Syketilfellebit(
-                id = "id",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET),
-                ressursId = "ressursId",
-                fom = LocalDate.now(),
-                tom = LocalDate.now(),
-                fnr = "fnr"
+        val biter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now().minusDays(17),
+                    tom = LocalDate.now().minusDays(17),
+                    fnr = "fnr",
+                ),
+                Syketilfellebit(
+                    id = "id",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now(),
+                    tom = LocalDate.now(),
+                    fnr = "fnr",
+                ),
             )
-        )
 
         val tidslinje = Tidslinje(Syketilfellebiter(biter, prioriteringsliste))
 

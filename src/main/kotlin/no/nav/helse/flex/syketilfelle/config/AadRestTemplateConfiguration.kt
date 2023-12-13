@@ -26,16 +26,16 @@ const val PDL_REST_TEMPLATE_READ_TIMEOUT = 1L
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
 class AadRestTemplateConfiguration {
-
     @Bean
     fun httpClient(): CloseableHttpClient {
         val connectionManager = PoolingHttpClientConnectionManager()
         connectionManager.defaultMaxPerRoute = 50
         connectionManager.maxTotal = 50
         // Erstatter deprecated HttpComponentsClientHttpRequestFactory.setReadTimeout()
-        connectionManager.defaultSocketConfig = SocketConfig.custom()
-            .setSoTimeout(Timeout.of(PDL_REST_TEMPLATE_READ_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS))
-            .build()
+        connectionManager.defaultSocketConfig =
+            SocketConfig.custom()
+                .setSoTimeout(Timeout.of(PDL_REST_TEMPLATE_READ_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS))
+                .build()
 
         return HttpClientBuilder.create()
             .setConnectionManager(connectionManager)
@@ -47,11 +47,12 @@ class AadRestTemplateConfiguration {
         restTemplateBuilder: RestTemplateBuilder,
         httpClient: CloseableHttpClient,
         clientConfigurationProperties: ClientConfigurationProperties,
-        oAuth2AccessTokenService: OAuth2AccessTokenService
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
     ): RestTemplate {
         val registrationName = "pdl-api-client-credentials"
-        val clientProperties = clientConfigurationProperties.registration[registrationName]
-            ?: throw RuntimeException("Fant ikke config for $registrationName.")
+        val clientProperties =
+            clientConfigurationProperties.registration[registrationName]
+                ?: throw RuntimeException("Fant ikke config for $registrationName.")
 
         return restTemplateBuilder
             // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
@@ -63,7 +64,7 @@ class AadRestTemplateConfiguration {
 
     private fun bearerTokenInterceptor(
         clientProperties: ClientProperties,
-        oAuth2AccessTokenService: OAuth2AccessTokenService
+        oAuth2AccessTokenService: OAuth2AccessTokenService,
     ): ClientHttpRequestInterceptor {
         return ClientHttpRequestInterceptor { request: HttpRequest, body: ByteArray, execution: ClientHttpRequestExecution ->
             val response = oAuth2AccessTokenService.getAccessToken(clientProperties)

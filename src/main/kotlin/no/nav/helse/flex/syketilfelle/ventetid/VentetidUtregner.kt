@@ -20,7 +20,6 @@ import java.util.ArrayList
 
 @Component
 class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRepository) {
-
     val log = logger()
     final val koronaPeriodeMedFireDager =
         LocalDate.of(2020, Month.MARCH, 16).rangeTo(LocalDate.of(2021, Month.SEPTEMBER, 30))
@@ -30,25 +29,27 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
     fun beregnOmSykmeldingErUtenforVentetid(
         sykmeldingId: String,
         fnrs: List<String>,
-        erUtenforVentetidRequest: ErUtenforVentetidRequest
+        erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
-        val biter = syketilfellebitRepository
-            .findByFnrIn(fnrs)
-            .map { it.tilSyketilfellebit() }
-            .utenKorrigerteSoknader()
-        val syketilfellebiter = biter
-            .toMutableList()
-            .also {
-                with(erUtenforVentetidRequest) {
-                    sykmeldingKafkaMessage?.let { sm ->
-                        it.addAll(sm.mapTilBiter())
-                    }
-                    tilleggsopplysninger?.let { to ->
-                        it.addAll(to.mapTilBiter(sykmeldingId, fnrs.first()))
+        val biter =
+            syketilfellebitRepository
+                .findByFnrIn(fnrs)
+                .map { it.tilSyketilfellebit() }
+                .utenKorrigerteSoknader()
+        val syketilfellebiter =
+            biter
+                .toMutableList()
+                .also {
+                    with(erUtenforVentetidRequest) {
+                        sykmeldingKafkaMessage?.let { sm ->
+                            it.addAll(sm.mapTilBiter())
+                        }
+                        tilleggsopplysninger?.let { to ->
+                            it.addAll(to.mapTilBiter(sykmeldingId, fnrs.first()))
+                        }
                     }
                 }
-            }
-            .toList()
+                .toList()
 
         val aktuellSykmeldingBiter = syketilfellebiter.filter { it.ressursId == sykmeldingId }
 
@@ -76,7 +77,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
                         Tag.GRADERT_AKTIVITET,
                         Tag.INGEN_AKTIVITET,
                         Tag.BEHANDLINGSDAGER,
-                        Tag.ANNET_FRAVAR
+                        Tag.ANNET_FRAVAR,
                     ).contains(t)
                 }
             }
@@ -99,7 +100,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
             fom = this.fom,
             redusertVentePeriode = this.tags.contains(Tag.REDUSERT_ARBEIDSGIVERPERIODE),
             behandlingsdager = this.tags.contains(Tag.BEHANDLINGSDAGER),
-            ressursId = this.ressursId
+            ressursId = this.ressursId,
         )
     }
 
@@ -108,7 +109,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         val tom: LocalDate,
         val redusertVentePeriode: Boolean,
         val behandlingsdager: Boolean,
-        val ressursId: String
+        val ressursId: String,
     )
 
     private fun Periode.splittPeriodeMedBehandlingsdagerIPerioderForHverMandag(): List<Periode> {
@@ -149,7 +150,10 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         return mergedePerioder.sortedByDescending { it.tom }
     }
 
-    private fun skalMerges(tidligstePeriode: Periode, senestePeriode: Periode): Boolean {
+    private fun skalMerges(
+        tidligstePeriode: Periode,
+        senestePeriode: Periode,
+    ): Boolean {
         val dagerMellomPeriodene = DAYS.between(tidligstePeriode.tom, senestePeriode.fom)
         if (dagerMellomPeriodene > 3) {
             return false
@@ -166,8 +170,9 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
     private fun List<Periode>.fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId: String): List<Periode> {
         return this.map { periode ->
             val sisteDagIPerioden = periode.tom.getDayOfWeek()
-            if (periode.ressursId == sykmeldingId && (sisteDagIPerioden == SATURDAY || sisteDagIPerioden == SUNDAY) && !periode.tom.with(
-                    previous(FRIDAY)
+            if (periode.ressursId == sykmeldingId && (sisteDagIPerioden == SATURDAY || sisteDagIPerioden == SUNDAY) &&
+                !periode.tom.with(
+                    previous(FRIDAY),
                 ).isBefore(periode.fom)
             ) {
                 periode.copy(tom = periode.tom.with(previous(FRIDAY)))
@@ -187,14 +192,14 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
             if (periode.redusertVentePeriode) {
                 if (periode in koronaPeriodeMedSeksDager && DAYS.between(
                         periode.fom,
-                        periode.tom
+                        periode.tom,
                     ) >= 5
                 ) { // fra og med 6 dag
                     return true
                 }
                 if (periode in koronaPeriodeMedFireDager && DAYS.between(
                         periode.fom,
-                        periode.tom
+                        periode.tom,
                     ) >= 3
                 ) { // fra og med 4 dag
                     return true
@@ -213,7 +218,10 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
     }
 }
 
-private fun Tilleggsopplysninger.mapTilBiter(ressursId: String, fnr: String): List<Syketilfellebit> {
+private fun Tilleggsopplysninger.mapTilBiter(
+    ressursId: String,
+    fnr: String,
+): List<Syketilfellebit> {
     return this.egenmeldingsperioder?.map {
         Syketilfellebit(
             fom = it.fom,
@@ -223,7 +231,7 @@ private fun Tilleggsopplysninger.mapTilBiter(ressursId: String, fnr: String): Li
             tags = setOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.ANNET_FRAVAR),
             ressursId = ressursId,
             fnr = fnr,
-            orgnummer = null
+            orgnummer = null,
         )
     } ?: emptyList()
 }

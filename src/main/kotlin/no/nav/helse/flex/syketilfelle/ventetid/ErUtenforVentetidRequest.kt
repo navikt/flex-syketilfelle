@@ -5,11 +5,11 @@ import java.time.LocalDate
 
 data class ErUtenforVentetidRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
-    val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null
+    val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
 )
 
 data class Tilleggsopplysninger(
-    val egenmeldingsperioder: List<Datospenn>?
+    val egenmeldingsperioder: List<Datospenn>?,
 )
 
 data class Datospenn(val fom: LocalDate, val tom: LocalDate)

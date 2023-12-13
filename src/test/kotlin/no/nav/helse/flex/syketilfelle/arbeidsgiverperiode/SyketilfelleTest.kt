@@ -8,7 +8,6 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 
 class SyketilfelleTest {
-
     @Test
     fun genererOppfolgingstilfelleFiltrerBortKorrigerteBiter() {
         val biter =
@@ -22,7 +21,7 @@ class SyketilfelleTest {
                     tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
                     ressursId = "korrigertRessursId",
                     fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now()
+                    tom = LocalDate.now(),
                 ),
                 Syketilfellebit(
                     id = "id",
@@ -33,7 +32,7 @@ class SyketilfelleTest {
                     tags = setOf(SYKEPENGESOKNAD, KORRIGERT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
                     ressursId = "korrigertRessursId",
                     fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now()
+                    tom = LocalDate.now(),
                 ),
                 Syketilfellebit(
                     id = "id",
@@ -44,8 +43,8 @@ class SyketilfelleTest {
                     tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
                     ressursId = "ressursId",
                     fom = LocalDate.now(),
-                    tom = LocalDate.now()
-                )
+                    tom = LocalDate.now(),
+                ),
             )
 
         val oppfolgingstilfeller = genererOppfolgingstilfelle(biter)
@@ -56,39 +55,42 @@ class SyketilfelleTest {
 
     @Test
     fun genererOppfolgingstilfelleKorrigerOgFiltrerBortBiterSomTilleggsbiterKorrigerer() {
-        val biter = listOf(
-            Syketilfellebit(
-                id = "id",
-                fnr = "fnr",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
-                ressursId = "korrigertRessursId",
-                fom = LocalDate.now().minusWeeks(1),
-                tom = LocalDate.now()
+        val biter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    fnr = "fnr",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
+                    ressursId = "korrigertRessursId",
+                    fom = LocalDate.now().minusWeeks(1),
+                    tom = LocalDate.now(),
+                ),
             )
-        )
 
-        val tilleggsbiter = listOf(
-            Syketilfellebit(
-                id = "id",
-                fnr = "fnr",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
-                ressursId = "ressursId",
-                fom = LocalDate.now(),
-                tom = LocalDate.now()
+        val tilleggsbiter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    fnr = "fnr",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now(),
+                    tom = LocalDate.now(),
+                ),
             )
-        )
 
-        val oppfolgingstilfeller = genererOppfolgingstilfelle(
-            biter,
-            listOf("korrigertRessursId"),
-            tilleggsbiter
-        )
+        val oppfolgingstilfeller =
+            genererOppfolgingstilfelle(
+                biter,
+                listOf("korrigertRessursId"),
+                tilleggsbiter,
+            )
 
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje).hasSize(1)
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje?.get(0)?.dag).isEqualTo(LocalDate.now())
@@ -96,38 +98,41 @@ class SyketilfelleTest {
 
     @Test
     fun genererOppfolgingstilfelleUtdanningSkalIkkePavirkeArbeidsgiverperioden() {
-        val biter = listOf(
-            Syketilfellebit(
-                id = "id",
-                fnr = "fnr",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, SENDT),
-                ressursId = "korrigertRessursId",
-                fom = LocalDate.now().minusWeeks(1),
-                tom = LocalDate.now()
+        val biter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    fnr = "fnr",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, SENDT),
+                    ressursId = "korrigertRessursId",
+                    fom = LocalDate.now().minusWeeks(1),
+                    tom = LocalDate.now(),
+                ),
             )
-        )
 
-        val tilleggsbiter = listOf(
-            Syketilfellebit(
-                id = "id",
-                fnr = "fnr",
-                orgnummer = "orgnummer",
-                opprettet = OffsetDateTime.now(),
-                inntruffet = OffsetDateTime.now(),
-                tags = setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, FULLTID),
-                ressursId = "ressursId",
-                fom = LocalDate.now().minusYears(1),
-                tom = LocalDate.now()
+        val tilleggsbiter =
+            listOf(
+                Syketilfellebit(
+                    id = "id",
+                    fnr = "fnr",
+                    orgnummer = "orgnummer",
+                    opprettet = OffsetDateTime.now(),
+                    inntruffet = OffsetDateTime.now(),
+                    tags = setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, FULLTID),
+                    ressursId = "ressursId",
+                    fom = LocalDate.now().minusYears(1),
+                    tom = LocalDate.now(),
+                ),
             )
-        )
 
-        val oppfolgingstilfeller = genererOppfolgingstilfelle(
-            biter = biter,
-            tilleggsbiter = tilleggsbiter
-        )
+        val oppfolgingstilfeller =
+            genererOppfolgingstilfelle(
+                biter = biter,
+                tilleggsbiter = tilleggsbiter,
+            )
 
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje).hasSize(8)
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje?.get(0)?.dag).isEqualTo(LocalDate.now().minusWeeks(1))

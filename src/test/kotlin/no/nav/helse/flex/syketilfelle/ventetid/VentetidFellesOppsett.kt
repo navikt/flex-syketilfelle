@@ -14,7 +14,6 @@ import java.time.OffsetDateTime
 import java.util.*
 
 interface VentetidFellesOppsett {
-
     var sykmeldingLagring: SykmeldingLagring
     val fnr: String
 
@@ -26,24 +25,25 @@ interface VentetidFellesOppsett {
         fom: LocalDate = LocalDate.now(),
         tom: LocalDate = LocalDate.now(),
         harRedusertArbeidsgiverperiode: Boolean = false,
-        type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG
+        type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     ): MottattSykmeldingKafkaMessage {
         val sykmeldingId = UUID.randomUUID().toString()
         return MottattSykmeldingKafkaMessage(
-            sykmelding = skapArbeidsgiverSykmelding(
-                fom = fom,
-                tom = tom,
-                sykmeldingId = sykmeldingId,
-                harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
-                type = type
-
-            ),
-            kafkaMetadata = KafkaMetadataDTO(
-                sykmeldingId = sykmeldingId,
-                fnr = fnr,
-                timestamp = OffsetDateTime.now(),
-                source = "Denne testen"
-            )
+            sykmelding =
+                skapArbeidsgiverSykmelding(
+                    fom = fom,
+                    tom = tom,
+                    sykmeldingId = sykmeldingId,
+                    harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
+                    type = type,
+                ),
+            kafkaMetadata =
+                KafkaMetadataDTO(
+                    sykmeldingId = sykmeldingId,
+                    fnr = fnr,
+                    timestamp = OffsetDateTime.now(),
+                    source = "Denne testen",
+                ),
         )
     }
 
@@ -52,20 +52,21 @@ interface VentetidFellesOppsett {
         tom: LocalDate = LocalDate.now(),
         harRedusertArbeidsgiverperiode: Boolean = false,
         type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-        sporsmals: List<SporsmalOgSvarDTO>? = null
+        sporsmals: List<SporsmalOgSvarDTO>? = null,
     ): SykmeldingKafkaMessage {
         val apen = skapApenSykmeldingKafkaMessage(fom, tom, harRedusertArbeidsgiverperiode, type)
 
         return SykmeldingKafkaMessage(
             sykmelding = apen.sykmelding,
             kafkaMetadata = apen.kafkaMetadata,
-            event = SykmeldingStatusKafkaEventDTO(
-                sykmeldingId = apen.sykmelding.id,
-                timestamp = OffsetDateTime.now(),
-                statusEvent = STATUS_BEKREFTET,
-                arbeidsgiver = null,
-                sporsmals = sporsmals
-            )
+            event =
+                SykmeldingStatusKafkaEventDTO(
+                    sykmeldingId = apen.sykmelding.id,
+                    timestamp = OffsetDateTime.now(),
+                    statusEvent = STATUS_BEKREFTET,
+                    arbeidsgiver = null,
+                    sporsmals = sporsmals,
+                ),
         )
     }
 }

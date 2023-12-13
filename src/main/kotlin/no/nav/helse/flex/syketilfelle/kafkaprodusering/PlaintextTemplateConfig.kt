@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets
 
 @Configuration
 class PlaintextTemplateConfig {
-
     @Bean(name = ["plainTextUtf8RestTemplate"])
     fun plainTextUtf8RestTemplate(): RestTemplate {
         return RestTemplateBuilder()

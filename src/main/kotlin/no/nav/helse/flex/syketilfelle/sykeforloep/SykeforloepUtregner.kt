@@ -12,10 +12,12 @@ import java.util.ArrayList
 
 @Component
 class SykeforloepUtregner(
-    private val syketilfellebitRepository: SyketilfellebitRepository
+    private val syketilfellebitRepository: SyketilfellebitRepository,
 ) {
-
-    fun hentSykeforloep(fnrs: List<String>, inkluderPapirsykmelding: Boolean): List<Sykeforloep> {
+    fun hentSykeforloep(
+        fnrs: List<String>,
+        inkluderPapirsykmelding: Boolean,
+    ): List<Sykeforloep> {
         return syketilfellebitRepository
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }
@@ -79,15 +81,18 @@ fun Sykeforloep.sisteDagIForloep(): LocalDate {
 
 data class Sykeforloep(
     var oppfolgingsdato: LocalDate,
-    val sykmeldinger: ArrayList<SimpleSykmelding> = ArrayList()
+    val sykmeldinger: ArrayList<SimpleSykmelding> = ArrayList(),
 )
 
 data class SimpleSykmelding(
     val id: String,
     val fom: LocalDate,
-    val tom: LocalDate
+    val tom: LocalDate,
 )
 
-private fun antallDagerMellom(tidligst: LocalDate, eldst: LocalDate): Int {
+private fun antallDagerMellom(
+    tidligst: LocalDate,
+    eldst: LocalDate,
+): Int {
     return ChronoUnit.DAYS.between(tidligst, eldst).toInt() - 1
 }

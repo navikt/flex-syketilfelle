@@ -12,7 +12,6 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 
 object PdlMockDispatcher : Dispatcher() {
-
     override fun dispatch(request: RecordedRequest): MockResponse {
         val graphReq: GraphQLRequest = objectMapper.readValue(request.body.readUtf8())
         val ident = graphReq.variables["ident"] ?: return MockResponse().setStatus("400")
@@ -28,13 +27,15 @@ object PdlMockDispatcher : Dispatcher() {
     fun skapResponse(identer: List<String>): MockResponse {
         return MockResponse().setBody(
             GetPersonResponse(
-                data = HentIdenterResponseData(
-                    hentIdenter = HentIdenter(
-                        identer = identer.map { PdlIdent(gruppe = FOLKEREGISTERIDENT, ident = it) }
-                    )
-                ),
-                errors = null
-            ).serialisertTilString()
+                data =
+                    HentIdenterResponseData(
+                        hentIdenter =
+                            HentIdenter(
+                                identer = identer.map { PdlIdent(gruppe = FOLKEREGISTERIDENT, ident = it) },
+                            ),
+                    ),
+                errors = null,
+            ).serialisertTilString(),
         )
     }
 }

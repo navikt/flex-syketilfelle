@@ -11,42 +11,43 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.util.*
 
+private const val TEMA = "Tema"
+private const val TEMA_SYK = "SYK"
+private const val IDENT = "ident"
+
 @Component
 class PdlClient(
     @Value("\${PDL_BASE_URL}")
     private val pdlApiUrl: String,
-    private val pdlRestTemplate: RestTemplate
+    private val pdlRestTemplate: RestTemplate,
 ) {
-
-    private val TEMA = "Tema"
-    private val TEMA_SYK = "SYK"
-    private val IDENT = "ident"
-
-    private val HENT_PERSON_QUERY =
+    private val hentPersonQuery =
         """
-query(${"$"}ident: ID!){
-  hentIdenter(ident: ${"$"}ident, historikk: true) {
-    identer {
-      ident,
-      gruppe
-    }
-  }
-}
-"""
+        query(${"$"}ident: ID!){
+          hentIdenter(ident: ${"$"}ident, historikk: true) {
+            identer {
+              ident,
+              gruppe
+            }
+          }
+        }
+        """.trimIndent()
 
     @Retryable(exclude = [FunctionalPdlError::class])
     fun hentFolkeregisterIdenter(ident: String): List<String> {
-        val graphQLRequest = GraphQLRequest(
-            query = HENT_PERSON_QUERY,
-            variables = Collections.singletonMap(IDENT, ident)
-        )
+        val graphQLRequest =
+            GraphQLRequest(
+                query = hentPersonQuery,
+                variables = Collections.singletonMap(IDENT, ident),
+            )
 
-        val responseEntity = pdlRestTemplate.exchange(
-            "$pdlApiUrl/graphql",
-            HttpMethod.POST,
-            HttpEntity(requestToJson(graphQLRequest), createHeaderWithTema()),
-            String::class.java
-        )
+        val responseEntity =
+            pdlRestTemplate.exchange(
+                "$pdlApiUrl/graphql",
+                HttpMethod.POST,
+                HttpEntity(requestToJson(graphQLRequest), createHeaderWithTema()),
+                String::class.java,
+            )
 
         if (responseEntity.statusCode != HttpStatus.OK) {
             throw RuntimeException("PDL svarer med status ${responseEntity.statusCode} - ${responseEntity.body}")

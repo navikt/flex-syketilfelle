@@ -5,5 +5,5 @@ import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
 
 data class MottattSykmeldingKafkaMessage(
     val sykmelding: ArbeidsgiverSykmelding,
-    val kafkaMetadata: KafkaMetadataDTO
+    val kafkaMetadata: KafkaMetadataDTO,
 )

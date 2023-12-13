@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 class Syketilfellebiter(
     val biter: List<Syketilfellebit>,
-    private val prioriteringsliste: List<ListContainsPredicate<Tag>>
+    private val prioriteringsliste: List<ListContainsPredicate<Tag>>,
 ) {
     fun tilSyketilfelleIntradag(dag: LocalDate): SyketilfelleIntradag {
         return SyketilfelleIntradag(dag, biter.filter { dag in (it.fom..(it.tom)) }, prioriteringsliste)

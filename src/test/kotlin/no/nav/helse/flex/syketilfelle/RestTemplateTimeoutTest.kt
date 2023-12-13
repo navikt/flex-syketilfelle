@@ -21,11 +21,10 @@ import java.util.concurrent.TimeUnit
     classes = [
         AadRestTemplateConfiguration::class,
         no.nav.security.token.support.client.spring.oauth2.OAuth2ClientConfiguration::class,
-        no.nav.security.token.support.spring.SpringTokenValidationContextHolder::class
-    ]
+        no.nav.security.token.support.spring.SpringTokenValidationContextHolder::class,
+    ],
 )
 class RestTemplateTimeoutTest {
-
     init {
         MockWebServer()
             .also {
@@ -44,7 +43,7 @@ class RestTemplateTimeoutTest {
                 pdlRestTemplate.getForEntity(
                     // Non-routable IP addresse. så vi får ikke opprettet en connection.
                     "http://172.0.0.1",
-                    String::class.java
+                    String::class.java,
                 )
             }
         }

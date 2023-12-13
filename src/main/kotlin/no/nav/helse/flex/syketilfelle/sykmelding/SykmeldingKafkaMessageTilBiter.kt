@@ -16,11 +16,12 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.ArrayList
 
-private val objectMapper = ObjectMapper()
-    .registerModule(JavaTimeModule())
-    .registerKotlinModule()
-    .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE, true)
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+private val objectMapper =
+    ObjectMapper()
+        .registerModule(JavaTimeModule())
+        .registerKotlinModule()
+        .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE, true)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 class Periode(val fom: LocalDate, val tom: LocalDate)
 
@@ -40,51 +41,54 @@ fun SykmeldingKafkaMessage.mapTilEgenmeldingBiter(): List<Syketilfellebit> {
                 opprettet = OffsetDateTime.now().tilOsloZone(),
                 ressursId = this.sykmelding.id,
                 tags = setOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING),
-                fnr = this.kafkaMetadata.fnr
+                fnr = this.kafkaMetadata.fnr,
             )
         }
         ?: emptyList()
 }
 
 fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
-    val sykmeldingsperioderBiter = this.sykmelding
-        .sykmeldingsperioder
-        .map {
-            Syketilfellebit(
-                orgnummer = this.event.arbeidsgiver?.orgnummer,
-                inntruffet = if (this.event.statusEvent == STATUS_APEN) {
-                    OffsetDateTime.now()
-                } else {
-                    this.event.timestamp.tilOsloZone()
-                },
-                fom = it.fom,
-                tom = it.tom,
-                opprettet = OffsetDateTime.now().tilOsloZone(),
-                ressursId = this.sykmelding.id,
-                tags = it.finnTagsForPeriode(this),
-                fnr = this.kafkaMetadata.fnr
-            )
-        }
+    val sykmeldingsperioderBiter =
+        this.sykmelding
+            .sykmeldingsperioder
+            .map {
+                Syketilfellebit(
+                    orgnummer = this.event.arbeidsgiver?.orgnummer,
+                    inntruffet =
+                        if (this.event.statusEvent == STATUS_APEN) {
+                            OffsetDateTime.now()
+                        } else {
+                            this.event.timestamp.tilOsloZone()
+                        },
+                    fom = it.fom,
+                    tom = it.tom,
+                    opprettet = OffsetDateTime.now().tilOsloZone(),
+                    ressursId = this.sykmelding.id,
+                    tags = it.finnTagsForPeriode(this),
+                    fnr = this.kafkaMetadata.fnr,
+                )
+            }
 
-    val periodeSvar = this.event.sporsmals
-        ?.firstOrNull { it.shortName == ShortNameDTO.PERIODE }
-        ?.svar
-        ?.let {
-            return@let objectMapper.readValue(it) as List<Periode>
-        }
-        ?.map {
-            Syketilfellebit(
-                orgnummer = this.event.arbeidsgiver?.orgnummer,
-                inntruffet = this.event.timestamp.tilOsloZone(),
-                fom = it.fom,
-                tom = it.tom,
-                opprettet = OffsetDateTime.now().tilOsloZone(),
-                ressursId = this.sykmelding.id,
-                tags = setOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.ANNET_FRAVAR),
-                fnr = this.kafkaMetadata.fnr
-            )
-        }
-        ?: emptyList()
+    val periodeSvar =
+        this.event.sporsmals
+            ?.firstOrNull { it.shortName == ShortNameDTO.PERIODE }
+            ?.svar
+            ?.let {
+                return@let objectMapper.readValue(it) as List<Periode>
+            }
+            ?.map {
+                Syketilfellebit(
+                    orgnummer = this.event.arbeidsgiver?.orgnummer,
+                    inntruffet = this.event.timestamp.tilOsloZone(),
+                    fom = it.fom,
+                    tom = it.tom,
+                    opprettet = OffsetDateTime.now().tilOsloZone(),
+                    ressursId = this.sykmelding.id,
+                    tags = setOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.ANNET_FRAVAR),
+                    fnr = this.kafkaMetadata.fnr,
+                )
+            }
+            ?: emptyList()
 
     return ArrayList<Syketilfellebit>().also {
         it.addAll(sykmeldingsperioderBiter)

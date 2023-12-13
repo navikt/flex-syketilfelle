@@ -13,16 +13,18 @@ const val SYKMELDINGBEKREFTET_TOPIC = "teamsykmelding." + "syfo-bekreftet-sykmel
 
 @Component
 class SykmeldingSendtBekreftetListener(
-    private val sykmeldingLagring: SykmeldingLagring
+    private val sykmeldingLagring: SykmeldingLagring,
 ) {
-
     @KafkaListener(
         topics = [SYKMELDINGSENDT_TOPIC],
         id = "sykmelding-sendt",
         idIsGroup = false,
-        containerFactory = "syketilfelleKafkaListenerContainerFactory"
+        containerFactory = "syketilfelleKafkaListenerContainerFactory",
     )
-    fun listenSendt(cr: ConsumerRecord<String, String?>, acknowledgment: Acknowledgment) {
+    fun listenSendt(
+        cr: ConsumerRecord<String, String?>,
+        acknowledgment: Acknowledgment,
+    ) {
         listen(cr, acknowledgment)
     }
 
@@ -30,13 +32,19 @@ class SykmeldingSendtBekreftetListener(
         topics = [SYKMELDINGBEKREFTET_TOPIC],
         id = "sykmelding-bekreftet",
         idIsGroup = false,
-        containerFactory = "syketilfelleKafkaListenerContainerFactory"
+        containerFactory = "syketilfelleKafkaListenerContainerFactory",
     )
-    fun listenBekreftet(cr: ConsumerRecord<String, String?>, acknowledgment: Acknowledgment) {
+    fun listenBekreftet(
+        cr: ConsumerRecord<String, String?>,
+        acknowledgment: Acknowledgment,
+    ) {
         listen(cr, acknowledgment)
     }
 
-    private fun listen(cr: ConsumerRecord<String, String?>, acknowledgment: Acknowledgment) {
+    private fun listen(
+        cr: ConsumerRecord<String, String?>,
+        acknowledgment: Acknowledgment,
+    ) {
         val sykmeldingSentBekreftetDTO = cr.value()?.tilSykmeldingDTO()
 
         sykmeldingLagring.handterSykmelding(cr.key(), sykmeldingSentBekreftetDTO)

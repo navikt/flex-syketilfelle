@@ -24,17 +24,15 @@ class VentetidController(
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     private val sykeforloepUtregner: SykeforloepUtregner,
     override val pdlClient: PdlClient,
-
     @Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
-    val sykmeldingerFrontendClientId: String
-
+    val sykmeldingerFrontendClientId: String,
 ) : MedPdlClient {
     val log = logger()
 
     @PostMapping(
         value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"],
         consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
@@ -42,13 +40,13 @@ class VentetidController(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @PathVariable sykmeldingId: String,
-        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest
+        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
         clientIdValidation.validateClientId(
             NamespaceAndApp(
                 namespace = "flex",
-                app = "sykepengesoknad-backend"
-            )
+                app = "sykepengesoknad-backend",
+            ),
         )
         with(erUtenforVentetidRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
@@ -60,24 +58,26 @@ class VentetidController(
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
             sykmeldingId = sykmeldingId,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
-            fnrs = alleFnrs
+            fnrs = alleFnrs,
         )
     }
 
     @GetMapping(
         "/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid",
-        produces = [MediaType.APPLICATION_JSON_VALUE]
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ResponseBody
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
-    fun erUtenforVentetid(@PathVariable("sykmeldingId") sykmeldingId: String): ErUtenforVentetidResponse {
+    fun erUtenforVentetid(
+        @PathVariable("sykmeldingId") sykmeldingId: String,
+    ): ErUtenforVentetidResponse {
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         return erUtenforVentetidResponse(fnr, sykmeldingId)
     }
 
     private fun erUtenforVentetidResponse(
         fnr: String,
-        sykmeldingId: String
+        sykmeldingId: String,
     ): ErUtenforVentetidResponse {
         val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
 
@@ -85,9 +85,10 @@ class VentetidController(
             ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, fnrs, ErUtenforVentetidRequest())
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(fnrs, inkluderPapirsykmelding = false)
-        val oppfolgingsdato = sykeforloep
-            .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
-            ?.oppfolgingsdato
+        val oppfolgingsdato =
+            sykeforloep
+                .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
+                ?.oppfolgingsdato
 
         return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
     }
@@ -112,5 +113,5 @@ private class IngenTilgang(override val message: String) : AbstractApiError(
     message = message,
     httpStatus = HttpStatus.FORBIDDEN,
     reason = "INGEN_TILGANG",
-    loglevel = LogLevel.WARN
+    loglevel = LogLevel.WARN,
 )
