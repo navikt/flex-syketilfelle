@@ -16,6 +16,7 @@ class KafkaErrorHandler : DefaultErrorHandler(
         maxInterval = 60_000L * 8
     },
 ) {
+    // Bruker aliased logger for unngå kollisjon med CommonErrorHandler.logger(): LogAccessor.
     val log = slf4jLogger()
 
     override fun handleRemaining(
