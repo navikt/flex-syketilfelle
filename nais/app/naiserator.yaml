@@ -59,19 +59,14 @@ spec:
       rules:
         - application: sykepengesoknad-backend
           namespace: flex
-          cluster: {{environment}}-gcp
         - application: sykmeldinger
           namespace: teamsykmelding
-          cluster: {{environment}}-gcp
         - application: sparenaproxy
           namespace: teamsykmelding
-          cluster: {{environment}}-gcp
         - application: syfosmregler
           namespace: teamsykmelding
-          cluster: {{environment}}-gcp
         - application: syfosmpapirregler
           namespace: teamsykmelding
-          cluster: {{environment}}-gcp
         - application: dinesykmeldte-kafka
           namespace: teamsykmelding
         - application: syfosminfotrygd
