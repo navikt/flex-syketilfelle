@@ -25,31 +25,42 @@ class SykmeldingLagring(
         key: String,
         sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
     ) {
-        if (sykmeldingKafkaMessage == null) {
-            log.debug("Mottok tombstone event for sykmelding $key")
-            return
+        when {
+            sykmeldingKafkaMessage == null -> {
+                val slettetTimestamp = OffsetDateTime.now()
+                val biter =
+                    syketilfellebitRepository.findByRessursId(key)
+                        .map { it.copy(slettet = slettetTimestamp) }
+
+                if (biter.isEmpty()) {
+                    log.info("Mottok tombstone for sykmelding $key på kafka. Ingen tilhørende biter.")
+                } else {
+                    log.info("Mottok status åpen for sykmelding $key på kafka. Markerer ${biter.size} biter som slettet.")
+                    syketilfellebitRepository.saveAll(biter)
+                }
+            }
+
+            sykmeldingKafkaMessage.event.erSvarOppdatering == true -> {
+                // Slett de gamle som ikke lengre stemmer
+                val identer = pdlClient.hentFolkeregisterIdenter(sykmeldingKafkaMessage.kafkaMetadata.fnr)
+                val biter =
+                    syketilfellebitRepository.findByFnrIn(identer)
+                        .filter { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }
+                        .filter { it.tags.tagsFromString().contains(Tag.EGENMELDING) }
+                        .map { it.copy(slettet = OffsetDateTime.now()) }
+
+                syketilfellebitRepository.saveAll(biter)
+
+                val nyeEgenmeldingsBiter = sykmeldingKafkaMessage.mapTilEgenmeldingBiter()
+                syketilfellebitLagring.lagreBiter(nyeEgenmeldingsBiter)
+            }
+
+            else -> {
+                log.info("Prosseserer sykmelding $key med status ${sykmeldingKafkaMessage.event.statusEvent}")
+                val biter = sykmeldingKafkaMessage.mapTilBiter()
+                syketilfellebitLagring.lagreBiter(biter)
+            }
         }
-        log.info("Prosseserer sykmelding $key med status ${sykmeldingKafkaMessage.event.statusEvent}")
-
-        if (sykmeldingKafkaMessage.event.erSvarOppdatering == true) {
-            // Slett de gamle som ikke lengre stemmer
-            val identer = pdlClient.hentFolkeregisterIdenter(sykmeldingKafkaMessage.kafkaMetadata.fnr)
-            val biter =
-                syketilfellebitRepository.findByFnrIn(identer)
-                    .filter { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }
-                    .filter { it.tags.tagsFromString().contains(Tag.EGENMELDING) }
-                    .map { it.copy(slettet = OffsetDateTime.now()) }
-
-            syketilfellebitRepository.saveAll(biter)
-
-            val nyeEgenmeldingsBiter = sykmeldingKafkaMessage.mapTilEgenmeldingBiter()
-            syketilfellebitLagring.lagreBiter(nyeEgenmeldingsBiter)
-
-            return
-        }
-
-        val biter = sykmeldingKafkaMessage.mapTilBiter()
-        syketilfellebitLagring.lagreBiter(biter)
     }
 
     fun handterMottattSykmelding(

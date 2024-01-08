@@ -97,7 +97,7 @@ abstract class Testoppsett {
 
     fun sendKafkaMelding(
         key: String,
-        value: String,
+        value: String?,
         topic: String,
         headers: Headers = RecordHeaders(),
     ) {
