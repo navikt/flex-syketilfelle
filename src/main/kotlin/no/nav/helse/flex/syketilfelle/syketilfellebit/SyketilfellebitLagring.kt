@@ -15,6 +15,7 @@ class SyketilfellebitLagring(
         val eksisterendeBiter =
             syketilfellebitRepository
                 .findByFnr(dbBiter.first().fnr)
+                .filter { it.slettet == null }
                 .map { it.tilSammenlikner() }
 
         val nyeBiter =
