@@ -176,7 +176,8 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
     @Order(6)
     fun `Sykmelding tombstone fixer`() {
         nullableStringConsumer
-            .ventPåRecords(5)
+            .hentProduserteRecords()
+            .filter { it.key() == sykmeldingId }
             .forEach {
                 sykmeldingTombstoneFixer.prosesserSykmeldingPåNytt(it)
             }
