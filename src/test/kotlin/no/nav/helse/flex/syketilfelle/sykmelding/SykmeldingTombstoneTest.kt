@@ -69,7 +69,7 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
 
     @Test
     @Order(2)
-    fun `Sykmelding gjenåpnes og vi mottar tombstone på kafka`() {
+    fun `Mottar tombstone på kafka`() {
         sendKafkaMelding(sykmeldingId, null, SYKMELDINGBEKREFTET_TOPIC)
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
@@ -80,6 +80,61 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
 
     @Test
     @Order(3)
+    fun `Sykmeldingen bekreftes uten spørsmål`() {
+        val sykmeldingKafka =
+            skapSykmeldingKafkaMessage(
+                fom = fom,
+                tom = tom,
+            ).run {
+                copy(
+                    sykmelding =
+                        this.sykmelding.copy(
+                            id = sykmeldingId,
+                        ),
+                    kafkaMetadata =
+                        this.kafkaMetadata.copy(
+                            sykmeldingId = sykmeldingId,
+                        ),
+                    event =
+                        this.event.copy(
+                            sykmeldingId = sykmeldingId,
+                        ),
+                )
+            }
+
+        sendKafkaMelding(sykmeldingId, sykmeldingKafka.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 2 + 1
+        }
+        val sykeforloep = hentSykeforloep(listOf(fnr))
+
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(fom)
+        assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
+            listOf(
+                SimpleSykmelding(
+                    fom = fom,
+                    tom = tom,
+                    id = sykmeldingId,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    @Order(4)
+    fun `Mottar enda en tombstone på kafka`() {
+        sendKafkaMelding(sykmeldingId, null, SYKMELDINGBEKREFTET_TOPIC)
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
+            val biter = syketilfellebitRepository.findByFnr(fnr)
+            biter.size == 2 + 1 && biter.all { it.slettet != null }
+        }
+    }
+
+    @Test
+    @Order(5)
     fun `Sykmeldingen gjenåpnes som arbeidstaker sykmelding og oppfolgingsdato er lik fom`() {
         val sykmelding = skapArbeidsgiverSykmelding(fom, tom, sykmeldingId)
 
@@ -87,7 +142,7 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
         opprettSendtSykmelding(sykmelding, fnr)
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
-            syketilfellebitRepository.findByFnr(fnr).size == 2 + 2
+            syketilfellebitRepository.findByFnr(fnr).size == 2 + 1 + 2
         }
         val sykeforloep = hentSykeforloep(listOf(fnr))
 
