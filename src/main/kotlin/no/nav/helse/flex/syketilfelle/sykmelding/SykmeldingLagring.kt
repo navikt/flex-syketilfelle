@@ -28,9 +28,9 @@ class SykmeldingLagring(
         when {
             sykmeldingKafkaMessage == null -> {
                 val slettetTimestamp = OffsetDateTime.now()
-                val biter =
-                    syketilfellebitRepository.findByRessursId(key)
-                        .map { it.copy(slettet = slettetTimestamp) }
+                val biter = syketilfellebitRepository.findByRessursId(key)
+                    .filter { it.slettet == null }
+                    .map { it.copy(slettet = slettetTimestamp) }
 
                 if (biter.isEmpty()) {
                     log.info("Mottok tombstone for sykmelding $key på kafka. Ingen tilhørende biter.")
