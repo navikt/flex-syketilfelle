@@ -6,8 +6,10 @@ import no.nav.helse.flex.syketilfelle.ventetid.VentetidFellesOppsett
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
@@ -27,6 +29,17 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
 
     @Autowired
     override lateinit var sykmeldingLagring: SykmeldingLagring
+
+    @Autowired
+    lateinit var nullableStringConsumer: KafkaConsumer<String, String?>
+
+    @Autowired
+    lateinit var sykmeldingTombstoneFixer: SykmeldingTombstoneFixer
+
+    @BeforeAll
+    fun subscribe() {
+        nullableStringConsumer.subscribeHvisIkkeSubscribed(SYKMELDINGBEKREFTET_TOPIC, SYKMELDINGSENDT_TOPIC)
+    }
 
     @Test
     @Order(1)
@@ -146,6 +159,29 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, Testoppsett() {
         }
         val sykeforloep = hentSykeforloep(listOf(fnr))
 
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(fom)
+        assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
+            listOf(
+                SimpleSykmelding(
+                    fom = fom,
+                    tom = tom,
+                    id = sykmeldingId,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    @Order(6)
+    fun `Sykmelding tombstone fixer`() {
+        nullableStringConsumer
+            .ventPåRecords(5)
+            .forEach {
+                sykmeldingTombstoneFixer.prosesserSykmeldingPåNytt(it)
+            }
+
+        val sykeforloep = hentSykeforloep(listOf(fnr))
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(fom)
         assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
