@@ -44,6 +44,6 @@ class SykmeldingListener(
     ) {
         // Seek all the assigned partition to a certain offset
         callback.seekToTimestamp(assignments.keys, startTimestamp)
-        log.info("Ferdig med seekToTimestamp ${this.javaClass.simpleName}")
+        log.info("Ferdig med seekToTimestamp fra klassen ${this.javaClass.simpleName}")
     }
 }
