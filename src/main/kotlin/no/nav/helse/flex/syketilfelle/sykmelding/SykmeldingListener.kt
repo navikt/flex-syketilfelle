@@ -24,6 +24,7 @@ class SykmeldingListener(
         topics = [SYKMELDINGSENDT_TOPIC, SYKMELDINGBEKREFTET_TOPIC],
         id = "sykmelding-tombstones-fixer",
         idIsGroup = true,
+        properties = ["auto.offset.reset = earliest"],
         containerFactory = "syketilfelleKafkaListenerContainerFactory",
     )
     fun listenSendt(
