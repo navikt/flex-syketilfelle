@@ -47,7 +47,7 @@ class SykmeldingSendtBekreftetListener(
     ) {
         val sykmeldingSentBekreftetDTO = cr.value()?.tilSykmeldingDTO()
 
-        sykmeldingLagring.handterSykmelding(cr.key(), sykmeldingSentBekreftetDTO)
+        sykmeldingLagring.handterSykmelding(cr.key(), sykmeldingSentBekreftetDTO, cr.topic())
 
         acknowledgment.acknowledge()
     }

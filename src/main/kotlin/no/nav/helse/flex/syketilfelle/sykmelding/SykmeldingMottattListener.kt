@@ -24,9 +24,9 @@ class AivenSykmeldingMottattListener(
         cr: ConsumerRecord<String, String?>,
         acknowledgment: Acknowledgment,
     ) {
-        cr.value()?.let {
-            sykmeldingLagring.handterMottattSykmelding(cr.key(), it.tilSykmeldingDTO())
-        }
+        val sykmeldingDTO = cr.value()?.tilSykmeldingDTO()
+
+        sykmeldingLagring.handterMottattSykmelding(cr.key(), sykmeldingDTO, cr.topic())
 
         acknowledgment.acknowledge()
     }
