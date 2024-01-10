@@ -21,7 +21,7 @@ class SykmeldingListener(
     private val fixTimestamp = LocalDate.of(2024, 1, 9).atStartOfDay(osloZone).withHour(11).withMinute(50)
 
     @KafkaListener(
-        topics = [SYKMELDINGSENDT_TOPIC, SYKMELDINGBEKREFTET_TOPIC],
+        topics = [SYKMELDINGSENDT_TOPIC, SYKMELDINGBEKREFTET_TOPIC, SYKMELDINGMOTTATT_TOPIC],
         id = "sykmelding-tombstones-fixer",
         idIsGroup = true,
         properties = ["auto.offset.reset = earliest"],
