@@ -30,6 +30,7 @@ class SykmeldingLagring(
                 val slettetTimestamp = OffsetDateTime.now()
                 val biter =
                     syketilfellebitRepository.findByRessursId(key)
+                        .filter { it.slettet == null }
                         .map { it.copy(slettet = slettetTimestamp) }
 
                 if (biter.isEmpty()) {

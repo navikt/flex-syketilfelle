@@ -31,6 +31,9 @@ class TestKafkaConfig(
     fun syketilfelleBitConsumer() = KafkaConsumer<String, String>(consumerConfig("bit-group-id"))
 
     @Bean
+    fun nullableStringConsumer() = KafkaConsumer<String, String?>(consumerConfig("testing"))
+
+    @Bean
     fun juridiskVurderingKafkaConsumer() = KafkaConsumer<String, String>(consumerConfig("juridisk-group-id"))
 
     private fun consumerConfig(groupId: String) =
