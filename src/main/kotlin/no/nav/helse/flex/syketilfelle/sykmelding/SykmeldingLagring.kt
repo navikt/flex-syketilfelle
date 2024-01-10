@@ -24,6 +24,7 @@ class SykmeldingLagring(
     fun handterSykmelding(
         key: String,
         sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
+        topic: String,
     ) {
         when {
             sykmeldingKafkaMessage == null -> {
@@ -31,6 +32,20 @@ class SykmeldingLagring(
                 val biter =
                     syketilfellebitRepository.findByRessursId(key)
                         .filter { it.slettet == null }
+                        .filter {
+                            when (topic) {
+                                SYKMELDINGSENDT_TOPIC -> {
+                                    Tag.SENDT in it.tags.tagsFromString()
+                                }
+                                SYKMELDINGBEKREFTET_TOPIC -> {
+                                    Tag.BEKREFTET in it.tags.tagsFromString()
+                                }
+                                else -> {
+                                    // Sletter alle sykmelding biter
+                                    true
+                                }
+                            }
+                        }
                         .map { it.copy(slettet = slettetTimestamp) }
 
                 if (biter.isEmpty()) {
@@ -66,22 +81,26 @@ class SykmeldingLagring(
 
     fun handterMottattSykmelding(
         key: String,
-        mottattSykmeldingKafkaMessage: MottattSykmeldingKafkaMessage,
+        mottattSykmeldingKafkaMessage: MottattSykmeldingKafkaMessage?,
+        topic: String,
     ) {
         handterSykmelding(
             key,
-            SykmeldingKafkaMessage(
-                sykmelding = mottattSykmeldingKafkaMessage.sykmelding,
-                kafkaMetadata = mottattSykmeldingKafkaMessage.kafkaMetadata,
-                event =
-                    SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = key,
-                        timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
-                        arbeidsgiver = null,
-                        sporsmals = emptyList(),
-                        statusEvent = STATUS_APEN,
-                    ),
-            ),
+            mottattSykmeldingKafkaMessage?.let {
+                SykmeldingKafkaMessage(
+                    sykmelding = mottattSykmeldingKafkaMessage.sykmelding,
+                    kafkaMetadata = mottattSykmeldingKafkaMessage.kafkaMetadata,
+                    event =
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = key,
+                            timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
+                            arbeidsgiver = null,
+                            sporsmals = emptyList(),
+                            statusEvent = STATUS_APEN,
+                        ),
+                )
+            },
+            topic,
         )
     }
 }

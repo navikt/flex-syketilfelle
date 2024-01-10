@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
@@ -18,7 +19,7 @@ interface VentetidFellesOppsett {
     val fnr: String
 
     fun MottattSykmeldingKafkaMessage.publiser() {
-        sykmeldingLagring.handterMottattSykmelding("key", this)
+        sykmeldingLagring.handterMottattSykmelding("key", this, SYKMELDINGMOTTATT_TOPIC)
     }
 
     fun skapApenSykmeldingKafkaMessage(
