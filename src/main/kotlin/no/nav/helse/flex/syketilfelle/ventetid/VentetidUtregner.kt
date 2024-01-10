@@ -34,6 +34,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         val biter =
             syketilfellebitRepository
                 .findByFnrIn(fnrs)
+                .filter { it.slettet == null }
                 .map { it.tilSyketilfellebit() }
                 .utenKorrigerteSoknader()
         val syketilfellebiter =
