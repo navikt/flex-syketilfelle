@@ -8,7 +8,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.*
 
 @Configuration
 class TestKafkaConfig(
@@ -29,9 +28,6 @@ class TestKafkaConfig(
 
     @Bean
     fun syketilfelleBitConsumer() = KafkaConsumer<String, String>(consumerConfig("bit-group-id"))
-
-    @Bean
-    fun nullableStringConsumer() = KafkaConsumer<String, String?>(consumerConfig("testing"))
 
     @Bean
     fun juridiskVurderingKafkaConsumer() = KafkaConsumer<String, String>(consumerConfig("juridisk-group-id"))
