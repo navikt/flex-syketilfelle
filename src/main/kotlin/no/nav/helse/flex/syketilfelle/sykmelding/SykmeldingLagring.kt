@@ -29,23 +29,24 @@ class SykmeldingLagring(
         when {
             sykmeldingKafkaMessage == null -> {
                 val slettetTimestamp = OffsetDateTime.now()
-                val biter = syketilfellebitRepository.findByRessursId(key)
-                    .filter { it.slettet == null }
-                    .filter {
-                        when (topic) {
-                            SYKMELDINGSENDT_TOPIC -> {
-                                Tag.SENDT in it.tags.tagsFromString()
-                            }
-                            SYKMELDINGBEKREFTET_TOPIC -> {
-                                Tag.BEKREFTET in it.tags.tagsFromString()
-                            }
-                            else -> {
-                                // Sletter alle sykmelding biter
-                                true
+                val biter =
+                    syketilfellebitRepository.findByRessursId(key)
+                        .filter { it.slettet == null }
+                        .filter {
+                            when (topic) {
+                                SYKMELDINGSENDT_TOPIC -> {
+                                    Tag.SENDT in it.tags.tagsFromString()
+                                }
+                                SYKMELDINGBEKREFTET_TOPIC -> {
+                                    Tag.BEKREFTET in it.tags.tagsFromString()
+                                }
+                                else -> {
+                                    // Sletter alle sykmelding biter
+                                    true
+                                }
                             }
                         }
-                    }
-                    .map { it.copy(slettet = slettetTimestamp) }
+                        .map { it.copy(slettet = slettetTimestamp) }
 
                 if (biter.isEmpty()) {
                     log.info("Mottok tombstone for sykmelding $key på kafka. Ingen tilhørende biter.")
@@ -90,16 +91,16 @@ class SykmeldingLagring(
                     sykmelding = mottattSykmeldingKafkaMessage.sykmelding,
                     kafkaMetadata = mottattSykmeldingKafkaMessage.kafkaMetadata,
                     event =
-                    SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = key,
-                        timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
-                        arbeidsgiver = null,
-                        sporsmals = emptyList(),
-                        statusEvent = STATUS_APEN,
-                    ),
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = key,
+                            timestamp = mottattSykmeldingKafkaMessage.kafkaMetadata.timestamp,
+                            arbeidsgiver = null,
+                            sporsmals = emptyList(),
+                            statusEvent = STATUS_APEN,
+                        ),
                 )
             },
-            topic
+            topic,
         )
     }
 }
