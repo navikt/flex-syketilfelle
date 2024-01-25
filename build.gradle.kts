@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -13,7 +14,7 @@ plugins {
 group = "no.nav.helse.flex"
 version = "1.0"
 description = "flex-syketilfelle"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 ext["okhttp3.version"] = "4.9.3" // For at token support testen kjører
 
@@ -75,9 +76,13 @@ tasks.getByName<BootJar>("bootJar") {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+        freeCompilerArgs.add("-Xjsr305=strict")
+
+        if (System.getenv("CI") == "true") {
+            allWarningsAsErrors.set(true)
+        }
     }
 }
 tasks.withType<Test> {
