@@ -94,7 +94,7 @@ class VentetidController(
     }
 
     private fun validerTokenXClaims(): JwtTokenClaims {
-        val context = tokenValidationContextHolder.tokenValidationContext
+        val context = tokenValidationContextHolder.getTokenValidationContext()
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
         if (clientId != sykmeldingerFrontendClientId) {
