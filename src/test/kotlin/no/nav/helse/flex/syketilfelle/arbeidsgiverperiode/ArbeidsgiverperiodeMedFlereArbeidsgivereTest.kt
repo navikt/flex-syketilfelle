@@ -4,7 +4,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
 import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
 import no.nav.helse.flex.syketilfelle.opprettSendtSykmelding
@@ -18,7 +18,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.util.*
 
-class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : Testoppsett() {
+class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : FellesTestOppsett() {
     private final val fnr = "11111555555"
     private final val orgnr1 = "888888888"
     private final val orgnr2 = "999999999"

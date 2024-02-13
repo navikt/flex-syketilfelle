@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-fun Testoppsett.kallArbeidsgiverperiodeApi(
+fun FellesTestOppsett.kallArbeidsgiverperiodeApi(
     soknad: SykepengesoknadDTO,
     sykmelding: SykmeldingKafkaMessage? = null,
     expectNoContent: Boolean = false,
@@ -47,7 +47,7 @@ fun Testoppsett.kallArbeidsgiverperiodeApi(
         ?.let { objectMapper.readValue(it) }
 }
 
-fun Testoppsett.opprettSendtSykmelding(
+fun FellesTestOppsett.opprettSendtSykmelding(
     sykmelding: ArbeidsgiverSykmelding,
     fnr: String,
     orgnummer: String? = null,
@@ -57,7 +57,7 @@ fun Testoppsett.opprettSendtSykmelding(
     return sykmelding.id
 }
 
-fun Testoppsett.opprettMottattSykmelding(
+fun FellesTestOppsett.opprettMottattSykmelding(
     sykmelding: ArbeidsgiverSykmelding,
     fnr: String,
 ): String {

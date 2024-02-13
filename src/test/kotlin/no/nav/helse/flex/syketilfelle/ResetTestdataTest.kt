@@ -10,7 +10,7 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class ResetTestdataTest : Testoppsett() {
+class ResetTestdataTest : FellesTestOppsett() {
     @Test
     fun `Kan slette en bit`() {
         syketilfellebitRepository.count() `should be equal to` 0

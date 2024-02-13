@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.kafkaprodusering
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
@@ -21,7 +21,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-class KafkaProduseringTest : Testoppsett() {
+class KafkaProduseringTest : FellesTestOppsett() {
     @Autowired
     private lateinit var kafkaProduseringJob: KafkaProduseringJob
 

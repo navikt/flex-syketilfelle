@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidTest : VentetidFellesOppsett, Testoppsett() {
+class VentetidTest : VentetidFellesOppsett, FellesTestOppsett() {
     private val mandag = LocalDate.of(2020, Month.JUNE, 1)
     private val søndag = mandag.minusDays(1)
     private val lørdag = mandag.minusDays(2)
