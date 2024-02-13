@@ -1,7 +1,5 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "3.2.2"
@@ -16,7 +14,7 @@ version = "1.0"
 description = "flex-syketilfelle"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
-ext["okhttp3.version"] = "4.9.3" // For at token support testen kjører
+ext["okhttp3.version"] = "4.12" // Token-support tester trenger MockWebServer.
 
 val githubUser: String by project
 val githubPassword: String by project
@@ -29,7 +27,7 @@ repositories {
 }
 
 val tokenSupportVersion = "4.1.3"
-val logstashEncoderVersion = "7.4"
+val logstashLogbackEncoderVersion = "7.4"
 val testContainersVersion = "1.19.4"
 val kluentVersion = "1.73"
 val sykepengesoknadKafkaVersion = "2024.01.31-08.02-ce296b0f"
@@ -45,50 +43,54 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.kafka:spring-kafka")
-    implementation("org.slf4j:slf4j-api")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
-    implementation("org.postgresql:postgresql")
-    implementation("org.hibernate.validator:hibernate-validator")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.hibernate.validator:hibernate-validator")
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.postgresql:postgresql")
+    implementation("org.flywaydb:flyway-core")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
-    implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
-    implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
     implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
+    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+    implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
+    implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
 
     testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainersVersion"))
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:kafka")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.awaitility:awaitility")
-    testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("com.networknt:json-schema-validator:$jsonSchemaValidatorVersion")
 }
 
-tasks.getByName<BootJar>("bootJar") {
-    this.archiveFileName.set("app.jar")
-}
-
-tasks.withType<KotlinCompile> {
+kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
         freeCompilerArgs.add("-Xjsr305=strict")
-
         if (System.getenv("CI") == "true") {
             allWarningsAsErrors.set(true)
         }
     }
 }
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        events("STARTED", "PASSED", "FAILED", "SKIPPED")
-        exceptionFormat = TestExceptionFormat.FULL
+
+tasks {
+    test {
+        useJUnitPlatform()
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
+        testLogging {
+            events("PASSED", "FAILED", "SKIPPED")
+            exceptionFormat = FULL
+        }
+        failFast = false
+    }
+}
+
+tasks {
+    bootJar {
+        archiveFileName = "app.jar"
     }
 }
