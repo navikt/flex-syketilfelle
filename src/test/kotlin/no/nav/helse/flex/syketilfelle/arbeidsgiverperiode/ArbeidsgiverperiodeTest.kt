@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
 import no.nav.helse.flex.sykepengesoknad.kafka.*
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.KafkaProduseringJob
@@ -34,7 +34,7 @@ import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class ArbeidsgiverperiodeTest : Testoppsett() {
+class ArbeidsgiverperiodeTest : FellesTestOppsett() {
     @Autowired
     lateinit var kafkaProduseringJob: KafkaProduseringJob
 

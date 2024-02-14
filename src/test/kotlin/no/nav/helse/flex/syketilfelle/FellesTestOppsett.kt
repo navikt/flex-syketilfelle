@@ -36,7 +36,7 @@ private class PostgreSQLContainer14 : PostgreSQLContainer<PostgreSQLContainer14>
 @SpringBootTest
 @EnableMockOAuth2Server
 @AutoConfigureMockMvc
-abstract class Testoppsett {
+abstract class FellesTestOppsett {
     @Autowired
     lateinit var mockMvc: MockMvc
 
@@ -56,7 +56,7 @@ abstract class Testoppsett {
             val threads = mutableListOf<Thread>()
 
             thread {
-                KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.1")).apply {
+                KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.3")).apply {
                     start()
                     System.setProperty("KAFKA_BROKERS", bootstrapServers)
                 }

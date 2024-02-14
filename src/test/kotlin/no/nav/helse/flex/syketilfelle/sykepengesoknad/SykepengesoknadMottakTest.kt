@@ -1,10 +1,9 @@
 package no.nav.helse.flex.syketilfelle.sykepengesoknad
 
 import no.nav.helse.flex.sykepengesoknad.kafka.*
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.soknad.SYKEPENGESOKNAD_TOPIC
-import no.nav.helse.flex.syketilfelle.syketilfellebit.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SYKEPENGESOKNAD
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -20,7 +19,7 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class SykepengesoknadMottakTest : Testoppsett() {
+class SykepengesoknadMottakTest : FellesTestOppsett() {
     private final val fnr = "12345432123"
 
     @BeforeEach

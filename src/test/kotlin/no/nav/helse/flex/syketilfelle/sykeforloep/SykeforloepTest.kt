@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
 import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
@@ -26,7 +26,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit.SECONDS
 
-class SykeforloepTest : Testoppsett() {
+class SykeforloepTest : FellesTestOppsett() {
     private final val fnr = "12345432123"
     private final val nyttFnr = "22345432123"
 

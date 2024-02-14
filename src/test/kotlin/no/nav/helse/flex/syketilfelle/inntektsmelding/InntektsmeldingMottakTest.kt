@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle.inntektsmelding
 
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class InntektsmeldingMottakTest : Testoppsett() {
+class InntektsmeldingMottakTest : FellesTestOppsett() {
     private final val fnr = "12345432123"
 
     private final val inntektsmelding =

@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import org.amshove.kluent.`should be false`
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidEtterDesember2021Test : VentetidFellesOppsett, Testoppsett() {
+class VentetidEtterDesember2021Test : VentetidFellesOppsett, FellesTestOppsett() {
     private val onsdag = LocalDate.of(2022, Month.JANUARY, 5)
 
     @Autowired

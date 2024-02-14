@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.util.*
 
-fun Testoppsett.hentSykeforloep(
+fun FellesTestOppsett.hentSykeforloep(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     inkluderPapirsykmelding: Boolean = true,
@@ -31,7 +31,7 @@ fun Testoppsett.hentSykeforloep(
     return objectMapper.readValue(json)
 }
 
-fun Testoppsett.erUtenforVentetidSomBrukerTokenX(
+fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     fnr: String,
     sykmeldingId: String,
 ): ErUtenforVentetidResponse {
@@ -45,7 +45,7 @@ fun Testoppsett.erUtenforVentetidSomBrukerTokenX(
     return objectMapper.readValue(json)
 }
 
-fun Testoppsett.erUtenforVentetid(
+fun FellesTestOppsett.erUtenforVentetid(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,

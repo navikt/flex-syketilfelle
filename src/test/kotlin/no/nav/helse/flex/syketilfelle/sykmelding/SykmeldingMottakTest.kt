@@ -1,6 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
-import no.nav.helse.flex.syketilfelle.Testoppsett
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -25,7 +25,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 
-class SykmeldingMottakTest : Testoppsett() {
+class SykmeldingMottakTest : FellesTestOppsett() {
     private final val fnr = "12345432123"
 
     @BeforeEach
