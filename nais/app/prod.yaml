@@ -1,4 +1,5 @@
 db_tier: db-custom-1-3840
+db_type: POSTGRES_12
 azureTenant: nav.no
 kafkaPool: nav-prod
 environment: prod
