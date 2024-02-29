@@ -43,6 +43,8 @@ spec:
     sqlInstances:
       - type: {{db_type}}
         tier: {{db_tier}}
+        highAvailability: {{db_highAvailability}}
+        pointInTimeRecovery: {{db_pointInTimeRecovery}}
         diskAutoresize: true
         databases:
           - name: flex-syketilfelle-db
