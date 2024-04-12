@@ -1,16 +1,14 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
-import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.azureToken
-import no.nav.helse.flex.syketilfelle.hentSykeforloep
-import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
-import no.nav.helse.flex.syketilfelle.opprettSendtSykmelding
+import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.model.sykmeldingstatus.*
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.assertj.core.api.Assertions.assertThat
@@ -245,6 +243,97 @@ class SykeforloepTest : FellesTestOppsett() {
         assertThat(sykeforloepUtenPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 2, 1))
 
         sykeforloepUtenPapirsykmedling `should not be equal to` sykeforloepMedPapirsykmedling
+    }
+
+    @Test
+    fun `Tar med sykmelding i beregning av sykeforloep`() {
+        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
+
+        val kafkaMetadata =
+            KafkaMetadataDTO(
+                sykmeldingId = sykmelding.id,
+                fnr = fnr,
+                timestamp = OffsetDateTime.now(),
+                source = "Denne testen",
+            )
+
+        val event =
+            SykmeldingStatusKafkaEventDTO(
+                sykmeldingId = sykmelding.id,
+                timestamp = OffsetDateTime.now(),
+                statusEvent = STATUS_SENDT,
+                arbeidsgiver = null,
+                sporsmals = emptyList(),
+            )
+
+        val kafkaMessage =
+            SykmeldingKafkaMessage(
+                sykmelding =
+                    sykmelding.copy(
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeAGDTO(
+                                    fom = basisDato,
+                                    tom = basisDato.plusDays(14),
+                                    reisetilskudd = false,
+                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    aktivitetIkkeMulig = null,
+                                    behandlingsdager = null,
+                                    gradert = null,
+                                    innspillTilArbeidsgiver = null,
+                                ),
+                            ),
+                    ),
+                kafkaMetadata = kafkaMetadata,
+                event = event.copy(),
+            )
+        producerPåSendtBekreftetTopic(kafkaMessage)
+
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato)
+        assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
+            listOf(
+                SimpleSykmelding(
+                    fom = basisDato,
+                    tom = basisDato.plusDays(14),
+                    id = sykmelding.id,
+                ),
+            ),
+        )
+
+        // melding med egenmelding er ikke plukket opp av syketilfelle enda, men blir sendt med fra feks sykepengesoknad-backend
+        val kafkaMessageMedEgenmelding =
+            kafkaMessage.copy(
+                event =
+                    event.copy(
+                        arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi"),
+                        sporsmals =
+                            listOf(
+                                SporsmalOgSvarDTO(
+                                    tekst = "Velg dagene du brukte egenmelding",
+                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    svar = "[\"2020-03-09\",\"2020-03-10\",\"2020-03-11\"]",
+                                    svartype = SvartypeDTO.DAGER,
+                                ),
+                            ),
+                    ),
+            )
+        val sykeforloepMedSykmelding =
+            hentSykeforloepMedSykmelding(listOf(nyttFnr), hentAndreIdenter = true, sykmeldingKafkaMessage = kafkaMessageMedEgenmelding)
+
+        assertThat(sykeforloepMedSykmelding).hasSize(1)
+        assertThat(sykeforloepMedSykmelding[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(3))
+        assertThat(sykeforloepMedSykmelding[0].sykmeldinger.toList()).isEqualTo(
+            listOf(
+                SimpleSykmelding(
+                    fom = basisDato.minusDays(3),
+                    tom = basisDato.plusDays(14),
+                    id = sykmelding.id,
+                ),
+            ),
+        )
     }
 
     @Test
