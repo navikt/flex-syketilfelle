@@ -5,7 +5,7 @@ import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.http.MediaType
@@ -27,7 +27,7 @@ class SykeforloepController(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false,
-        @RequestBody(required = false) sykmelding: SykmeldingKafkaMessage? = null,
+        @RequestBody(required = false) sykmelding: SykmeldingRequest? = null,
     ): List<Sykeforloep> {
         clientIdValidation.validateClientId(
             listOf(
@@ -59,7 +59,7 @@ class SykeforloepController(
         )
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
-        val syketilfellebiter = sykmelding?.mapTilBiter()
+        val syketilfellebiter = sykmelding?.sykmeldingKafkaMessage?.mapTilBiter()
         return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding, syketilfellebiter)
     }
 }

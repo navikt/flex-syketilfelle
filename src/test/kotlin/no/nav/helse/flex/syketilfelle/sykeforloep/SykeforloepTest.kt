@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
@@ -320,8 +321,9 @@ class SykeforloepTest : FellesTestOppsett() {
                             ),
                     ),
             )
+        val sykmeldingRequest = SykmeldingRequest(kafkaMessageMedEgenmelding)
         val sykeforloepMedSykmelding =
-            hentSykeforloepMedSykmelding(listOf(nyttFnr), hentAndreIdenter = true, sykmeldingKafkaMessage = kafkaMessageMedEgenmelding)
+            hentSykeforloepMedSykmelding(listOf(nyttFnr), hentAndreIdenter = true, sykmeldingRequest = sykmeldingRequest)
 
         assertThat(sykeforloepMedSykmelding).hasSize(1)
         assertThat(sykeforloepMedSykmelding[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(3))
