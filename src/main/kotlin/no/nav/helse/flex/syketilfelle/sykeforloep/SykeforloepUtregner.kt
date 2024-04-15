@@ -17,11 +17,16 @@ class SykeforloepUtregner(
     fun hentSykeforloep(
         fnrs: List<String>,
         inkluderPapirsykmelding: Boolean,
+        syketilfellebiter: List<Syketilfellebit>? = null,
     ): List<Sykeforloep> {
         return syketilfellebitRepository
             .findByFnrIn(fnrs)
             .map { it.tilSyketilfellebit() }
             .utenKorrigerteSoknader()
+            .toMutableList()
+            .also {
+                it.addAll(syketilfellebiter ?: emptyList())
+            }
             .filter { it.slettet == null }
             .filter {
                 if (inkluderPapirsykmelding) {

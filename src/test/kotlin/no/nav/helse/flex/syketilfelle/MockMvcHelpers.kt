@@ -2,6 +2,7 @@ package no.nav.helse.flex.syketilfelle
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -25,6 +26,27 @@ fun FellesTestOppsett.hentSykeforloep(
                 .header("fnr", fnr.joinToString(separator = ", "))
                 .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                 .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                .contentType(MediaType.APPLICATION_JSON),
+        ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun FellesTestOppsett.hentSykeforloepMedSykmelding(
+    fnr: List<String>,
+    hentAndreIdenter: Boolean = true,
+    inkluderPapirsykmelding: Boolean = true,
+    sykmeldingRequest: SykmeldingRequest,
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
+): List<Sykeforloep> {
+    val json =
+        mockMvc.perform(
+            post("/api/v1/sykeforloep")
+                .header("Authorization", "Bearer $token")
+                .header("fnr", fnr.joinToString(separator = ", "))
+                .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                .content(objectMapper.writeValueAsString(sykmeldingRequest))
                 .contentType(MediaType.APPLICATION_JSON),
         ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 

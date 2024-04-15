@@ -5,6 +5,8 @@ import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
+import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -18,13 +20,14 @@ class SykeforloepController(
 ) : MedPdlClient {
     val log = logger()
 
-    @GetMapping("/api/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @RequestMapping("/api/v1/sykeforloep", produces = [MediaType.APPLICATION_JSON_VALUE], method = [RequestMethod.GET, RequestMethod.POST])
     @ResponseBody
     @ProtectedWithClaims(issuer = "azureator")
     fun hentSykeforloep(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false,
+        @RequestBody(required = false) sykmelding: SykmeldingRequest? = null,
     ): List<Sykeforloep> {
         clientIdValidation.validateClientId(
             listOf(
@@ -56,6 +59,7 @@ class SykeforloepController(
         )
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
-        return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding)
+        val syketilfellebiter = sykmelding?.sykmeldingKafkaMessage?.mapTilBiter()
+        return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding, syketilfellebiter)
     }
 }
