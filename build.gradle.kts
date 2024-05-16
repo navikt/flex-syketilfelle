@@ -33,7 +33,7 @@ val kluentVersion = "1.73"
 val sykepengesoknadKafkaVersion = "2024.05.04-08.31-672172ee"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "1.4.0"
-val inntektsmeldingKontrakt = "2024.03.11-02-07-32abf"
+val inntektsmeldingKontrakt = "2024.05.15-12-35-01389"
 val httpClientVersion = "5.3.1"
 
 dependencies {
