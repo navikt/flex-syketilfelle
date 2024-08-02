@@ -32,7 +32,7 @@ val testContainersVersion = "1.20.0"
 val kluentVersion = "1.73"
 val sykepengesoknadKafkaVersion = "2024.05.04-08.31-672172ee"
 val syfoSmCommon = "2.0.8"
-val jsonSchemaValidatorVersion = "1.5.0"
+val jsonSchemaValidatorVersion = "1.5.1"
 val inntektsmeldingKontrakt = "2024.05.21-09-56-5528e"
 val httpClientVersion = "5.3.1"
 
