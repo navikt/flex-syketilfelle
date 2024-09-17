@@ -290,6 +290,9 @@ class SykeforloepTest : FellesTestOppsett() {
             )
         producerPåSendtBekreftetTopic(kafkaMessage)
 
+        await().atMost(10, SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 1
+        }
         val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
 
         assertThat(sykeforloep).hasSize(1)

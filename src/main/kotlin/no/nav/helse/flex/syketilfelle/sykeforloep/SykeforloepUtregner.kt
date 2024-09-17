@@ -42,35 +42,34 @@ class SykeforloepUtregner(
 }
 
 fun List<SimpleSykmelding>.grupperSykmeldingerIForloep(): List<Sykeforloep> {
+    if (this.isEmpty()) return emptyList()
     val sykmeldinger = this.sortedBy { it.fom }
-    val alleSykeforloep = ArrayList<Sykeforloep>()
 
-    if (sykmeldinger.isEmpty()) {
-        return emptyList()
-    }
+    val alleSykeforloep =
+        mutableListOf<Sykeforloep>().apply {
+            add(
+                Sykeforloep(oppfolgingsdato = sykmeldinger.first().fom).also { forloep ->
+                    forloep.sykmeldinger.add(sykmeldinger.first())
+                },
+            )
+        }
+    var gjeldendeSykeforloep = alleSykeforloep.first()
 
-    val iterator = sykmeldinger.iterator()
-    val gjeldendeSykmelding = iterator.next()
-
-    var gjeldendeSykeforloep = Sykeforloep(oppfolgingsdato = gjeldendeSykmelding.fom)
-    gjeldendeSykeforloep.sykmeldinger.add(gjeldendeSykmelding)
-    alleSykeforloep.add(gjeldendeSykeforloep)
-
-    while (iterator.hasNext()) {
-        val sykmelding = iterator.next()
-
-        if (antallDagerMellom(gjeldendeSykeforloep.sisteDagIForloep(), sykmelding.fom) >= 16) {
+    sykmeldinger.drop(1).forEach { sykmelding ->
+        if (skalLageNyttSykeforloep(gjeldendeSykeforloep, sykmelding)) {
             gjeldendeSykeforloep = Sykeforloep(oppfolgingsdato = sykmelding.fom)
             alleSykeforloep.add(gjeldendeSykeforloep)
         }
         gjeldendeSykeforloep.sykmeldinger.add(sykmelding)
     }
-    alleSykeforloep.forEach {
-        it.sykmeldinger.sortBy { sykmelding -> sykmelding.fom }
-    }
 
     return alleSykeforloep
 }
+
+private fun skalLageNyttSykeforloep(
+    gjeldendeSykeforloep: Sykeforloep,
+    sykmelding: SimpleSykmelding
+) = antallDagerMellom(gjeldendeSykeforloep.sisteDagIForloep(), sykmelding.fom) >= 16
 
 fun List<Syketilfellebit>.senesteTom(): LocalDate {
     return this.maxOf { it.tom }
