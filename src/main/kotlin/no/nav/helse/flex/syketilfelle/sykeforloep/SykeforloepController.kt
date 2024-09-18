@@ -66,7 +66,11 @@ class SykeforloepController(
             fnrs = alleFnrs,
             inkluderPapirsykmelding = inkluderPapirsykmelding,
             syketilfellebiter,
-            enumValueOf<ArbeidssituasjonDTO>(arbeidssituasjon ?: ""),
+            enumValueOfOrNull<ArbeidssituasjonDTO>(arbeidssituasjon),
         )
     }
+}
+
+inline fun <reified E : Enum<E>> enumValueOfOrNull(name: String? = null): E? {
+    return enumValues<E>().firstOrNull { it.name == name }
 }
