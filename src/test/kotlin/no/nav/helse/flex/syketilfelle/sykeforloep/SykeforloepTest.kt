@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidssituasjonDTO
 import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
@@ -47,10 +48,11 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size + syketilfellebitRepository.findByFnr(nyttFnr).size == 2
         }
-        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(12))
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato.minusDays(12))
         assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
             listOf(
                 SimpleSykmelding(
@@ -76,10 +78,11 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
-        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(40))
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato.minusDays(24))
         assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
             listOf(
                 SimpleSykmelding(
@@ -113,9 +116,30 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 3
         }
-        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
+    }
+
+    @Test
+    fun `15 dager i mellom er samme forloep næringsdrivende`() {
+        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
+        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(16))
+
+        opprettMottattSykmelding(sykmelding, fnr)
+        opprettMottattSykmelding(sykmelding2, fnr)
+        opprettSendtSykmelding(sykmelding, fnr)
+
+        await().atMost(10, SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size == 3
+        }
+        val sykeforloep =
+            hentSykeforloep(listOf(fnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE)
+
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato.minusDays(30))
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
     }
 
@@ -131,18 +155,73 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size + syketilfellebitRepository.findByFnr(nyttFnr).size == 3
         }
-        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(2)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
         assertThat(sykeforloep[1].oppfolgingsdato).isEqualTo(basisDato)
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato.minusDays(30))
+        assertThat(sykeforloep[1].skjaeringstidspunkt).isEqualTo(basisDato)
 
-        val sykeforloepMaskin = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+        val sykeforloepMaskin =
+            hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
         sykeforloepMaskin `should be equal to` sykeforloep
 
-        sykeforloepMaskin `should not be equal to` hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = false)
-        sykeforloepMaskin `should not be equal to` hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
-        sykeforloepMaskin `should be equal to` hentSykeforloep(listOf(nyttFnr, fnr), hentAndreIdenter = false)
+        sykeforloepMaskin `should not be equal to`
+            hentSykeforloep(
+                listOf(nyttFnr), hentAndreIdenter = false,
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+            )
+        sykeforloepMaskin `should not be equal to`
+            hentSykeforloep(
+                listOf(fnr), hentAndreIdenter = false,
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+            )
+        sykeforloepMaskin `should be equal to`
+            hentSykeforloep(
+                listOf(nyttFnr, fnr), hentAndreIdenter = false,
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+            )
+    }
+
+    @Test
+    fun `opphold mellom sykmeldinger eller egenmeldinger gir riktig skjæringstidspunkt`() {
+        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(10), tom = basisDato.plusDays(10))
+        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(20), tom = basisDato.minusDays(15))
+        val sykmelding3 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(25))
+
+        opprettMottattSykmelding(sykmelding, fnr)
+        opprettMottattSykmelding(sykmelding2, fnr)
+        opprettMottattSykmelding(sykmelding3, fnr)
+        opprettSendtSykmelding(sykmelding, fnr)
+
+        await().atMost(10, SECONDS).until {
+            syketilfellebitRepository.findByFnr(fnr).size + syketilfellebitRepository.findByFnr(nyttFnr).size == 4
+        }
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
+
+        assertThat(sykeforloep).hasSize(1)
+        assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(30))
+        assertThat(sykeforloep[0].skjaeringstidspunkt).isEqualTo(basisDato.minusDays(10))
+        assertThat(sykeforloep[0].sykmeldinger.toList()).isEqualTo(
+            listOf(
+                SimpleSykmelding(
+                    fom = basisDato.minusDays(30),
+                    tom = basisDato.minusDays(25),
+                    id = sykmelding3.id,
+                ),
+                SimpleSykmelding(
+                    fom = basisDato.minusDays(20),
+                    tom = basisDato.minusDays(15),
+                    id = sykmelding2.id,
+                ),
+                SimpleSykmelding(
+                    fom = basisDato.minusDays(10),
+                    tom = basisDato.plusDays(10),
+                    id = sykmelding.id,
+                ),
+            ),
+        )
     }
 
     @Test
@@ -178,7 +257,7 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
-        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(13))
@@ -227,6 +306,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 hentAndreIdenter = true,
                 inkluderPapirsykmelding = true,
                 token = server.azureToken(subject = "sparenaproxy-client-id"),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
             )
 
         assertThat(sykeforloepMedPapirsykmedling).hasSize(1)
@@ -238,6 +318,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 hentAndreIdenter = true,
                 inkluderPapirsykmelding = false,
                 token = server.azureToken(subject = "sparenaproxy-client-id"),
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
             )
 
         assertThat(sykeforloepUtenPapirsykmedling).hasSize(1)
@@ -293,7 +374,7 @@ class SykeforloepTest : FellesTestOppsett() {
         await().atMost(10, SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
         }
-        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
+        val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(basisDato)
@@ -326,7 +407,12 @@ class SykeforloepTest : FellesTestOppsett() {
             )
         val sykmeldingRequest = SykmeldingRequest(kafkaMessageMedEgenmelding)
         val sykeforloepMedSykmelding =
-            hentSykeforloepMedSykmelding(listOf(nyttFnr), hentAndreIdenter = true, sykmeldingRequest = sykmeldingRequest)
+            hentSykeforloepMedSykmelding(
+                listOf(nyttFnr),
+                hentAndreIdenter = true,
+                sykmeldingRequest = sykmeldingRequest,
+                arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER,
+            )
 
         assertThat(sykeforloepMedSykmelding).hasSize(1)
         assertThat(sykeforloepMedSykmelding[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(3))
@@ -423,7 +509,7 @@ class SykeforloepTest : FellesTestOppsett() {
 
         val biterFørGjenopptatt = syketilfellebitRepository.findByFnr(fnr)
         biterFørGjenopptatt.size `should be equal to` 6
-        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
+        val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = false, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))
@@ -434,7 +520,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 syketilfellebitRepository.save(it.copy(slettet = OffsetDateTime.now()))
             }
 
-        val sykeforloep2 = hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
+        val sykeforloep2 = hentSykeforloep(listOf(fnr), hentAndreIdenter = false, arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep2).hasSize(2)
         assertThat(sykeforloep2[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))

@@ -1,6 +1,7 @@
 package no.nav.helse.flex.syketilfelle
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidssituasjonDTO
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
@@ -17,6 +18,7 @@ fun FellesTestOppsett.hentSykeforloep(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     inkluderPapirsykmelding: Boolean = true,
+    arbeidssituasjon: ArbeidssituasjonDTO,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): List<Sykeforloep> {
     val json =
@@ -26,6 +28,7 @@ fun FellesTestOppsett.hentSykeforloep(
                 .header("fnr", fnr.joinToString(separator = ", "))
                 .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                 .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                .queryParam("arbeidssituasjon", arbeidssituasjon.name)
                 .contentType(MediaType.APPLICATION_JSON),
         ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
 
@@ -37,6 +40,7 @@ fun FellesTestOppsett.hentSykeforloepMedSykmelding(
     hentAndreIdenter: Boolean = true,
     inkluderPapirsykmelding: Boolean = true,
     sykmeldingRequest: SykmeldingRequest,
+    arbeidssituasjon: ArbeidssituasjonDTO,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): List<Sykeforloep> {
     val json =
@@ -46,6 +50,7 @@ fun FellesTestOppsett.hentSykeforloepMedSykmelding(
                 .header("fnr", fnr.joinToString(separator = ", "))
                 .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                 .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                .queryParam("arbeidssituasjon", arbeidssituasjon.name)
                 .content(objectMapper.writeValueAsString(sykmeldingRequest))
                 .contentType(MediaType.APPLICATION_JSON),
         ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString

@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidssituasjonDTO
 import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.sykeforloep.SimpleSykmelding
 import no.nav.helse.flex.syketilfelle.ventetid.VentetidFellesOppsett
@@ -52,7 +53,7 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, FellesTestOppsett() {
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 2
         }
-        val sykeforloep = hentSykeforloep(listOf(fnr))
+        val sykeforloep = hentSykeforloep(listOf(fnr), arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(tidligDato)
@@ -107,7 +108,7 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, FellesTestOppsett() {
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 2 + 1
         }
-        val sykeforloep = hentSykeforloep(listOf(fnr))
+        val sykeforloep = hentSykeforloep(listOf(fnr), arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(fom)
@@ -144,7 +145,7 @@ class SykmeldingTombstoneTest : VentetidFellesOppsett, FellesTestOppsett() {
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 2 + 1 + 2
         }
-        val sykeforloep = hentSykeforloep(listOf(fnr))
+        val sykeforloep = hentSykeforloep(listOf(fnr), arbeidssituasjon = ArbeidssituasjonDTO.ARBEIDSTAKER)
 
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(fom)

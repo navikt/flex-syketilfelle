@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidssituasjonDTO
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
@@ -27,6 +28,7 @@ class SykeforloepController(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @RequestParam(required = false) inkluderPapirsykmelding: Boolean = false,
+        @RequestParam(required = false) arbeidssituasjon: String? = null,
         @RequestBody(required = false) sykmelding: SykmeldingRequest? = null,
     ): List<Sykeforloep> {
         clientIdValidation.validateClientId(
@@ -60,6 +62,11 @@ class SykeforloepController(
 
         val alleFnrs = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
         val syketilfellebiter = sykmelding?.sykmeldingKafkaMessage?.mapTilBiter()
-        return sykeforloepUtregner.hentSykeforloep(fnrs = alleFnrs, inkluderPapirsykmelding = inkluderPapirsykmelding, syketilfellebiter)
+        return sykeforloepUtregner.hentSykeforloep(
+            fnrs = alleFnrs,
+            inkluderPapirsykmelding = inkluderPapirsykmelding,
+            syketilfellebiter,
+            enumValueOf<ArbeidssituasjonDTO>(arbeidssituasjon ?: ""),
+        )
     }
 }
