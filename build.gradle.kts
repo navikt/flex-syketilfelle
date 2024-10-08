@@ -34,7 +34,7 @@ val sykepengesoknadKafkaVersion = "2024.09.30-15.52-54e2f03d"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "1.5.2"
 val inntektsmeldingKontrakt = "2024.05.21-09-56-5528e"
-val httpClientVersion = "5.3.1"
+val httpClientVersion = "5.4"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
