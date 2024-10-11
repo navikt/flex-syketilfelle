@@ -34,7 +34,6 @@ val sykepengesoknadKafkaVersion = "2024.09.30-15.52-54e2f03d"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "1.5.2"
 val inntektsmeldingKontrakt = "2024.05.21-09-56-5528e"
-val httpClientVersion = "5.3.1"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -49,11 +48,11 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
     implementation("no.nav.security:token-validation-spring:$tokenSupportVersion")
     implementation("no.nav.security:token-client-spring:$tokenSupportVersion")
     implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
-    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
     implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
     implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
 
