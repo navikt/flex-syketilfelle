@@ -12,8 +12,9 @@ spec:
     minimumInSyncReplicas: 1
     partitions: 20
     replication: 3
-    retentionBytes: -1  # Messages will never be deleted because of disk space
-    retentionHours: -1  # Messages will never be timed out
+    retentionBytes: -1        # Messages will never be deleted because of disk space
+    retentionHours: -1        # Messages will never be timed out
+    localRetentionHours: 24 # 1 dag lagring på rask disk
   acl:
     - team: flex
       application: flex-syketilfelle
