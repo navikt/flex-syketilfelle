@@ -81,8 +81,10 @@ spec:
           namespace: teamsykmelding
         - application: dinesykmeldte-kafka
           namespace: teamsykmelding
+        - application: dinesykmeldte-backend
+          namespace: teamsykmelding
         - application: syfosminfotrygd
-          namespace: teamsykmelding          
+          namespace: teamsykmelding
     outbound:
       external:
   {{#each external-host}}
