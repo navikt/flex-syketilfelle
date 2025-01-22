@@ -33,7 +33,7 @@ val kluentVersion = "1.73"
 val sykepengesoknadKafkaVersion = "2024.12.06-09.11-55fbeea5"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "1.5.5"
-val inntektsmeldingKontrakt = "2024.05.21-09-56-5528e"
+val inntektsmeldingKontrakt = "2025.01.09-03-43-0eb17"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
