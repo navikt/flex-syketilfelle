@@ -79,8 +79,8 @@ spec:
           namespace: teamsykmelding
         - application: syfosmpapirregler
           namespace: teamsykmelding
-        - application: dinesykmeldte-kafka
-          namespace: teamsykmelding
+        - application: dinesykmeldte-backend
+          namespace: team-esyfo
         - application: dinesykmeldte-backend
           namespace: teamsykmelding
         - application: syfosminfotrygd
