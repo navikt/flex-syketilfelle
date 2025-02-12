@@ -48,8 +48,8 @@ class SykeforloepController(
                     app = "syfosmpapirregler",
                 ),
                 NamespaceAndApp(
-                    namespace = "teamsykmelding",
-                    app = "dinesykmeldte-kafka",
+                    namespace = "team-esyfo",
+                    app = "dinesykmeldte-backend",
                 ),
                 NamespaceAndApp(
                     namespace = "teamsykmelding",
