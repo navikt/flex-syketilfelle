@@ -81,8 +81,6 @@ spec:
           namespace: teamsykmelding
         - application: dinesykmeldte-backend
           namespace: team-esyfo
-        - application: dinesykmeldte-backend
-          namespace: teamsykmelding
         - application: syfosminfotrygd
           namespace: teamsykmelding
     outbound:
