@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.not
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
@@ -99,7 +100,7 @@ class VentetidController(
         val context = tokenValidationContextHolder.getTokenValidationContext()
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
-        if (listOf(sykmeldingerFrontendClientId, flexSykmeldingerFrontendClientId).contains(clientId)) {
+        if (!listOf(sykmeldingerFrontendClientId, flexSykmeldingerFrontendClientId).contains(clientId)) {
             throw IngenTilgang("Uventet client id $clientId")
         }
 
