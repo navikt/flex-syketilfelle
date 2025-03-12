@@ -71,6 +71,8 @@ spec:
       rules:
         - application: sykepengesoknad-backend
           namespace: flex
+        - application: flex-sykmeldinger-backend
+          namespace: flex
         - application: sykmeldinger
           namespace: teamsykmelding
         - application: sparenaproxy

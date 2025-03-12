@@ -26,6 +26,8 @@ class VentetidController(
     override val pdlClient: PdlClient,
     @Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
     val sykmeldingerFrontendClientId: String,
+    @Value("\${FLEX_SYKMELDINGER_BACKEND_CLIENT_ID}")
+    val flexSykmeldingerBackendClientId: String,
 ) : MedPdlClient {
     val log = logger()
 
@@ -97,7 +99,7 @@ class VentetidController(
         val context = tokenValidationContextHolder.getTokenValidationContext()
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
-        if (clientId != sykmeldingerFrontendClientId) {
+        if (clientId !in listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId)) {
             throw IngenTilgang("Uventet client id $clientId")
         }
 
