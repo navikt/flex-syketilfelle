@@ -82,7 +82,6 @@ class VentetidController(
         sykmeldingId: String,
     ): ErUtenforVentetidResponse {
         val fnrs = pdlClient.hentFolkeregisterIdenter(fnr)
-        log.info("Forsøker å hente sykeforløp for sykmeldingId=$sykmeldingId")
 
         val utenforVentetid =
             ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, fnrs, ErUtenforVentetidRequest())
