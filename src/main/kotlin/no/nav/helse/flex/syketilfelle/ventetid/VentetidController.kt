@@ -99,7 +99,7 @@ class VentetidController(
         val context = tokenValidationContextHolder.getTokenValidationContext()
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
-        if (!listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId).contains(clientId)) {
+        if (clientId !in listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId)) {
             throw IngenTilgang("Uventet client id $clientId")
         }
 
