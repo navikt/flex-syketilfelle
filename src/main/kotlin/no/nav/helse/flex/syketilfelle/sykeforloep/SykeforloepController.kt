@@ -40,19 +40,7 @@ class SykeforloepController(
                     app = "sparenaproxy",
                 ),
                 NamespaceAndApp(
-                    namespace = "teamsykmelding",
-                    app = "syfosmregler",
-                ),
-                NamespaceAndApp(
-                    namespace = "teamsykmelding",
-                    app = "syfosmpapirregler",
-                ),
-                NamespaceAndApp(
                     namespace = "team-esyfo",
-                    app = "dinesykmeldte-backend",
-                ),
-                NamespaceAndApp(
-                    namespace = "teamsykmelding",
                     app = "dinesykmeldte-backend",
                 ),
                 NamespaceAndApp(

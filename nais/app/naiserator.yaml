@@ -77,14 +77,8 @@ spec:
           namespace: teamsykmelding
         - application: sparenaproxy
           namespace: teamsykmelding
-        - application: syfosmregler
-          namespace: teamsykmelding
-        - application: syfosmpapirregler
-          namespace: teamsykmelding
         - application: dinesykmeldte-backend
           namespace: team-esyfo
-        - application: dinesykmeldte-backend
-          namespace: teamsykmelding
         - application: syfosminfotrygd
           namespace: teamsykmelding
     outbound:
