@@ -24,7 +24,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidTest : VentetidFellesOppsett, FellesTestOppsett() {
+class VentetidTest :
+    FellesTestOppsett(),
+    VentetidFellesOppsett {
     private val mandag = LocalDate.of(2020, Month.JUNE, 1)
     private val søndag = mandag.minusDays(1)
     private val lørdag = mandag.minusDays(2)
@@ -96,28 +98,34 @@ class VentetidTest : VentetidFellesOppsett, FellesTestOppsett() {
 
     @Test
     fun `tokenx api krever riktig audience`() {
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `tokenx api krever token`() {
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     fun `tokenx api krever riktig client id`() {
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isForbidden)
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
@@ -233,8 +241,7 @@ class VentetidTest : VentetidFellesOppsett, FellesTestOppsett() {
         skapApenSykmeldingKafkaMessage(
             fom = LocalDate.of(2020, 11, 23),
             tom = LocalDate.of(2020, 12, 20),
-        )
-            .publiser()
+        ).publiser()
 
         val melding =
             skapApenSykmeldingKafkaMessage(
@@ -342,8 +349,7 @@ class VentetidTest : VentetidFellesOppsett, FellesTestOppsett() {
                                     ),
                                 ),
                         ),
-                )
-                .also { it.publiser() }
+                ).also { it.publiser() }
 
         skapApenSykmeldingKafkaMessage(
             fom = LocalDate.of(2018, 8, 18),

@@ -14,7 +14,8 @@ class KafkaProduseringJob(
     val publisertSyketilfellebit = registry.counter("publisert_syketilfellebit_counter")
 
     fun publiser() {
-        syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false)
+        syketilfellebitRepository
+            .findFirst300ByPublisertOrderByOpprettetAsc(false)
             .forEach {
                 syketilfellebitKafkaProducer.produserMelding(it.tilKafkasyketilfellebit())
                 syketilfellebitRepository.save(it.copy(publisert = true))

@@ -26,14 +26,13 @@ class SyketilfellebitLagring(
     }
 }
 
-fun SyketilfellebitDbRecord.tilSammenlikner(): SyketilfellebitSammenlikner {
-    return SyketilfellebitSammenlikner(
+fun SyketilfellebitDbRecord.tilSammenlikner(): SyketilfellebitSammenlikner =
+    SyketilfellebitSammenlikner(
         tags = tags.tagsFromString(),
         ressursId = ressursId,
         fom = fom,
         tom = tom,
     )
-}
 
 data class SyketilfellebitSammenlikner(
     val tags: Set<Tag>,

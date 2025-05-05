@@ -50,7 +50,8 @@ class LeaderElection(
             val hostname: String = InetAddress.getLocalHost().hostName
 
             val uriString =
-                UriComponentsBuilder.fromUriString(getHttpPath(electorPath))
+                UriComponentsBuilder
+                    .fromUriString(getHttpPath(electorPath))
                     .toUriString()
             val result =
                 plainTextUtf8RestTemplate
@@ -88,7 +89,9 @@ class LeaderElection(
             else -> "http://$url"
         }
 
-    private data class Leader(val name: String)
+    private data class Leader(
+        val name: String,
+    )
 
     private val objectMapper =
         ObjectMapper()

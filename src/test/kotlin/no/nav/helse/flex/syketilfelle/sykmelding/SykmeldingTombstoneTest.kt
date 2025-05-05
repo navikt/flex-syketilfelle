@@ -18,7 +18,9 @@ import java.time.format.DateTimeFormatter.ISO_DATE
 import java.util.concurrent.TimeUnit
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class SykmeldingTombstoneTest : VentetidFellesOppsett, FellesTestOppsett() {
+class SykmeldingTombstoneTest :
+    FellesTestOppsett(),
+    VentetidFellesOppsett {
     override val fnr = "12345432123"
     final val fom = LocalDate.of(2024, 1, 1)
     final val tom = LocalDate.of(2024, 1, 8)

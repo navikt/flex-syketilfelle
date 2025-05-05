@@ -44,63 +44,60 @@ class ArbeidsgiverperiodeUtregner(
             tilleggsbiter = soknad.mapSoknadTilBiter(),
             grense = soknad.tom!!.atStartOfDay(),
             startSyketilfelle = soknad.startSyketilfelle,
-        )
-            ?.lastOrNull {
-                if (it.sisteSykedagEllerFeriedag == null) {
-                    return@lastOrNull it.oppbruktArbeidsgvierperiode()
-                }
-                it.sisteSykedagEllerFeriedag.plusDays(16).isEqualOrAfter(soknad.forsteDagISoknad())
+        )?.lastOrNull {
+            if (it.sisteSykedagEllerFeriedag == null) {
+                return@lastOrNull it.oppbruktArbeidsgvierperiode()
             }
-            ?.let {
-                Arbeidsgiverperiode(
-                    it.dagerAvArbeidsgiverperiode,
-                    it.oppbruktArbeidsgvierperiode(),
-                    it.arbeidsgiverperiode().let { p -> PeriodeDTO(p.first, p.second) },
+            it.sisteSykedagEllerFeriedag.plusDays(16).isEqualOrAfter(soknad.forsteDagISoknad())
+        }?.let {
+            Arbeidsgiverperiode(
+                it.dagerAvArbeidsgiverperiode,
+                it.oppbruktArbeidsgvierperiode(),
+                it.arbeidsgiverperiode().let { p -> PeriodeDTO(p.first, p.second) },
+            )
+        }?.also { arbeidsgiverperiode ->
+            if (!forelopig) {
+                juridiskVurderingKafkaProducer.produserMelding(
+                    JuridiskVurdering(
+                        fodselsnummer = fnrs.first(),
+                        sporing =
+                            hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
+                                .also { map ->
+                                    soknad.sykmeldingId?.let {
+                                        map[SYKMELDING] = listOf(it)
+                                    }
+                                    soknad.arbeidsgiver?.orgnummer?.let {
+                                        map[ORGANISASJONSNUMMER] = listOf(it)
+                                    }
+                                },
+                        input =
+                            mapOf(
+                                "soknad" to soknad.id,
+                                "versjon" to LocalDate.of(2022, 2, 1),
+                            ),
+                        output =
+                            hashMapOf(
+                                "versjon" to LocalDate.of(2022, 2, 1),
+                                "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
+                                "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
+                            ),
+                        lovverk = "folketrygdloven",
+                        paragraf = "8-19",
+                        bokstav = null,
+                        ledd = null,
+                        punktum = null,
+                        lovverksversjon = LocalDate.of(2001, 1, 1),
+                        utfall = Utfall.VILKAR_BEREGNET,
+                    ),
                 )
-            }?.also { arbeidsgiverperiode ->
-                if (!forelopig) {
-                    juridiskVurderingKafkaProducer.produserMelding(
-                        JuridiskVurdering(
-                            fodselsnummer = fnrs.first(),
-                            sporing =
-                                hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
-                                    .also { map ->
-                                        soknad.sykmeldingId?.let {
-                                            map[SYKMELDING] = listOf(it)
-                                        }
-                                        soknad.arbeidsgiver?.orgnummer?.let {
-                                            map[ORGANISASJONSNUMMER] = listOf(it)
-                                        }
-                                    },
-                            input =
-                                mapOf(
-                                    "soknad" to soknad.id,
-                                    "versjon" to LocalDate.of(2022, 2, 1),
-                                ),
-                            output =
-                                hashMapOf(
-                                    "versjon" to LocalDate.of(2022, 2, 1),
-                                    "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
-                                    "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
-                                ),
-                            lovverk = "folketrygdloven",
-                            paragraf = "8-19",
-                            bokstav = null,
-                            ledd = null,
-                            punktum = null,
-                            lovverksversjon = LocalDate.of(2001, 1, 1),
-                            utfall = Utfall.VILKAR_BEREGNET,
-                        ),
-                    )
-                }
             }
+        }
     }
 
-    private fun SykepengesoknadDTO.forsteDagISoknad(): LocalDate {
-        return egenmeldinger?.mapNotNull { it.fom }?.minOrNull()
+    private fun SykepengesoknadDTO.forsteDagISoknad(): LocalDate =
+        egenmeldinger?.mapNotNull { it.fom }?.minOrNull()
             ?: fravarForSykmeldingen?.mapNotNull { it.fom }?.minOrNull()
             ?: fom!!
-    }
 
     private fun finnBiter(fnrs: List<String>) =
         syketilfellebitRepository

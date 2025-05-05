@@ -24,8 +24,8 @@ object PdlMockDispatcher : Dispatcher() {
         return skapResponse(listOf(ident))
     }
 
-    fun skapResponse(identer: List<String>): MockResponse {
-        return MockResponse().setBody(
+    fun skapResponse(identer: List<String>): MockResponse =
+        MockResponse().setBody(
             GetPersonResponse(
                 data =
                     HentIdenterResponseData(
@@ -37,5 +37,4 @@ object PdlMockDispatcher : Dispatcher() {
                 errors = null,
             ).serialisertTilString(),
         )
-    }
 }

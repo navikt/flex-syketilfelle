@@ -50,7 +50,13 @@ class SyketilfelleTest {
         val oppfolgingstilfeller = genererOppfolgingstilfelle(biter)
 
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje).hasSize(1)
-        assertThat(oppfolgingstilfeller?.get(0)?.tidslinje?.get(0)?.dag).isEqualTo(LocalDate.now())
+        assertThat(
+            oppfolgingstilfeller
+                ?.get(0)
+                ?.tidslinje
+                ?.get(0)
+                ?.dag,
+        ).isEqualTo(LocalDate.now())
     }
 
     @Test
@@ -93,7 +99,13 @@ class SyketilfelleTest {
             )
 
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje).hasSize(1)
-        assertThat(oppfolgingstilfeller?.get(0)?.tidslinje?.get(0)?.dag).isEqualTo(LocalDate.now())
+        assertThat(
+            oppfolgingstilfeller
+                ?.get(0)
+                ?.tidslinje
+                ?.get(0)
+                ?.dag,
+        ).isEqualTo(LocalDate.now())
     }
 
     @Test
@@ -135,6 +147,12 @@ class SyketilfelleTest {
             )
 
         assertThat(oppfolgingstilfeller?.get(0)?.tidslinje).hasSize(8)
-        assertThat(oppfolgingstilfeller?.get(0)?.tidslinje?.get(0)?.dag).isEqualTo(LocalDate.now().minusWeeks(1))
+        assertThat(
+            oppfolgingstilfeller
+                ?.get(0)
+                ?.tidslinje
+                ?.get(0)
+                ?.dag,
+        ).isEqualTo(LocalDate.now().minusWeeks(1))
     }
 }

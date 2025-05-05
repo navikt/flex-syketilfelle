@@ -14,7 +14,8 @@ class TombsstoneProduseringJob(
     val publisertSyketilfellebit = registry.counter("publisert_syketilfellebit_counter")
 
     fun publiser() {
-        syketilfellebitRepository.findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc()
+        syketilfellebitRepository
+            .findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc()
             .filter { it.publisert } // Tombstone skal kun produseres for publiserte syketilfellebiter
             .forEach {
                 syketilfellebitKafkaProducer.produserTombstone(it.syketilfellebitId, it.fnr)

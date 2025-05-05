@@ -341,59 +341,74 @@ class SykeforloepTest : FellesTestOppsett() {
     @Test
     fun `Krever fnr header som input`() {
         val json =
-            mockMvc.perform(
-                get("/api/v1/sykeforloep")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+            mockMvc
+                .perform(
+                    get("/api/v1/sykeforloep")
+                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isBadRequest)
+                .andReturn()
+                .response.contentAsString
         json `should be equal to` "{\"reason\":\"Bad Request\"}"
     }
 
     @Test
     fun `Krever riktig subject`() {
         val json =
-            mockMvc.perform(
-                get("/api/v1/sykeforloep")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "slem-app-client-id")}")
-                    .header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isForbidden).andReturn().response.contentAsString
+            mockMvc
+                .perform(
+                    get("/api/v1/sykeforloep")
+                        .header("Authorization", "Bearer ${server.azureToken(subject = "slem-app-client-id")}")
+                        .header("fnr", fnr)
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isForbidden)
+                .andReturn()
+                .response.contentAsString
         json `should be equal to` "{\"reason\":\"UKJENT_CLIENT\"}"
     }
 
     @Test
     fun `Krever auth header`() {
         val json =
-            mockMvc.perform(
-                get("/api/v1/sykeforloep")
-                    .header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isUnauthorized).andReturn().response.contentAsString
+            mockMvc
+                .perform(
+                    get("/api/v1/sykeforloep")
+                        .header("fnr", fnr)
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isUnauthorized)
+                .andReturn()
+                .response.contentAsString
         json `should be equal to` "{\"reason\":\"Unauthorized\"}"
     }
 
     @Test
     fun `Krever gyldig fnr i input`() {
         val json =
-            mockMvc.perform(
-                get("/api/v1/sykeforloep")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                    .header("fnr", "blah")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+            mockMvc
+                .perform(
+                    get("/api/v1/sykeforloep")
+                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                        .header("fnr", "blah")
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isBadRequest)
+                .andReturn()
+                .response.contentAsString
         json `should be equal to` "{\"reason\":\"UGYLDIG_FNR\"}"
     }
 
     @Test
     fun `Kan ikke hente identer fra PDL hvis det er flere enn en ident i requesten`() {
         val json =
-            mockMvc.perform(
-                get("/api/v1/sykeforloep")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                    .header("fnr", "$fnr, $nyttFnr")
-                    .queryParam("hentAndreIdenter", true.toString())
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isBadRequest).andReturn().response.contentAsString
+            mockMvc
+                .perform(
+                    get("/api/v1/sykeforloep")
+                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                        .header("fnr", "$fnr, $nyttFnr")
+                        .queryParam("hentAndreIdenter", true.toString())
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isBadRequest)
+                .andReturn()
+                .response.contentAsString
         json `should be equal to` "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
     }
 
@@ -425,7 +440,8 @@ class SykeforloepTest : FellesTestOppsett() {
         assertThat(sykeforloep).hasSize(1)
         assertThat(sykeforloep[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))
 
-        syketilfellebitRepository.findByFnr(fnr)
+        syketilfellebitRepository
+            .findByFnr(fnr)
             .filter { it.fom == LocalDate.of(2022, 11, 21) }
             .forEach {
                 syketilfellebitRepository.save(it.copy(slettet = OffsetDateTime.now()))

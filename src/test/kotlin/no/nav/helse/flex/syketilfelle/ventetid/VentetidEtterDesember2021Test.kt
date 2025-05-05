@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidEtterDesember2021Test : VentetidFellesOppsett, FellesTestOppsett() {
+class VentetidEtterDesember2021Test :
+    FellesTestOppsett(),
+    VentetidFellesOppsett {
     private val onsdag = LocalDate.of(2022, Month.JANUARY, 5)
 
     @Autowired

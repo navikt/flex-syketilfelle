@@ -61,9 +61,12 @@ class PdlClient(
         throw FunctionalPdlError("Fant ikke person, ingen body eller data. ${parsedResponse.hentErrors()}")
     }
 
-    private fun HentIdenterResponseData.folkeregisteridenter(): List<String> {
-        return this.hentIdenter?.identer?.filter { it.gruppe == FOLKEREGISTERIDENT }?.map { it.ident } ?: emptyList()
-    }
+    private fun HentIdenterResponseData.folkeregisteridenter(): List<String> =
+        this.hentIdenter
+            ?.identer
+            ?.filter {
+                it.gruppe == FOLKEREGISTERIDENT
+            }?.map { it.ident } ?: emptyList()
 
     private fun createHeaderWithTema(): HttpHeaders {
         val headers = createHeader()
@@ -77,19 +80,21 @@ class PdlClient(
         return headers
     }
 
-    private fun requestToJson(graphQLRequest: Any): String {
-        return try {
+    private fun requestToJson(graphQLRequest: Any): String =
+        try {
             ObjectMapper().writeValueAsString(graphQLRequest)
         } catch (e: JsonProcessingException) {
             throw RuntimeException(e)
         }
-    }
 
-    private fun GetPersonResponse?.hentErrors(): String? {
-        return this?.errors?.map { it.message }?.joinToString(" - ")
-    }
+    private fun GetPersonResponse?.hentErrors(): String? = this?.errors?.map { it.message }?.joinToString(" - ")
 
-    class FunctionalPdlError(message: String) : RuntimeException(message)
+    class FunctionalPdlError(
+        message: String,
+    ) : RuntimeException(message)
 }
 
-data class GraphQLRequest(val query: String, val variables: Map<String, String>)
+data class GraphQLRequest(
+    val query: String,
+    val variables: Map<String, String>,
+)

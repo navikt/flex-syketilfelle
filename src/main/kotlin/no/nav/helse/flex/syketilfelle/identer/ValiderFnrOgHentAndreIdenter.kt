@@ -30,23 +30,26 @@ interface MedPdlClient {
     }
 }
 
-class FlereIdenterVedHentingException : AbstractApiError(
-    message = "Kan ikke ha flere identer i input når vi skal hente flere identer",
-    httpStatus = HttpStatus.BAD_REQUEST,
-    reason = "FLERE_IDENTER_OG_HENTING",
-    loglevel = LogLevel.ERROR,
-)
+class FlereIdenterVedHentingException :
+    AbstractApiError(
+        message = "Kan ikke ha flere identer i input når vi skal hente flere identer",
+        httpStatus = HttpStatus.BAD_REQUEST,
+        reason = "FLERE_IDENTER_OG_HENTING",
+        loglevel = LogLevel.ERROR,
+    )
 
-class ManglerIdenterException : AbstractApiError(
-    message = "Må ha hvertfall en ident i input",
-    httpStatus = HttpStatus.BAD_REQUEST,
-    reason = "MANGLER_IDENTER",
-    loglevel = LogLevel.ERROR,
-)
+class ManglerIdenterException :
+    AbstractApiError(
+        message = "Må ha hvertfall en ident i input",
+        httpStatus = HttpStatus.BAD_REQUEST,
+        reason = "MANGLER_IDENTER",
+        loglevel = LogLevel.ERROR,
+    )
 
-class FeilIdentException : AbstractApiError(
-    message = "Forventer ident med 11 siffer",
-    httpStatus = HttpStatus.BAD_REQUEST,
-    reason = "UGYLDIG_FNR",
-    loglevel = LogLevel.ERROR,
-)
+class FeilIdentException :
+    AbstractApiError(
+        message = "Forventer ident med 11 siffer",
+        httpStatus = HttpStatus.BAD_REQUEST,
+        reason = "UGYLDIG_FNR",
+        loglevel = LogLevel.ERROR,
+    )
