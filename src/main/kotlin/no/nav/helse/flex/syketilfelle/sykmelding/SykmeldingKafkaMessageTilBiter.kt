@@ -23,10 +23,13 @@ private val objectMapper =
         .configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE, true)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-class Periode(val fom: LocalDate, val tom: LocalDate)
+class Periode(
+    val fom: LocalDate,
+    val tom: LocalDate,
+)
 
-fun SykmeldingKafkaMessage.mapTilEgenmeldingBiter(): List<Syketilfellebit> {
-    return event.sporsmals
+fun SykmeldingKafkaMessage.mapTilEgenmeldingBiter(): List<Syketilfellebit> =
+    event.sporsmals
         ?.firstOrNull { it.shortName == ShortNameDTO.EGENMELDINGSDAGER }
         ?.svar
         ?.let { objectMapper.readValue(it) as List<String> }
@@ -45,7 +48,6 @@ fun SykmeldingKafkaMessage.mapTilEgenmeldingBiter(): List<Syketilfellebit> {
             )
         }
         ?: emptyList()
-}
 
 fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
     val sykmeldingsperioderBiter =
@@ -75,8 +77,7 @@ fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
             ?.svar
             ?.let {
                 return@let objectMapper.readValue(it) as List<Periode>
-            }
-            ?.map {
+            }?.map {
                 Syketilfellebit(
                     orgnummer = this.event.arbeidsgiver?.orgnummer,
                     inntruffet = this.event.timestamp.tilOsloZone(),
@@ -97,8 +98,9 @@ fun SykmeldingKafkaMessage.mapTilBiter(): List<Syketilfellebit> {
     }
 }
 
-fun List<LocalDate>.groupConsecutiveDays(): List<Periode> {
-    return this.sorted()
+fun List<LocalDate>.groupConsecutiveDays(): List<Periode> =
+    this
+        .sorted()
         .fold(emptyList()) { perioder, dato ->
             if (perioder.isEmpty() || perioder.last().tom.plusDays(1) != dato) {
                 perioder + Periode(dato, dato)
@@ -106,7 +108,6 @@ fun List<LocalDate>.groupConsecutiveDays(): List<Periode> {
                 perioder.dropLast(1) + Periode(fom = perioder.last().fom, tom = dato)
             }
         }
-}
 
 private fun SykmeldingsperiodeAGDTO.finnTagsForPeriode(sykmeldingKafkaMessage: SykmeldingKafkaMessage): Set<Tag> {
     val tags = ArrayList<Tag>()
@@ -147,8 +148,8 @@ private fun SykmeldingsperiodeAGDTO.finnTagsForPeriode(sykmeldingKafkaMessage: S
     return tags.toSet()
 }
 
-private fun SykmeldingKafkaMessage.finnStatustag(): Tag {
-    return when (val statusEvent = this.event.statusEvent) {
+private fun SykmeldingKafkaMessage.finnStatustag(): Tag =
+    when (val statusEvent = this.event.statusEvent) {
         STATUS_APEN -> Tag.NY
         STATUS_AVBRUTT -> Tag.AVBRUTT
         STATUS_UTGATT -> Tag.UTGAATT
@@ -158,4 +159,3 @@ private fun SykmeldingKafkaMessage.finnStatustag(): Tag {
             throw IllegalStateException("Mottok en ukjent statusevent: $statusEvent")
         }
     }
-}

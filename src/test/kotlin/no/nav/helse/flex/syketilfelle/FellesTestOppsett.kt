@@ -89,16 +89,17 @@ abstract class FellesTestOppsett {
         topic: String,
         headers: Headers = RecordHeaders(),
     ) {
-        kafkaProducer.send(
-            ProducerRecord(
-                topic,
-                null,
-                null,
-                key,
-                value,
-                headers,
-            ),
-        ).get()
+        kafkaProducer
+            .send(
+                ProducerRecord(
+                    topic,
+                    null,
+                    null,
+                    key,
+                    value,
+                    headers,
+                ),
+            ).get()
     }
 
     fun producerPåInntektsmeldingTopic(inntektsmelding: Inntektsmelding) =

@@ -14,11 +14,14 @@ fun <K, V> Consumer<K, V>.subscribeHvisIkkeSubscribed(vararg topics: String) {
     }
 }
 
-fun <K, V> Consumer<K, V>.hentProduserteRecords(duration: Duration = Duration.ofMillis(100)): List<ConsumerRecord<K, V>> {
-    return this.poll(duration).also {
-        this.commitSync()
-    }.iterator().asSequence().toList()
-}
+fun <K, V> Consumer<K, V>.hentProduserteRecords(duration: Duration = Duration.ofMillis(100)): List<ConsumerRecord<K, V>> =
+    this
+        .poll(duration)
+        .also {
+            this.commitSync()
+        }.iterator()
+        .asSequence()
+        .toList()
 
 fun <K, V> Consumer<K, V>.ventPåRecords(
     antall: Int,
@@ -40,11 +43,9 @@ fun <K, V> Consumer<K, V>.ventPåRecords(
     return alle
 }
 
-fun List<ConsumerRecord<String, String>>.tilJuridiskVurdering(): List<JuridiskVurderingKafkaDto> {
-    return this
+fun List<ConsumerRecord<String, String>>.tilJuridiskVurdering(): List<JuridiskVurderingKafkaDto> =
+    this
         .map {
             assertSubsumsjonsmelding(it.value())
             it.value()
-        }
-        .map { objectMapper.readValue(it) }
-}
+        }.map { objectMapper.readValue(it) }

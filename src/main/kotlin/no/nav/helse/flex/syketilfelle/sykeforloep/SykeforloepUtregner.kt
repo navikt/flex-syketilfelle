@@ -26,15 +26,13 @@ class SykeforloepUtregner(
             .toMutableList()
             .also {
                 it.addAll(syketilfellebiter ?: emptyList())
-            }
-            .filter { it.slettet == null }
+            }.filter { it.slettet == null }
             .filter {
                 if (inkluderPapirsykmelding) {
                     return@filter it.tags.contains(Tag.SYKMELDING) || it.tags.contains(Tag.PAPIRSYKMELDING)
                 }
                 return@filter it.tags.contains(Tag.SYKMELDING)
-            }
-            .groupBy { it.ressursId }
+            }.groupBy { it.ressursId }
             .map { SimpleSykmelding(id = it.key, tom = it.value.senesteTom(), fom = it.value.firstFom()) }
             .grupperSykmeldingerIForloep()
             .sortedBy { it.oppfolgingsdato }
@@ -72,17 +70,11 @@ fun List<SimpleSykmelding>.grupperSykmeldingerIForloep(): List<Sykeforloep> {
     return alleSykeforloep
 }
 
-fun List<Syketilfellebit>.senesteTom(): LocalDate {
-    return this.maxOf { it.tom }
-}
+fun List<Syketilfellebit>.senesteTom(): LocalDate = this.maxOf { it.tom }
 
-fun List<Syketilfellebit>.firstFom(): LocalDate {
-    return this.minOf { it.fom }
-}
+fun List<Syketilfellebit>.firstFom(): LocalDate = this.minOf { it.fom }
 
-fun Sykeforloep.sisteDagIForloep(): LocalDate {
-    return this.sykmeldinger.maxOf { it.tom }
-}
+fun Sykeforloep.sisteDagIForloep(): LocalDate = this.sykmeldinger.maxOf { it.tom }
 
 data class Sykeforloep(
     var oppfolgingsdato: LocalDate,
@@ -98,6 +90,4 @@ data class SimpleSykmelding(
 private fun antallDagerMellom(
     tidligst: LocalDate,
     eldst: LocalDate,
-): Int {
-    return ChronoUnit.DAYS.between(tidligst, eldst).toInt() - 1
-}
+): Int = ChronoUnit.DAYS.between(tidligst, eldst).toInt() - 1

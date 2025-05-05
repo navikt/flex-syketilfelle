@@ -19,7 +19,9 @@ import java.time.temporal.TemporalAdjusters.previous
 import java.util.ArrayList
 
 @Component
-class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRepository) {
+class VentetidUtregner(
+    private val syketilfellebitRepository: SyketilfellebitRepository,
+) {
     val log = logger()
     final val koronaPeriodeMedFireDager =
         LocalDate.of(2020, Month.MARCH, 16).rangeTo(LocalDate.of(2021, Month.SEPTEMBER, 30))
@@ -49,8 +51,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
                             it.addAll(to.mapTilBiter(sykmeldingId, fnrs.first()))
                         }
                     }
-                }
-                .toList()
+                }.toList()
 
         val aktuellSykmeldingBiter = syketilfellebiter.filter { it.ressursId == sykmeldingId }
 
@@ -61,13 +62,12 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
 
         val sykmeldingSisteTom = aktuellSykmeldingBiter.maxOf { it.tom }
 
-        fun Periode.kuttBitSomErLengreEnnAktuellTom(): Periode {
-            return if (this.tom.isAfter(sykmeldingSisteTom)) {
+        fun Periode.kuttBitSomErLengreEnnAktuellTom(): Periode =
+            if (this.tom.isAfter(sykmeldingSisteTom)) {
                 this.copy(tom = sykmeldingSisteTom)
             } else {
                 this
             }
-        }
 
         return syketilfellebiter
             .asSequence()
@@ -81,8 +81,7 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
                         Tag.ANNET_FRAVAR,
                     ).contains(t)
                 }
-            }
-            .filterNot { it.tags.contains(Tag.REISETILSKUDD) }
+            }.filterNot { it.tags.contains(Tag.REISETILSKUDD) }
             .filterNot { it.tags.contains(Tag.AVVENTENDE) }
             .map { it.tilPeriode() }
             .map { it.splittPeriodeMedBehandlingsdagerIPerioderForHverMandag() }
@@ -95,15 +94,14 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
             .erUtenforVentetid()
     }
 
-    private fun Syketilfellebit.tilPeriode(): Periode {
-        return Periode(
+    private fun Syketilfellebit.tilPeriode(): Periode =
+        Periode(
             tom = this.tom,
             fom = this.fom,
             redusertVentePeriode = this.tags.contains(Tag.REDUSERT_ARBEIDSGIVERPERIODE),
             behandlingsdager = this.tags.contains(Tag.BEHANDLINGSDAGER),
             ressursId = this.ressursId,
         )
-    }
 
     private data class Periode(
         val fom: LocalDate,
@@ -168,20 +166,21 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         return true
     }
 
-    private fun List<Periode>.fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId: String): List<Periode> {
-        return this.map { periode ->
+    private fun List<Periode>.fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId: String): List<Periode> =
+        this.map { periode ->
             val sisteDagIPerioden = periode.tom.getDayOfWeek()
-            if (periode.ressursId == sykmeldingId && (sisteDagIPerioden == SATURDAY || sisteDagIPerioden == SUNDAY) &&
-                !periode.tom.with(
-                    previous(FRIDAY),
-                ).isBefore(periode.fom)
+            if (periode.ressursId == sykmeldingId &&
+                (sisteDagIPerioden == SATURDAY || sisteDagIPerioden == SUNDAY) &&
+                !periode.tom
+                    .with(
+                        previous(FRIDAY),
+                    ).isBefore(periode.fom)
             ) {
                 periode.copy(tom = periode.tom.with(previous(FRIDAY)))
             } else {
                 periode
             }
         }
-    }
 
     private fun List<Periode>.erUtenforVentetid(): Boolean {
         var index = 0
@@ -191,14 +190,16 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
                 return true
             }
             if (periode.redusertVentePeriode) {
-                if (periode in koronaPeriodeMedSeksDager && DAYS.between(
+                if (periode in koronaPeriodeMedSeksDager &&
+                    DAYS.between(
                         periode.fom,
                         periode.tom,
                     ) >= 5
                 ) { // fra og med 6 dag
                     return true
                 }
-                if (periode in koronaPeriodeMedFireDager && DAYS.between(
+                if (periode in koronaPeriodeMedFireDager &&
+                    DAYS.between(
                         periode.fom,
                         periode.tom,
                     ) >= 3
@@ -214,16 +215,14 @@ class VentetidUtregner(private val syketilfellebitRepository: SyketilfellebitRep
         return false
     }
 
-    private operator fun ClosedRange<LocalDate>.contains(periode: Periode): Boolean {
-        return contains(periode.fom) || contains(periode.tom)
-    }
+    private operator fun ClosedRange<LocalDate>.contains(periode: Periode): Boolean = contains(periode.fom) || contains(periode.tom)
 }
 
 private fun Tilleggsopplysninger.mapTilBiter(
     ressursId: String,
     fnr: String,
-): List<Syketilfellebit> {
-    return this.egenmeldingsperioder?.map {
+): List<Syketilfellebit> =
+    this.egenmeldingsperioder?.map {
         Syketilfellebit(
             fom = it.fom,
             tom = it.tom,
@@ -235,8 +234,5 @@ private fun Tilleggsopplysninger.mapTilBiter(
             orgnummer = null,
         )
     } ?: emptyList()
-}
 
-private fun LocalDate.isBeforeOrEqual(other: LocalDate): Boolean {
-    return this == other || this.isBefore(other)
-}
+private fun LocalDate.isBeforeOrEqual(other: LocalDate): Boolean = this == other || this.isBefore(other)

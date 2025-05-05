@@ -20,21 +20,20 @@ class SyketilfellebitKafkaProducer(
     private val log = logger()
     private val headers = RecordHeaders().also { it.add(RecordHeader("kilde", "flex-syketilfelle".toByteArray())) }
 
-    fun kalkulerPartisjonForFnr(fnr: String): Int {
-        return kalkulerPartisjon(fnr.toByteArray(), antallPartisjoner)
-    }
+    fun kalkulerPartisjonForFnr(fnr: String): Int = kalkulerPartisjon(fnr.toByteArray(), antallPartisjoner)
 
     fun produserMelding(kafkaSyketilfellebit: KafkaSyketilfellebit) {
         try {
-            producer.send(
-                ProducerRecord(
-                    SYKETILFELLEBIT_TOPIC,
-                    kalkulerPartisjonForFnr(kafkaSyketilfellebit.fnr),
-                    kafkaSyketilfellebit.id,
-                    kafkaSyketilfellebit,
-                    headers,
-                ),
-            ).get()
+            producer
+                .send(
+                    ProducerRecord(
+                        SYKETILFELLEBIT_TOPIC,
+                        kalkulerPartisjonForFnr(kafkaSyketilfellebit.fnr),
+                        kafkaSyketilfellebit.id,
+                        kafkaSyketilfellebit,
+                        headers,
+                    ),
+                ).get()
         } catch (e: Throwable) {
             log.error(
                 "Feil ved sending av syketilfellebit id: ${kafkaSyketilfellebit.id} til topic: $SYKETILFELLEBIT_TOPIC.",
@@ -49,9 +48,10 @@ class SyketilfellebitKafkaProducer(
         fnr: String,
     ) {
         try {
-            producer.send(
-                ProducerRecord(SYKETILFELLEBIT_TOPIC, kalkulerPartisjonForFnr(fnr), key, null, headers),
-            ).get()
+            producer
+                .send(
+                    ProducerRecord(SYKETILFELLEBIT_TOPIC, kalkulerPartisjonForFnr(fnr), key, null, headers),
+                ).get()
         } catch (e: Throwable) {
             log.error(
                 "Feil ved sending av tombstone for key: $key til topic: $SYKETILFELLEBIT_TOPIC.",
@@ -65,6 +65,4 @@ class SyketilfellebitKafkaProducer(
 fun kalkulerPartisjon(
     keyBytes: ByteArray,
     antallPartisjoner: Int,
-): Int {
-    return Utils.toPositive(Utils.murmur2(keyBytes)) % (antallPartisjoner)
-}
+): Int = Utils.toPositive(Utils.murmur2(keyBytes)) % (antallPartisjoner)

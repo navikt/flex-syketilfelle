@@ -13,8 +13,8 @@ fun skapArbeidsgiverSykmelding(
     sykmeldingId: String = UUID.randomUUID().toString(),
     harRedusertArbeidsgiverperiode: Boolean = false,
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-): ArbeidsgiverSykmelding {
-    return ArbeidsgiverSykmelding(
+): ArbeidsgiverSykmelding =
+    ArbeidsgiverSykmelding(
         id = sykmeldingId,
         mottattTidspunkt = OffsetDateTime.now(),
         arbeidsgiver = ArbeidsgiverAGDTO(null, null),
@@ -60,4 +60,3 @@ fun skapArbeidsgiverSykmelding(
         utenlandskSykmelding = null,
         signaturDato = null,
     )
-}

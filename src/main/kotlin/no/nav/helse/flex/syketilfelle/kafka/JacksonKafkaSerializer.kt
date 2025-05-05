@@ -9,13 +9,14 @@ import org.apache.kafka.common.serialization.Serializer
 
 class JacksonKafkaSerializer<T : Any> : Serializer<T> {
     val objectMapper: ObjectMapper =
-        ObjectMapper().apply {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        }.also {
-            it.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        }
+        ObjectMapper()
+            .apply {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            }.also {
+                it.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            }
 
     override fun serialize(
         topic: String?,

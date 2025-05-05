@@ -22,13 +22,12 @@ class SykepengesoknadLagring(
         }
     }
 
-    private fun SykepengesoknadDTO.skalBehandles(): Boolean {
-        return when (this.type) {
+    private fun SykepengesoknadDTO.skalBehandles(): Boolean =
+        when (this.type) {
             ARBEIDSTAKERE -> true
             BEHANDLINGSDAGER, GRADERT_REISETILSKUDD -> {
                 this.arbeidssituasjon == ArbeidssituasjonDTO.ARBEIDSTAKER
             }
             else -> false
         }
-    }
 }

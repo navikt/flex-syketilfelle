@@ -106,14 +106,14 @@ class VentetidController(
         return claims
     }
 
-    private fun JwtTokenClaims.fnrFraIdportenTokenX(): String {
-        return this.getStringClaim("pid")
-    }
+    private fun JwtTokenClaims.fnrFraIdportenTokenX(): String = this.getStringClaim("pid")
 }
 
-private class IngenTilgang(override val message: String) : AbstractApiError(
-    message = message,
-    httpStatus = HttpStatus.FORBIDDEN,
-    reason = "INGEN_TILGANG",
-    loglevel = LogLevel.WARN,
-)
+private class IngenTilgang(
+    override val message: String,
+) : AbstractApiError(
+        message = message,
+        httpStatus = HttpStatus.FORBIDDEN,
+        reason = "INGEN_TILGANG",
+        loglevel = LogLevel.WARN,
+    )

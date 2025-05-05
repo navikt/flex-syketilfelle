@@ -66,6 +66,10 @@ dependencies {
     testImplementation("com.networknt:json-schema-validator:$jsonSchemaValidatorVersion")
 }
 
+ktlint {
+    version.set("1.5.0")
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)

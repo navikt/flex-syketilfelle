@@ -26,24 +26,25 @@ fun FellesTestOppsett.kallArbeidsgiverperiodeApi(
 ): Arbeidsgiverperiode? {
     val requestBody = SoknadOgSykmelding(soknad, sykmelding)
     val result =
-        mockMvc.perform(
-            MockMvcRequestBuilders.post("/api/v2/arbeidsgiverperiode")
-                .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                .header("fnr", fnr)
-                .header("forelopig", forelopig.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestBody)),
-        )
-            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v2/arbeidsgiverperiode")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .header("forelopig", forelopig.toString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(requestBody)),
+            ).andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
             .andExpect(
                 if (expectNoContent) {
                     MockMvcResultMatchers.status().isNoContent
                 } else {
                     MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 },
-            )
-            .andReturn()
-    return result.response.contentAsString.takeIf { it.isNotBlank() }
+            ).andReturn()
+    return result.response.contentAsString
+        .takeIf { it.isNotBlank() }
         ?.let { objectMapper.readValue(it) }
 }
 

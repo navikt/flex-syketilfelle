@@ -30,7 +30,8 @@ class SykmeldingLagring(
             sykmeldingKafkaMessage == null -> {
                 val slettetTimestamp = OffsetDateTime.now()
                 val biter =
-                    syketilfellebitRepository.findByRessursId(key)
+                    syketilfellebitRepository
+                        .findByRessursId(key)
                         .filter { it.slettet == null }
                         .filter {
                             when (topic) {
@@ -45,8 +46,7 @@ class SykmeldingLagring(
                                     true
                                 }
                             }
-                        }
-                        .map { it.copy(slettet = slettetTimestamp) }
+                        }.map { it.copy(slettet = slettetTimestamp) }
 
                 if (biter.isEmpty()) {
                     log.info("Mottok tombstone for sykmelding $key på kafka. Ingen tilhørende biter.")
@@ -60,7 +60,8 @@ class SykmeldingLagring(
                 // Slett de gamle som ikke lengre stemmer
                 val identer = pdlClient.hentFolkeregisterIdenter(sykmeldingKafkaMessage.kafkaMetadata.fnr)
                 val biter =
-                    syketilfellebitRepository.findByFnrIn(identer)
+                    syketilfellebitRepository
+                        .findByFnrIn(identer)
                         .filter { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }
                         .filter { it.tags.tagsFromString().contains(Tag.EGENMELDING) }
                         .map { it.copy(slettet = OffsetDateTime.now()) }

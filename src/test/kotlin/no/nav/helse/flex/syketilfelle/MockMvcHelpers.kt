@@ -20,14 +20,17 @@ fun FellesTestOppsett.hentSykeforloep(
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): List<Sykeforloep> {
     val json =
-        mockMvc.perform(
-            get("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer $token")
-                .header("fnr", fnr.joinToString(separator = ", "))
-                .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
-                .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+        mockMvc
+            .perform(
+                get("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
 
     return objectMapper.readValue(json)
 }
@@ -40,15 +43,18 @@ fun FellesTestOppsett.hentSykeforloepMedSykmelding(
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): List<Sykeforloep> {
     val json =
-        mockMvc.perform(
-            post("/api/v1/sykeforloep")
-                .header("Authorization", "Bearer $token")
-                .header("fnr", fnr.joinToString(separator = ", "))
-                .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
-                .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
-                .content(objectMapper.writeValueAsString(sykmeldingRequest))
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+        mockMvc
+            .perform(
+                post("/api/v1/sykeforloep")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .queryParam("inkluderPapirsykmelding", inkluderPapirsykmelding.toString())
+                    .content(objectMapper.writeValueAsString(sykmeldingRequest))
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
 
     return objectMapper.readValue(json)
 }
@@ -58,11 +64,14 @@ fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     sykmeldingId: String,
 ): ErUtenforVentetidResponse {
     val json =
-        mockMvc.perform(
-            get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
-                .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
 
     return objectMapper.readValue(json)
 }
@@ -75,14 +84,17 @@ fun FellesTestOppsett.erUtenforVentetid(
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): Boolean {
     val json =
-        mockMvc.perform(
-            post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
-                .header("Authorization", "Bearer $token")
-                .header("fnr", fnr.joinToString(separator = ", "))
-                .content(objectMapper.writeValueAsString(erUtenforVentetidRequest))
-                .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
-                .contentType(MediaType.APPLICATION_JSON),
-        ).andExpect(MockMvcResultMatchers.status().isOk).andReturn().response.contentAsString
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .content(objectMapper.writeValueAsString(erUtenforVentetidRequest))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
 
     return objectMapper.readValue(json)
 }
@@ -94,17 +106,18 @@ fun MockOAuth2Server.azureToken(
 ): String {
     val claims = HashMap<String, String>()
 
-    return this.issueToken(
-        issuer,
-        subject,
-        DefaultOAuth2TokenCallback(
-            issuerId = issuer,
-            subject = subject,
-            audience = listOf(audience),
-            claims = claims,
-            expiry = 3600,
-        ),
-    ).serialize()
+    return this
+        .issueToken(
+            issuer,
+            subject,
+            DefaultOAuth2TokenCallback(
+                issuerId = issuer,
+                subject = subject,
+                audience = listOf(audience),
+                claims = claims,
+                expiry = 3600,
+            ),
+        ).serialize()
 }
 
 fun MockOAuth2Server.tokenxToken(
@@ -119,8 +132,8 @@ fun MockOAuth2Server.tokenxToken(
             "client_id" to clientId,
             "pid" to fnr,
         ),
-): String {
-    return issueToken(
+): String =
+    issueToken(
         issuerId,
         clientId,
         DefaultOAuth2TokenCallback(
@@ -131,4 +144,3 @@ fun MockOAuth2Server.tokenxToken(
             expiry = 3600,
         ),
     ).serialize()
-}
