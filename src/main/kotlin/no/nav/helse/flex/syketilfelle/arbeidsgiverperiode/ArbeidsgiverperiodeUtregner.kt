@@ -57,42 +57,71 @@ class ArbeidsgiverperiodeUtregner(
             )
         }?.also { arbeidsgiverperiode ->
             if (!forelopig) {
-                juridiskVurderingKafkaProducer.produserMelding(
-                    JuridiskVurdering(
-                        fodselsnummer = fnrs.first(),
-                        sporing =
-                            hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
-                                .also { map ->
-                                    soknad.sykmeldingId?.let {
-                                        map[SYKMELDING] = listOf(it)
-                                    }
-                                    soknad.arbeidsgiver?.orgnummer?.let {
-                                        map[ORGANISASJONSNUMMER] = listOf(it)
-                                    }
-                                },
-                        input =
-                            mapOf(
-                                "soknad" to soknad.id,
-                                "versjon" to LocalDate.of(2022, 2, 1),
-                            ),
-                        output =
-                            hashMapOf(
-                                "versjon" to LocalDate.of(2022, 2, 1),
-                                "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
-                                "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
-                            ),
-                        lovverk = "folketrygdloven",
-                        paragraf = "8-19",
-                        bokstav = null,
-                        ledd = null,
-                        punktum = null,
-                        lovverksversjon = LocalDate.of(2001, 1, 1),
-                        utfall = Utfall.VILKAR_BEREGNET,
+                listOf(
+                    skapJuridiskVurdering(
+                        fnr = fnrs.first(),
+                        soknad = soknad,
+                        arbeidsgiverperiode = arbeidsgiverperiode,
+                        ledd = 2,
                     ),
-                )
+                    skapJuridiskVurdering(
+                        fnr = fnrs.first(),
+                        soknad = soknad,
+                        arbeidsgiverperiode = arbeidsgiverperiode,
+                        ledd = 3,
+                    ),
+                    skapJuridiskVurdering(
+                        fnr = fnrs.first(),
+                        soknad = soknad,
+                        arbeidsgiverperiode = arbeidsgiverperiode,
+                        ledd = 4,
+                    ),
+                ).forEach {
+                    juridiskVurderingKafkaProducer.produserMelding(
+                        it,
+                    )
+                }
             }
         }
     }
+
+    private fun skapJuridiskVurdering(
+        fnr: String,
+        soknad: SykepengesoknadDTO,
+        arbeidsgiverperiode: Arbeidsgiverperiode,
+        ledd: Int,
+    ): JuridiskVurdering =
+        JuridiskVurdering(
+            fodselsnummer = fnr,
+            sporing =
+                hashMapOf(SporingType.SOKNAD to listOf(soknad.id))
+                    .also { map ->
+                        soknad.sykmeldingId?.let {
+                            map[SYKMELDING] = listOf(it)
+                        }
+                        soknad.arbeidsgiver?.orgnummer?.let {
+                            map[ORGANISASJONSNUMMER] = listOf(it)
+                        }
+                    },
+            input =
+                mapOf(
+                    "soknad" to soknad.id,
+                    "versjon" to LocalDate.of(2022, 2, 1),
+                ),
+            output =
+                hashMapOf(
+                    "versjon" to LocalDate.of(2022, 2, 1),
+                    "arbeidsgiverperiode" to arbeidsgiverperiode.arbeidsgiverPeriode,
+                    "oppbruktArbeidsgiverperiode" to arbeidsgiverperiode.oppbruktArbeidsgiverperiode,
+                ),
+            lovverk = "folketrygdloven",
+            paragraf = "8-19",
+            bokstav = null,
+            ledd = ledd,
+            punktum = null,
+            lovverksversjon = LocalDate.of(2001, 1, 1),
+            utfall = Utfall.VILKAR_BEREGNET,
+        )
 
     private fun SykepengesoknadDTO.forsteDagISoknad(): LocalDate =
         egenmeldinger?.mapNotNull { it.fom }?.minOrNull()
