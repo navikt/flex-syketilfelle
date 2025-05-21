@@ -76,34 +76,39 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
         assertThat(res.arbeidsgiverPeriode.fom).isEqualTo(soknad.fom)
         assertThat(res.arbeidsgiverPeriode.tom).isEqualTo(soknad.tom)
 
-        val vurdering =
+        val antallJuridiskeVurderingerForEnSoknad = 3
+        val vurderinger =
             juridiskVurderingKafkaConsumer
-                .ventPåRecords(antall = 1, duration = Duration.ofSeconds(5))
-                .tilJuridiskVurdering()
-                .first { it.paragraf == "8-19" }
+                .ventPåRecords(
+                    antall = 1 * antallJuridiskeVurderingerForEnSoknad,
+                    duration = Duration.ofSeconds(5),
+                ).tilJuridiskVurdering()
+                .filter { it.paragraf == "8-19" }
 
-        vurdering.ledd.`should be null`()
-        vurdering.bokstav.`should be null`()
-        vurdering.punktum.`should be null`()
-        vurdering.kilde `should be equal to` "flex-syketilfelle"
-        vurdering.versjonAvKode `should be equal to` "flex-syketilfelle-12432536"
+        vurderinger.forEachIndexed { index, vurdering ->
+            vurdering.ledd `should be equal to` index + 2
+            vurdering.bokstav.`should be null`()
+            vurdering.punktum.`should be null`()
+            vurdering.kilde `should be equal to` "flex-syketilfelle"
+            vurdering.versjonAvKode `should be equal to` "flex-syketilfelle-12432536"
 
-        vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
-        vurdering.input `should be equal to`
-            mapOf(
-                "soknad" to soknad.id,
-                "versjon" to "2022-02-01",
-            )
-        vurdering.output `should be equal to`
-            mapOf(
-                "arbeidsgiverperiode" to
-                    mapOf(
-                        "fom" to "2019-03-01",
-                        "tom" to "2019-03-16",
-                    ),
-                "oppbruktArbeidsgiverperiode" to false,
-                "versjon" to "2022-02-01",
-            )
+            vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
+            vurdering.input `should be equal to`
+                mapOf(
+                    "soknad" to soknad.id,
+                    "versjon" to "2022-02-01",
+                )
+            vurdering.output `should be equal to`
+                mapOf(
+                    "arbeidsgiverperiode" to
+                        mapOf(
+                            "fom" to "2019-03-01",
+                            "tom" to "2019-03-16",
+                        ),
+                    "oppbruktArbeidsgiverperiode" to false,
+                    "versjon" to "2022-02-01",
+                )
+        }
     }
 
     @Test

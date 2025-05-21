@@ -82,6 +82,10 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : FellesTestOppsett() {
         assertThat(ag2.arbeidsgiverPeriode.fom).isEqualTo(soknad2.fom)
         assertThat(ag2.arbeidsgiverPeriode.tom).isEqualTo(soknad2.fom!!.plusDays(15))
 
-        juridiskVurderingKafkaConsumer.ventPåRecords(antall = 2, duration = Duration.ofSeconds(5))
+        val antallJuridiskeVurderingerForEnSoknad = 3
+        juridiskVurderingKafkaConsumer.ventPåRecords(
+            antall = 2 * antallJuridiskeVurderingerForEnSoknad,
+            duration = Duration.ofSeconds(5),
+        )
     }
 }
