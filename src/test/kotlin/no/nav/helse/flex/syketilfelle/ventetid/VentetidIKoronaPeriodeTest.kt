@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidEtterDesember2021Test :
+class VentetidIKoronaPeriodeTest :
     FellesTestOppsett(),
     VentetidFellesOppsett {
     private val onsdag = LocalDate.of(2022, Month.JANUARY, 5)
@@ -29,7 +29,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `periode på 6 dager er utenfor ventetiden`() {
+    fun `Periode på 6 dager er utenfor ventetiden`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = onsdag,
@@ -44,7 +44,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `periode på 5 dager er innenfor ventetiden`() {
+    fun `Periode på 5 dager er innenfor ventetiden`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = onsdag,
@@ -59,7 +59,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `tidligere periode på 6 eller flere dager teller ikke hvis opphold er over 16 dager ved redusert venteperiode`() {
+    fun `Tidligere periode på 6 dager eller mer teller ikke hvis opphold er over 16 dager ved redusert venteperiode`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = onsdag,
@@ -80,7 +80,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `tidligere periode teller hvis opphold er mindre enn 16 dager`() {
+    fun `Tidligere periode teller hvis opphold er mindre enn 16 dager`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = onsdag,
@@ -101,7 +101,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `tidligere periode under 6 dager er innenfor venteperiode`() {
+    fun `Tidligere periode under 6 dager er innenfor ventetiden`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = onsdag,
@@ -122,7 +122,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `redusert venteperiode på 4 dager gjelder ikke i fra 1 desember 2021`() {
+    fun `Redusert venteperiode på 4 dager gjelder ikke i fra 1 desember 2021`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2021, 11, 1),
@@ -137,7 +137,7 @@ class VentetidEtterDesember2021Test :
     }
 
     @Test
-    fun `utenfor venteperiode når tom er på grensa`() {
+    fun `Periode er utenfor ventetiden når sluttdato er lik første dag av koronaperioden med seks dagers grense`() {
         val grensa = LocalDate.of(2021, 12, 6)
         val melding =
             skapApenSykmeldingKafkaMessage(
