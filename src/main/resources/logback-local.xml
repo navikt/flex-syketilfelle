@@ -9,9 +9,7 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="no.nav.helse.flex" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
+    <logger name="no.nav.helse.flex" level="DEBUG"/>
 
     <logger name="org.springframework" level="INFO"/>
 </configuration>

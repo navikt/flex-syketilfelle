@@ -3,8 +3,9 @@ package no.nav.helse.flex.syketilfelle
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
-import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
+import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeResponse
+import no.nav.helse.flex.syketilfelle.ventetid.VentetidRequest
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
@@ -76,11 +77,34 @@ fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     return objectMapper.readValue(json)
 }
 
+fun FellesTestOppsett.hentVenteperiode(
+    fnr: List<String>,
+    hentAndreIdenter: Boolean = true,
+    sykmeldingId: String,
+    ventetidRequest: VentetidRequest,
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
+): VenteperiodeResponse {
+    val json =
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .content(objectMapper.writeValueAsString(ventetidRequest))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
 fun FellesTestOppsett.erUtenforVentetid(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,
-    erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    ventetidRequest: VentetidRequest,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): Boolean {
     val json =
@@ -89,7 +113,7 @@ fun FellesTestOppsett.erUtenforVentetid(
                 post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
                     .header("Authorization", "Bearer $token")
                     .header("fnr", fnr.joinToString(separator = ", "))
-                    .content(objectMapper.writeValueAsString(erUtenforVentetidRequest))
+                    .content(objectMapper.writeValueAsString(ventetidRequest))
                     .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)

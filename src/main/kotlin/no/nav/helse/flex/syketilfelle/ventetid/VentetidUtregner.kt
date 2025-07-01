@@ -17,17 +17,23 @@ import java.time.temporal.TemporalAdjusters.next
 import java.time.temporal.TemporalAdjusters.nextOrSame
 import java.time.temporal.TemporalAdjusters.previous
 
+const val SEKS_DAGER = 6L
+const val FIRE_DAGER = 4L
+const val SEKSTEN_DAGER = 16L
+
 @Component
 class VentetidUtregner(
     private val syketilfellebitRepository: SyketilfellebitRepository,
 ) {
     val log = logger()
+
     final val koronaPeriodeMedFireDager =
         LocalDate.of(2020, Month.MARCH, 16).rangeTo(LocalDate.of(2021, Month.SEPTEMBER, 30))
+
     final val koronaPeriodeMedSeksDager =
         LocalDate.of(2021, Month.DECEMBER, 6).rangeTo(LocalDate.of(2022, Month.JUNE, 30))
 
-    // Forbedrer ytelse ved å skiller ut konstante verdier sånn at settet ikke gjenopprettes for hvert kall.
+    // Skiller ut konstanter sånn at settet ikke gjenopprettes for hvert kall.
     private companion object {
         private val AKTIVITET_TAGS =
             setOf(
@@ -53,47 +59,84 @@ class VentetidUtregner(
 
     fun beregnOmSykmeldingErUtenforVentetid(
         sykmeldingId: String,
-        fnrs: List<String>,
-        erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean {
+        identer: List<String>,
+        ventetidRequest: VentetidRequest,
+    ): Boolean = beregnVenteperiode(sykmeldingId, identer, ventetidRequest) != null
+
+    fun beregnVenteperiode(
+        sykmeldingId: String,
+        identer: List<String>,
+        ventetidRequest: VentetidRequest,
+    ): Venteperiode? {
         val biter =
             syketilfellebitRepository
-                .findByFnrIn(fnrs)
+                .findByFnrIn(identer)
                 .filter { it.slettet == null }
                 .map { it.tilSyketilfellebit() }
                 .utenKorrigerteSoknader()
 
-        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, fnrs, erUtenforVentetidRequest)
-
+        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, ventetidRequest)
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
             log.error("Fant ikke biter til sykmelding $sykmeldingId i flex-syketilfelledatabasen.")
-            return false
+            return null
         }
 
         val sykmeldingSisteTom = aktuellSykmeldingBiter.maxOf { it.tom }
 
-        return sykmeldingBiter
-            .asSequence()
-            .filter { it.tags.contains(Tag.SYKMELDING) }
-            .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
-            .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
-            .map { it.tilPeriode() }
-            .flatMap { it.splittPeriodeMedBehandlingsdagerIPerioderForHverMandag() }
-            .filter { it.fom <= sykmeldingSisteTom }
-            .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom) }
-            .toList()
-            .mergePerioder()
-            .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
-            .erUtenforVentetid()
+        val perioder =
+            sykmeldingBiter
+                .asSequence()
+                .filter { it.tags.contains(Tag.SYKMELDING) }
+                .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
+                .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+                .map { it.tilPeriode() }
+                .flatMap { it.splittPeriodeMedBehandlingsdagerTilMandager() }
+                .filter { it.fom <= sykmeldingSisteTom }
+                .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom) }
+                .toList()
+                .mergePerioder()
+                .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
+
+        perioder.beregnVenteperiode()?.let { beregnetVenteperiode ->
+            return Venteperiode(
+                fom = beregnetVenteperiode.fom,
+                tom = beregnVenteperiodeTom(beregnetVenteperiode.fom, perioder),
+            )
+        }
+
+        return null
     }
+
+    private fun List<Periode>.beregnVenteperiode(): Periode? {
+        // Hvis gjeldende periode innefor ventetid men det er 16 dager mellom gjeldende og forrige periode, og forrige
+        // periode var utenfor ventetid, brukes forrige periode.
+        if (size >= 2) {
+            val (gjeldendePeriode, forrigePeriode) = this
+            if (!gjeldendePeriode.erLengreEnnVentetid() && !erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetid()) {
+                return forrigePeriode
+            }
+        }
+        // Går gjennom periodene og finern den første som kvalifiserer som venteperiode.
+        for ((index, periode) in withIndex()) {
+            when {
+                periode.erLengreEnnVentetid() -> return periode
+                erForLengeSidenForrigePeriode(index) -> return null
+            }
+        }
+
+        return null
+    }
+
+    private fun Periode.erLengreEnnVentetid(): Boolean =
+        erLengreEnnStandardVentetid() || (redusertVentePeriode && erLengreEnnKoronaVentetid())
 
     private fun lagSykmeldingBiter(
         baseBiter: List<Syketilfellebit>,
         sykmeldingId: String,
         fnrs: List<String>,
-        request: ErUtenforVentetidRequest,
+        request: VentetidRequest,
     ): List<Syketilfellebit> =
         baseBiter.toMutableList().apply {
             request.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
@@ -137,16 +180,15 @@ class VentetidUtregner(
             this
         }
 
-    private fun Periode.splittPeriodeMedBehandlingsdagerIPerioderForHverMandag(): List<Periode> {
+    private fun Periode.splittPeriodeMedBehandlingsdagerTilMandager(): List<Periode> {
         if (!this.behandlingsdager) {
             return listOf(this)
         }
 
-        // Lazy: evaluerer kun så mange mandager som nødvendig.
-        return generateSequence(this.fom.with(nextOrSame(MONDAY))) { currentMonday ->
-            currentMonday.with(next(MONDAY)).takeIf { !it.isAfter(this.tom) }
-        }.map { mandag -> this.copy(fom = mandag, tom = mandag) }
-            .toList()
+        // Lazy: evaluerer så lenge neste mandag er før periodens tom.
+        return generateSequence(this.fom.with(nextOrSame(MONDAY))) { aktuellMandag ->
+            aktuellMandag.with(next(MONDAY)).takeIf { !it.isAfter(this.tom) }
+        }.map { mandag -> this.copy(fom = mandag, tom = mandag) }.toList()
     }
 
     // Slår sammen periode som ligger kant i kant, eller som har kun helgedager mellom periodene.
@@ -189,11 +231,12 @@ class VentetidUtregner(
     ): Boolean {
         val dagerMellomPeriodene = DAYS.between(gjeldendePeriode.tom, nestePeriode.fom)
 
-        if (dagerMellomPeriodene > 3) {
+        // Trekker fra 1 dag siden fom er inclusive.
+        if (dagerMellomPeriodene > FIRE_DAGER - 1) {
             return false
         }
 
-        // Sjekk at alle dager mellom periodene er helgedager.
+        // Sjekk om alle dager mellom periodene er helgedager.
         return (1 until dagerMellomPeriodene)
             .asSequence()
             .map { gjeldendePeriode.tom.plusDays(it) }
@@ -220,33 +263,29 @@ class VentetidUtregner(
     private fun Periode.skalJusteresForHelg(sykmeldingId: String): Boolean =
         ressursId == sykmeldingId && (tom.dayOfWeek == SATURDAY || tom.dayOfWeek == SUNDAY)
 
-    private fun List<Periode>.erUtenforVentetid(): Boolean {
-        this.forEachIndexed { index, periode ->
-            if (periode.erLangNokForStandardVentetid()) {
-                return true
-            }
+    private fun beregnVenteperiodeTom(
+        fom: LocalDate,
+        perioder: List<Periode>,
+    ): LocalDate {
+        val harRedusertVenteperiode = perioder.any { it.redusertVentePeriode }
+        val erKoronaPeriodeMedSeksDager = perioder.any { it.erKoronaPeriodeMedSeksDager() }
+        val erKoronaPeriodeMedFireDager = perioder.any { it.erKoronaPeriodeMedFireDager() }
 
-            if (periode.redusertVentePeriode && periode.erLangNokForKoronaVentetid()) {
-                return true
-            }
-
-            if (this.erForLengeSidenForrigePeriode(index)) {
-                return false
-            }
+        return when {
+            harRedusertVenteperiode && erKoronaPeriodeMedSeksDager -> fom.plusDays(SEKS_DAGER - 1L)
+            harRedusertVenteperiode && erKoronaPeriodeMedFireDager -> fom.plusDays(FIRE_DAGER - 1L)
+            else -> fom.plusDays(SEKSTEN_DAGER - 1L)
         }
-        return false
     }
 
-    private fun Periode.erLangNokForStandardVentetid(): Boolean = DAYS.between(this.fom, this.tom) >= 16
+    private fun Periode.erLengreEnnStandardVentetid(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
-    private fun Periode.erLangNokForKoronaVentetid(): Boolean =
+    private fun Periode.erLengreEnnKoronaVentetid(): Boolean =
         when {
-            erKoronaPeriodeMedSeksDager() -> erLangNokForKoronaVentetid(5)
-            erKoronaPeriodeMedFireDager() -> erLangNokForKoronaVentetid(3)
+            erKoronaPeriodeMedSeksDager() -> DAYS.between(this.fom, this.tom) >= SEKS_DAGER - 1L
+            erKoronaPeriodeMedFireDager() -> DAYS.between(this.fom, this.tom) >= FIRE_DAGER - 1L
             else -> false
         }
-
-    private fun Periode.erLangNokForKoronaVentetid(terskel: Long): Boolean = DAYS.between(this.fom, this.tom) >= terskel
 
     private fun Periode.erKoronaPeriodeMedSeksDager(): Boolean =
         koronaPeriodeMedSeksDager.contains(this.fom) || koronaPeriodeMedSeksDager.contains(this.tom)
@@ -257,7 +296,7 @@ class VentetidUtregner(
     private fun List<Periode>.erForLengeSidenForrigePeriode(index: Int): Boolean {
         val gjeldendePeriode = this[index]
         val nestePeriode = this.getOrNull(index + 1) ?: return false
-        return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > 16
+        return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
 
     private data class LoggbarPeriode(

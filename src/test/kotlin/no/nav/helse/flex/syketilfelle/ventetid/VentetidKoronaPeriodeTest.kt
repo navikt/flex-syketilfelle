@@ -2,7 +2,9 @@ package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
+import no.nav.helse.flex.syketilfelle.hentVenteperiode
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
@@ -12,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidIKoronaPeriodeTest :
+class VentetidKoronaPeriodeTest :
     FellesTestOppsett(),
     VentetidFellesOppsett {
     private val onsdag = LocalDate.of(2022, Month.JANUARY, 5)
@@ -36,11 +38,21 @@ class VentetidIKoronaPeriodeTest :
                 tom = onsdag.plusDays(5),
                 harRedusertArbeidsgiverperiode = true,
             ).also { it.publiser() }
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be true`()
+
+        hentVenteperiode(
+            listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            ventetidRequest = VentetidRequest(),
+        ).venteperiode.also {
+            it!!.fom `should be equal to` onsdag
+            it.tom `should be equal to` onsdag.plusDays(SEKS_DAGER - 1L)
+        }
     }
 
     @Test
@@ -51,10 +63,11 @@ class VentetidIKoronaPeriodeTest :
                 tom = onsdag.plusDays(4),
                 harRedusertArbeidsgiverperiode = true,
             ).also { it.publiser() }
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be false`()
     }
 
@@ -72,10 +85,11 @@ class VentetidIKoronaPeriodeTest :
             tom = onsdag.minusDays(17),
             harRedusertArbeidsgiverperiode = true,
         ).publiser()
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be false`()
     }
 
@@ -93,11 +107,21 @@ class VentetidIKoronaPeriodeTest :
             tom = onsdag.minusDays(15),
             harRedusertArbeidsgiverperiode = true,
         ).publiser()
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be true`()
+
+        hentVenteperiode(
+            listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            ventetidRequest = VentetidRequest(),
+        ).venteperiode.also {
+            it!!.fom `should be equal to` onsdag.minusDays(22)
+            it.tom `should be equal to` it.fom.plusDays(SEKS_DAGER - 1L)
+        }
     }
 
     @Test
@@ -114,10 +138,11 @@ class VentetidIKoronaPeriodeTest :
             tom = onsdag.minusDays(2),
             harRedusertArbeidsgiverperiode = true,
         ).publiser()
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be false`()
     }
 
@@ -129,26 +154,37 @@ class VentetidIKoronaPeriodeTest :
                 tom = LocalDate.of(2021, 11, 4),
                 harRedusertArbeidsgiverperiode = true,
             ).also { it.publiser() }
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be false`()
     }
 
     @Test
     fun `Periode er utenfor ventetiden når sluttdato er lik første dag av koronaperioden med seks dagers grense`() {
-        val grensa = LocalDate.of(2021, 12, 6)
+        val tom = LocalDate.of(2021, 12, 6)
         val melding =
             skapApenSykmeldingKafkaMessage(
-                fom = grensa.minusDays(5),
-                tom = grensa,
+                fom = tom.minusDays(5),
+                tom = tom,
                 harRedusertArbeidsgiverperiode = true,
             ).also { it.publiser() }
+
         erUtenforVentetid(
             listOf(element = fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ventetidRequest = VentetidRequest(),
         ).`should be true`()
+
+        hentVenteperiode(
+            listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            ventetidRequest = VentetidRequest(),
+        ).venteperiode.also {
+            it!!.fom `should be equal to` tom.minusDays(SEKS_DAGER - 1L)
+            it.tom `should be equal to` tom
+        }
     }
 }
