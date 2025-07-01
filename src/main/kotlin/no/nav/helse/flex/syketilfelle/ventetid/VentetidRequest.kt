@@ -3,7 +3,7 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import java.time.LocalDate
 
-data class ErUtenforVentetidRequest(
+data class VentetidRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
 )
