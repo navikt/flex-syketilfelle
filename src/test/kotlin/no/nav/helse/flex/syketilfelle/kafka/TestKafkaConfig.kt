@@ -1,5 +1,7 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
+import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -8,11 +10,24 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.config.TopicBuilder
+import org.springframework.kafka.core.KafkaAdmin
 
 @Configuration
 class TestKafkaConfig(
     private val aivenKafkaConfig: AivenKafkaConfig,
 ) {
+    @Bean
+    fun createKafkaAdmin(): KafkaAdmin = KafkaAdmin(aivenKafkaConfig.commonConfig())
+
+    @Bean
+    fun lagSykmeldingBekreftetTopic(): NewTopic =
+        TopicBuilder
+            .name(SYKMELDINGBEKREFTET_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build()
+
     @Bean
     fun kafkaProducer(): KafkaProducer<String, String> {
         val config =
