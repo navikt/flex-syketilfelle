@@ -158,14 +158,16 @@ class VentetidUtregner(
 
         return sortertePerioder
             .drop(1)
-            .fold(mutableListOf(sortertePerioder.first())) { akkumulerteListe, gjeldendePeriode ->
-                val nestePeriode = akkumulerteListe.last()
+            .fold(mutableListOf(sortertePerioder.first())) { akkumulerteListe, forrigePeriode ->
+                val gjeldendePeriode = akkumulerteListe.last()
 
-                if (skalMerges(gjeldendePeriode, nestePeriode)) {
-                    log.info("gjeldendePeriode: $gjeldendePeriode merges med sistePeriode: $nestePeriode")
-                    akkumulerteListe[akkumulerteListe.lastIndex] = mergePerioder(gjeldendePeriode, nestePeriode)
+                if (skalMerges(forrigePeriode, gjeldendePeriode)) {
+                    log.info(
+                        "Gjeldende periode: ${gjeldendePeriode.tilLoggbarPeriode()} merges med forrige periode: ${forrigePeriode.tilLoggbarPeriode()}",
+                    )
+                    akkumulerteListe[akkumulerteListe.lastIndex] = mergePerioder(forrigePeriode, gjeldendePeriode)
                 } else {
-                    akkumulerteListe.add(gjeldendePeriode)
+                    akkumulerteListe.add(forrigePeriode)
                 }
                 akkumulerteListe
             }.sortedByDescending { it.tom }
@@ -258,6 +260,12 @@ class VentetidUtregner(
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > 16
     }
 
+    private data class LoggbarPeriode(
+        val id: String,
+        val fom: LocalDate,
+        val tom: LocalDate,
+    )
+
     private data class Periode(
         val fom: LocalDate,
         val tom: LocalDate,
@@ -265,4 +273,11 @@ class VentetidUtregner(
         val behandlingsdager: Boolean,
         val ressursId: String,
     )
+
+    private fun Periode.tilLoggbarPeriode() =
+        LoggbarPeriode(
+            id = ressursId,
+            fom = fom,
+            tom = tom,
+        )
 }
