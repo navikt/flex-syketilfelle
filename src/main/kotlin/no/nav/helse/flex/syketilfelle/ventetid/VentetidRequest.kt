@@ -8,6 +8,17 @@ data class VentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
 )
 
+data class VenteperiodeRequest(
+    val tilleggsopplysninger: Tilleggsopplysninger? = null,
+    val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+)
+
+fun VentetidRequest.tilVenteperiodeRequest(): VenteperiodeRequest =
+    VenteperiodeRequest(
+        tilleggsopplysninger = tilleggsopplysninger,
+        sykmeldingKafkaMessage = sykmeldingKafkaMessage,
+    )
+
 data class Tilleggsopplysninger(
     val egenmeldingsperioder: List<Datospenn>?,
 )

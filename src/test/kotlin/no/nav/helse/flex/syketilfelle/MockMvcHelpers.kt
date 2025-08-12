@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
+import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeRequest
 import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeResponse
 import no.nav.helse.flex.syketilfelle.ventetid.VentetidRequest
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -81,7 +82,7 @@ fun FellesTestOppsett.hentVenteperiode(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,
-    ventetidRequest: VentetidRequest,
+    venteperiodeRequest: VenteperiodeRequest,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): VenteperiodeResponse {
     val json =
@@ -90,7 +91,7 @@ fun FellesTestOppsett.hentVenteperiode(
                 post("/api/v1/ventetid/$sykmeldingId/venteperiode")
                     .header("Authorization", "Bearer $token")
                     .header("fnr", fnr.joinToString(separator = ", "))
-                    .content(objectMapper.writeValueAsString(ventetidRequest))
+                    .content(objectMapper.writeValueAsString(venteperiodeRequest))
                     .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)
