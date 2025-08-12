@@ -44,7 +44,7 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody ventetidRequest: VentetidRequest,
     ): Boolean {
-        validerRequest(ventetidRequest, sykmeldingId)
+        validerVenteperiodeRequest(ventetidRequest.tilVenteperiodeRequest(), sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
@@ -61,19 +61,19 @@ class VentetidController(
     )
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
-    fun kalkulerVenteperiode(
+    fun hentVenteperiode(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @PathVariable sykmeldingId: String,
-        @RequestBody ventetidRequest: VentetidRequest,
+        @RequestBody venteperiodeRequest: VenteperiodeRequest,
     ): VenteperiodeResponse {
-        validerRequest(ventetidRequest, sykmeldingId)
+        validerVenteperiodeRequest(venteperiodeRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         val venteperiode =
             ventetidUtregner.beregnVenteperiode(
                 sykmeldingId = sykmeldingId,
-                ventetidRequest = ventetidRequest,
+                venteperiodeRequest = venteperiodeRequest,
                 identer = identer,
             )
         return VenteperiodeResponse(venteperiode)
@@ -103,8 +103,8 @@ class VentetidController(
         return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
     }
 
-    private fun validerRequest(
-        ventetidRequest: VentetidRequest,
+    private fun validerVenteperiodeRequest(
+        venteperiodeRequest: VenteperiodeRequest,
         sykmeldingId: String,
     ) {
         clientIdValidation.validateClientId(
@@ -113,7 +113,7 @@ class VentetidController(
                 app = "sykepengesoknad-backend",
             ),
         )
-        with(ventetidRequest) {
+        with(venteperiodeRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
                 throw IllegalArgumentException("sykmeldingId i path er ikke samme som i request body.")
             }

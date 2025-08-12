@@ -61,12 +61,12 @@ class VentetidUtregner(
         sykmeldingId: String,
         identer: List<String>,
         ventetidRequest: VentetidRequest,
-    ): Boolean = beregnVenteperiode(sykmeldingId, identer, ventetidRequest) != null
+    ): Boolean = beregnVenteperiode(sykmeldingId, identer, ventetidRequest.tilVenteperiodeRequest()) != null
 
     fun beregnVenteperiode(
         sykmeldingId: String,
         identer: List<String>,
-        ventetidRequest: VentetidRequest,
+        venteperiodeRequest: VenteperiodeRequest,
     ): Venteperiode? {
         val biter =
             syketilfellebitRepository
@@ -75,7 +75,7 @@ class VentetidUtregner(
                 .map { it.tilSyketilfellebit() }
                 .utenKorrigerteSoknader()
 
-        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, ventetidRequest)
+        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, venteperiodeRequest)
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
@@ -136,13 +136,13 @@ class VentetidUtregner(
         baseBiter: List<Syketilfellebit>,
         sykmeldingId: String,
         fnrs: List<String>,
-        request: VentetidRequest,
+        venteperiodeRequest: VenteperiodeRequest,
     ): List<Syketilfellebit> =
         baseBiter.toMutableList().apply {
-            request.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
+            venteperiodeRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
                 addAll(sykmeldingMessage.mapTilBiter())
             }
-            request.tilleggsopplysninger?.let { tilleggsopplysninger ->
+            venteperiodeRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
                 addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, fnrs.first()))
             }
         }

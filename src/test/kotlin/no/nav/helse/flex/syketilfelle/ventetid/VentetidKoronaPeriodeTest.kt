@@ -48,7 +48,7 @@ class VentetidKoronaPeriodeTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag
             it.tom `should be equal to` onsdag.plusDays(SEKS_DAGER - 1L)
@@ -117,7 +117,7 @@ class VentetidKoronaPeriodeTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag.minusDays(22)
             it.tom `should be equal to` it.fom.plusDays(SEKS_DAGER - 1L)
@@ -181,7 +181,7 @@ class VentetidKoronaPeriodeTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` tom.minusDays(SEKS_DAGER - 1L)
             it.tom `should be equal to` tom
