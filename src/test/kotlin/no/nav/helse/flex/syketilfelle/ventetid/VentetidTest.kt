@@ -59,7 +59,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag
             it.tom `should be equal to` onsdag.plusDays(SEKSTEN_DAGER - 1)
@@ -103,7 +103,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
         ).venteperiode `should be equal to` null
     }
 
@@ -124,7 +124,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` sondag
             it.tom `should be equal to` sondag.plusDays(SEKSTEN_DAGER - 1)
@@ -169,7 +169,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` fredag.minusDays(16)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -254,7 +254,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag.minusDays(31)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -370,7 +370,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode `should be equal to` null
     }
 
@@ -392,7 +392,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode `should be equal to` null
     }
 
@@ -414,7 +414,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode `should be equal to` null
     }
 
@@ -436,7 +436,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` mandag
             it.tom `should be equal to` mandag.plusDays(FIRE_DAGER - 1)
@@ -460,7 +460,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode `should be equal to` null
     }
 
@@ -488,7 +488,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag.minusDays(31)
             it.tom `should be equal to` it.fom.plusDays(FIRE_DAGER - 1)
@@ -577,7 +577,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` mandag.minusDays(20)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -607,7 +607,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(),
+            venteperiodeRequest = VenteperiodeRequest(),
         ).venteperiode.also {
             it!!.fom `should be equal to` mandag.minusDays(21)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -640,7 +640,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag.minusDays(1)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -666,7 +666,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -702,7 +702,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -738,7 +738,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 12)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 27)
@@ -774,7 +774,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -810,7 +810,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -846,7 +846,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -927,7 +927,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -942,7 +942,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -972,7 +972,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -988,7 +988,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -1020,7 +1020,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, 11, 23)
                 it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
@@ -1056,7 +1056,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, 8, 14)
                 it.tom `should be equal to` LocalDate.of(2020, 8, 29)
@@ -1092,7 +1092,7 @@ class VentetidTest :
         hentVenteperiode(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            ventetidRequest = VentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
+            venteperiodeRequest = VenteperiodeRequest(tilleggsopplysninger = tilleggsopplysninger),
         ).venteperiode.also {
             it!!.fom `should be equal to` onsdag.minusDays(1)
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1L)
