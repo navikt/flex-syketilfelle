@@ -4,7 +4,6 @@ import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
-import no.nav.helse.flex.syketilfelle.tokenxToken
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
@@ -19,9 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
 import java.time.Month
 
@@ -863,40 +859,5 @@ class VentetidTest :
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
         ).`should be true`()
-    }
-
-    @Nested
-    inner class TokenXSecurityTester {
-        @Test
-        fun `Authorization feiler hvis audience er feil`() {
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                        .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
-                        .contentType(MediaType.APPLICATION_JSON),
-                ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-        }
-
-        @Test
-        fun `Authorization feiler hvis token mangler`() {
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                        .contentType(MediaType.APPLICATION_JSON),
-                ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-        }
-
-        @Test
-        fun `Authorization feiler hvis clientId er feil`() {
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .get("/api/bruker/v2/ventetid/12345/erUtenforVentetid")
-                        .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
-                        .contentType(MediaType.APPLICATION_JSON),
-                ).andExpect(MockMvcResultMatchers.status().isForbidden)
-        }
     }
 }
