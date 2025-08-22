@@ -191,6 +191,8 @@ class VentetidTest :
         ).`should be false`()
     }
 
+    // --------------------------------------------------------------------
+
     @Test
     fun `Tidligere periode under 16 dager teller ikke`() {
         val melding =
@@ -260,6 +262,8 @@ class VentetidTest :
             it.tom `should be equal to` it.fom.plusDays(SEKSTEN_DAGER - 1)
         }
     }
+
+    // -----------------------------------
 
     @Test
     fun `Tidligere periode over 16 dager teller ikke hvis opphold er akkurat 16 dager`() {
