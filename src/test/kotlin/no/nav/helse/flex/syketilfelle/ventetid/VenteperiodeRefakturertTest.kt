@@ -35,11 +35,9 @@ class VenteperiodeRefakturertTest :
     final override val fnr = "11111111111"
 
     /**
-     * Venteperioden er 16 dager.
-     * Kort Periode: Sykmeldingsperiode på 16 dager eller mindre.
-     * Lang Periode: Sykmeldingsperiode lengre enn 16 dager.
-     *
      * 1. juli 2024 er en mandag.
+     *
+     * Venteperioden: 16 dager.
      *
      * Alle kalenderdager telles i venteperioden på 16 dager. Også helgedager. Samtidig betaler
      * ikke Nav for helgedager. Derfor telles lørdag og søndag hvis venteperioden starter i en helg, men
@@ -166,21 +164,6 @@ class VenteperiodeRefakturertTest :
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 )
 
-            println("fom day of week: ${melding.sykmelding.sykmeldingsperioder.first().fom.dayOfWeek}")
-            println("tom day of week: ${melding.sykmelding.sykmeldingsperioder.first().tom.dayOfWeek}")
-            println(
-                "days between: ${
-                    java.time.temporal.ChronoUnit.DAYS.between(
-                        melding.sykmelding.sykmeldingsperioder
-                            .first()
-                            .fom,
-                        melding.sykmelding.sykmeldingsperioder
-                            .first()
-                            .tom,
-                    ) + 1
-                }",
-            )
-
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -196,42 +179,6 @@ class VenteperiodeRefakturertTest :
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
         }
-
-        @Test
-        fun `Siste periode er bare én dag lang`() {
-            val melding1 =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
-
-            val melding2 =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 17),
-                    tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).`should be false`()
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).`should be true`()
-
-            hentVenteperiode(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
-            }
-        }
     }
 
     /**
@@ -240,7 +187,7 @@ class VenteperiodeRefakturertTest :
     @Nested
     inner class SammenhengendePerioder {
         @Test
-        fun `To perioder til sammen mindre enn 16 dager er innenfor ventetiden`() {
+        fun `To perioder til sammen 16 dager er innenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -248,7 +195,6 @@ class VenteperiodeRefakturertTest :
                 ).also { it.publiser() }
 
             val melding2 =
-
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 9),
                     tom = LocalDate.of(2024, Month.JULY, 16),
@@ -280,7 +226,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `To perioder til sammen over 16 dager er utenfor ventetiden`() {
+        fun `To perioder til 17 dager er utenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -448,7 +394,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Tre perioder til sammen mindre enn 16 dager er innenfor ventetiden`() {
+        fun `Tre perioder til sammen 16 dager er innenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -505,7 +451,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Tre perioder til sammen over 16 dager er utenfor ventetiden`() {
+        fun `Tre perioder til sammen 17 dager er utenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -565,7 +511,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Tre perioder til sammen over 16 dager på grunn av helger utenfor ventetiden`() {
+        fun `Tre perioder til sammen over 16 dager på grunn av helg er utenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -623,16 +569,56 @@ class VenteperiodeRefakturertTest :
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
+
+        @Test
+        fun `To perider til sammen 17 dager hvor siste periode bar er én dag lang er utenfor ventetden`() {
+            val melding1 =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 16),
+                ).also { it.publiser() }
+
+            val melding2 =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 17),
+                    tom = LocalDate.of(2024, Month.JULY, 17),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding1.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
     }
 
     /**
      * Tidligere utbetalte (perioder utenfor ventetiden) perioden teller på ventetide på neste periode hvis oppholdet
      * mellom perioden er 16 dager eller mindre.
+     *
+     * Kort Periode: Sykmeldingsperiode på 16 dager eller mindre.
+     * Lang Periode: Sykmeldingsperiode lengre enn 16 dager.
+     *
      */
     @Nested
     inner class OppholdMellomPerioder {
         @Test
-        fun `Kort periode påvirker ikke kort periode selv om opphold er mindre enn 17 dager`() {
+        fun `Kort periode påvirker ikke kort periode selv om opphold er kortere enn 17 dager`() {
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 16),
@@ -652,7 +638,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Kort periode påvirker ikke lang periode selv om opphold er mindre enn 17 dager`() {
+        fun `Kort periode påvirker ikke lang periode selv om opphold er kortere enn 17 dager`() {
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 10),
@@ -681,7 +667,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Lang periode påvirker kort periode teller hvis opphold er mindre enn 17 dager`() {
+        fun `Lang periode påvirker kort periode teller hvis opphold er kortere enn 17 dager`() {
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
@@ -689,7 +675,7 @@ class VenteperiodeRefakturertTest :
 
             val melding =
                 skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 18),
+                    fom = LocalDate.of(2024, Month.JULY, 21),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                 ).also { it.publiser() }
 
@@ -711,7 +697,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Lang periode påvirker ikke neste periode hvis opphold er men enn 16 dager`() {
+        fun `Lang periode påvirker ikke neste periode hvis opphold er lengre enn 16 dager`() {
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
@@ -884,7 +870,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Sykmelding udner 16 dager med flere sammenhengende egenmeldingsperiode til sammen over 16 dager er utenfor ventetiden`() {
+        fun `Kort sykmelding med sammenhengende egenmeldingsperioder til sammen over 16 dager er utenfor ventetiden`() {
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1130,7 +1116,7 @@ class VenteperiodeRefakturertTest :
     @Nested
     inner class IkkeTellendePeriodetyper {
         @Test
-        fun `Lang avventede sykmelding påvirker ikke ventetiden`() {
+        fun `Lang Avventede Sykmelding påvirker ikke ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1170,7 +1156,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Lang sykmelding med reisetilskudd påvirker ikke ventetiden`() {
+        fun `Lang sykmelding med Reisetilskudd påvirker ikke ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1210,7 +1196,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `Lang sykmelding med behandlingsdager påvirker ikke ventetiden`() {
+        fun `Lang sykmelding med Behandlingsdager påvirker ikke ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
