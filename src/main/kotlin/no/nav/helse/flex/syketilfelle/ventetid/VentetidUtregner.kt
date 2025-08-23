@@ -231,9 +231,9 @@ class VentetidUtregner(
     ): Boolean {
         val dagerMellomPeriodene = DAYS.between(gjeldendePeriode.tom, nestePeriode.fom)
 
-        // TODO: Sjekk om denne er nødvendig som den er siden den kan slippe gjennom 3 dager.
-        // Trekker fra 1 dag siden fom er inclusive.
-        if (dagerMellomPeriodene > FIRE_DAGER - 1) {
+        // Siden 'fom' og 'tom' i perioden er inclusive vil sammenhengende perioder returnere '1 dag'. En hel helg
+        // mellom to perioder blir da 3 dager og derfor kan metoden returnerer tidlig hvis dager i mellom er > 3.
+        if (dagerMellomPeriodene > 3) {
             return false
         }
 
