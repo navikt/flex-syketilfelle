@@ -110,11 +110,11 @@ class VentetidUtregner(
     }
 
     private fun List<Periode>.beregnVenteperiode(): Periode? {
-        // Hvis gjeldende periode innefor ventetid men det er 16 dager mellom gjeldende og forrige periode, og forrige
-        // periode var utenfor ventetid, brukes forrige periode.
+        // Hvis det er mindre enn 17 siden forrige periode og forrige periode var utenfor ventetid, returneres forrige
+        // periodes venteperiode.
         if (size >= 2) {
-            val (gjeldendePeriode, forrigePeriode) = this
-            if (!gjeldendePeriode.erLengreEnnVentetid() && !erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetid()) {
+            val (_, forrigePeriode) = this
+            if (!erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetid()) {
                 return forrigePeriode
             }
         }
@@ -231,6 +231,7 @@ class VentetidUtregner(
     ): Boolean {
         val dagerMellomPeriodene = DAYS.between(gjeldendePeriode.tom, nestePeriode.fom)
 
+        // TODO: Sjekk om denne er nødvendig som den er siden den kan slippe gjennom 3 dager.
         // Trekker fra 1 dag siden fom er inclusive.
         if (dagerMellomPeriodene > FIRE_DAGER - 1) {
             return false
