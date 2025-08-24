@@ -14,6 +14,7 @@ import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -571,7 +572,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `To perider til sammen 17 dager hvor siste periode bar er én dag lang er utenfor ventetden`() {
+        fun `To perioder til sammen 17 dager hvor siste periode bar er én dag lang er utenfor ventetden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1233,6 +1234,166 @@ class VenteperiodeRefakturertTest :
                 sykmeldingId = melding2.sykmelding.id,
                 venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode `should be equal to` null
+        }
+    }
+
+    /**
+     * Når flagget 'harForsikring' er 'true' returneres det en venteperiode selv om perioden er innenfor ventetden.
+     * Venteperioden vil da være lik perioden, inkludert eventuelte egenmeldingsdager.
+     */
+    @Nested
+    inner class SykmeldtHarForsikring {
+        @Test
+        fun `Periode på 16 dager som har forsikring returnerer venteperiode`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 16),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
+
+        @Test
+        fun `Periode på 1 dag som har forsikring returnerer venteperiode`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 1),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+            }
+        }
+
+        @Test
+        fun `Periode på 6 dager som har forsikring og 2 egenmeldingsdager returnerer venteperiode`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 6),
+                    sporsmals =
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                shortName = ShortNameDTO.PERIODE,
+                                svar =
+                                    """
+                                    [{
+                                     "fom":"${LocalDate.of(2024, Month.JUNE, 29)}",
+                                     "tom":"${LocalDate.of(2024, Month.JUNE, 30)}"
+                                    }] 
+                                    """.trimIndent(),
+                                svartype = SvartypeDTO.PERIODER,
+                            ),
+                        ),
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding, harForsikring = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
+                // Perioden slutter på en lørdag, som blir fjernet fra perioden.
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 5)
+            }
+        }
+
+        @Test
+        fun `Periode normalt utenfor ventetiden skal ikke påvirkes av sykmeldt har forsikring`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 31),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
+
+        @Test
+        fun `Siste periode av to perioder i samme sykmelding brukes når periodene ikke kan merges`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 8),
+                )
+
+            with(melding) {
+                val p = sykmelding.sykmeldingsperioder.first()
+                copy(
+                    sykmelding =
+                        sykmelding.copy(
+                            sykmeldingsperioder =
+                                listOf(
+                                    p.copy(),
+                                    p.copy(
+                                        fom = LocalDate.of(2024, Month.JULY, 10),
+                                        tom = LocalDate.of(2024, Month.JULY, 16),
+                                    ),
+                                ),
+                        ),
+                )
+            }.also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 10)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
         }
     }
 }
