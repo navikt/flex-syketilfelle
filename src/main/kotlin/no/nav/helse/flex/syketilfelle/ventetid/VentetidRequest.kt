@@ -11,6 +11,7 @@ data class VentetidRequest(
 data class VenteperiodeRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+    val harForsikring: Boolean = false,
 )
 
 fun VentetidRequest.tilVenteperiodeRequest(): VenteperiodeRequest =

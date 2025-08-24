@@ -106,6 +106,16 @@ class VentetidUtregner(
             )
         }
 
+        // Hvis perioden normalt ikke er utenfor ventetid, men 'harForsikring' er satt,
+        // returneres hele perioden inkludert eventuelle egenmeldingsdager.
+        if (venteperiodeRequest.harForsikring) {
+            perioder
+                .asSequence()
+                .filter { it.ressursId == sykmeldingId }
+                .maxByOrNull { it.tom }
+                ?.let { return Venteperiode(it.fom, it.tom) }
+        }
+
         return null
     }
 
@@ -118,7 +128,7 @@ class VentetidUtregner(
                 return forrigePeriode
             }
         }
-        // Går gjennom periodene og finern den første som kvalifiserer som venteperiode.
+        // Går gjennom periodene og finner den første som kvalifiserer som venteperiode.
         for ((index, periode) in withIndex()) {
             when {
                 periode.erLengreEnnVentetid() -> return periode
