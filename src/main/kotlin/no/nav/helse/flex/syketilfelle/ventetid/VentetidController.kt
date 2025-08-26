@@ -87,7 +87,7 @@ class VentetidController(
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun erUtenforVentetid(
         @PathVariable("sykmeldingId") sykmeldingId: String,
-    ): ErUtenforVentetidResponse {
+    ): VentetidResponse {
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         val identer = pdlClient.hentFolkeregisterIdenter(fnr)
 
@@ -100,7 +100,7 @@ class VentetidController(
                 .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
                 ?.oppfolgingsdato
 
-        return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
+        return VentetidResponse(utenforVentetid, oppfolgingsdato)
     }
 
     private fun validerVenteperiodeRequest(

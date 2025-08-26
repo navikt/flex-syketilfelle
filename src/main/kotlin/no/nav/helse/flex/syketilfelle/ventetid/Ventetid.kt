@@ -22,3 +22,9 @@ data class Datospenn(
     val fom: LocalDate,
     val tom: LocalDate,
 )
+
+// Brukes i TokenX-response.
+data class VentetidResponse(
+    val erUtenforVentetid: Boolean,
+    val oppfolgingsdato: LocalDate?,
+)
