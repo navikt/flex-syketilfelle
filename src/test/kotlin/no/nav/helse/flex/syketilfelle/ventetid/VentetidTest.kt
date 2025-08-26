@@ -18,11 +18,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import java.time.LocalDate
 import java.time.Month
 
-class VenteperiodeRefakturertTest :
+class VentetidTest :
     FellesTestOppsett(),
     VentetidFellesOppsett {
     @Autowired
