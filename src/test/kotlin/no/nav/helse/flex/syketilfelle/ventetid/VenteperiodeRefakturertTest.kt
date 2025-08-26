@@ -572,7 +572,7 @@ class VenteperiodeRefakturertTest :
         }
 
         @Test
-        fun `To perioder til sammen 17 dager hvor siste periode bar er én dag lang er utenfor ventetden`() {
+        fun `To perioder til sammen 17 dager og siste periode er én dag lang er utenfor ventetden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -600,6 +600,47 @@ class VenteperiodeRefakturertTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
+
+        @Test
+        fun `To perioder i samme sykmelding merges likt perioder fra to sykmeldinger`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 16),
+                )
+
+            with(melding) {
+                val p = sykmelding.sykmeldingsperioder.first()
+                copy(
+                    sykmelding =
+                        sykmelding.copy(
+                            sykmeldingsperioder =
+                                listOf(
+                                    p.copy(),
+                                    p.copy(
+                                        fom = LocalDate.of(2024, Month.JULY, 17),
+                                        tom = LocalDate.of(2024, Month.JULY, 31),
+                                    ),
+                                ),
+                        ),
+                )
+            }.also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
                 venteperiodeRequest = VenteperiodeRequest(),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
@@ -1354,6 +1395,7 @@ class VenteperiodeRefakturertTest :
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
+
 
         @Test
         fun `Siste periode av to perioder i samme sykmelding brukes når periodene ikke kan merges`() {
