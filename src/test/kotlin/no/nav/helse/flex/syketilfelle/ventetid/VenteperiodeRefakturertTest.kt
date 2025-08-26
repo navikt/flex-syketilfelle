@@ -1859,7 +1859,7 @@ class VenteperiodeRefakturertTest :
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2021, Month.SEPTEMBER, 30),
-                    // Perioden blir 5 dager på grunn av helg.
+                    // Må bruke perioden på 5 dager på grunn av helg.
                     tom = LocalDate.of(2021, Month.OCTOBER, 4),
                     harRedusertArbeidsgiverperiode = true,
                 )
@@ -1877,6 +1877,378 @@ class VenteperiodeRefakturertTest :
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2021, Month.SEPTEMBER, 30)
                 it.tom `should be equal to` LocalDate.of(2021, Month.OCTOBER, 3)
+            }
+        }
+    }
+
+    /**
+     * Koronaperiode 6 dager: 2021-12-06 - 2022-06-30
+     *
+     * 7. mars 2022 er en mandag.
+     */
+    @Nested
+    inner class Koronaperiode6Dager {
+        @Test
+        fun `Periode på 5 dager er innenfor ventetiden`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 7),
+                    tom = LocalDate.of(2022, Month.MARCH, 11),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode `should be equal to` null
+        }
+
+        @Test
+        fun `Periode på 6 dager er utenfor ventetiden`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 10),
+                    tom = LocalDate.of(2022, Month.MARCH, 15),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 10)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 15)
+            }
+        }
+
+        @Test
+        fun `Periode på 5 dager påvirker ikke periode på 6 dager selv om opphold er mindre enn 17 dager`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 7),
+                tom = LocalDate.of(2022, Month.MARCH, 11),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 16),
+                    tom = LocalDate.of(2022, Month.MARCH, 21),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 16)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 21)
+            }
+        }
+
+        @Test
+        fun `Periode på 5 dager påvirker ikke periode på 5 dager selv om opphold er mindre enn 17 dager`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 7),
+                tom = LocalDate.of(2022, Month.MARCH, 11),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 17),
+                    tom = LocalDate.of(2022, Month.MARCH, 21),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode `should be equal to` null
+        }
+
+        @Test
+        fun `Periode på 6 dager påvirker periode på 5 dager hvis opphold er mindre enn 17 dager`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 7),
+                tom = LocalDate.of(2022, Month.MARCH, 14),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 15),
+                    tom = LocalDate.of(2022, Month.MARCH, 21),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 7)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 12)
+            }
+        }
+
+        @Test
+        fun `Periode på 6 dager påvirker ikke periode på 5 dager hvis opphold er mer enn 16 dager`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 7),
+                tom = LocalDate.of(2022, Month.MARCH, 14),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.APRIL, 4),
+                    tom = LocalDate.of(2022, Month.APRIL, 8),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode `should be equal to` null
+        }
+
+        @Test
+        fun `To perioder på 3 dager uten opphold er tilsammen utenfor ventetiden`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 6),
+                tom = LocalDate.of(2022, Month.MARCH, 8),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 9),
+                    tom = LocalDate.of(2022, Month.MARCH, 11),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 6)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 11)
+            }
+        }
+
+        @Test
+        fun `To perioder på 2 dager med helg i mellom er utenfor ventetiden`() {
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2022, Month.MARCH, 3),
+                tom = LocalDate.of(2022, Month.MARCH, 4),
+                harRedusertArbeidsgiverperiode = true,
+            ).also { it.publiser() }
+
+            val melding2 =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 7),
+                    tom = LocalDate.of(2022, Month.MARCH, 8),
+                    harRedusertArbeidsgiverperiode = true,
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 3)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 8)
+            }
+        }
+
+        @Test
+        fun `Periode på 5 dager er utenfor ventetiden med én dag egenmelding før perioden`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 7),
+                    tom = LocalDate.of(2022, Month.MARCH, 11),
+                    harRedusertArbeidsgiverperiode = true,
+                    sporsmals =
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                shortName = ShortNameDTO.PERIODE,
+                                svar =
+                                    """
+                                    [{
+                                     "fom":"${LocalDate.of(2022, Month.MARCH, 6)}",
+                                     "tom":"${LocalDate.of(2022, Month.MARCH, 6)}"
+                                    }]
+                                    """.trimIndent(),
+                                svartype = SvartypeDTO.PERIODER,
+                            ),
+                        ),
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 6)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 11)
+            }
+        }
+
+        @Test
+        fun `Periode på 6 dager som slutter på lørdag er innefor ventetiden`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 7),
+                    tom = LocalDate.of(2022, Month.MARCH, 12),
+                    harRedusertArbeidsgiverperiode = true,
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(),
+            ).venteperiode `should be equal to` null
+        }
+
+        @Test
+        fun `Periode på 6 dager som starter på søndag er utenfor ventetiden`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.MARCH, 13),
+                    tom = LocalDate.of(2022, Month.MARCH, 18),
+                    harRedusertArbeidsgiverperiode = true,
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 13)
+                it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 18)
+            }
+        }
+
+        @Test
+        fun `Periode på 6 dager som slutter på første dag i koronaperioden er utenfor ventetiden`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2021, Month.DECEMBER, 1),
+                    tom = LocalDate.of(2021, Month.DECEMBER, 6),
+                    harRedusertArbeidsgiverperiode = true,
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2021, Month.DECEMBER, 1)
+                it.tom `should be equal to` LocalDate.of(2021, Month.DECEMBER, 6)
+            }
+        }
+
+        @Test
+        fun `Periode på 6 dager som starter siste dag i koronaperioden er utenfor ventetiden`() {
+            val melding =
+                skapSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2022, Month.JUNE, 30),
+                    tom = LocalDate.of(2022, Month.JULY, 5),
+                    harRedusertArbeidsgiverperiode = true,
+                )
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be true`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2022, Month.JUNE, 30)
+                it.tom `should be equal to` LocalDate.of(2022, Month.JULY, 5)
             }
         }
     }
