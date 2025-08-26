@@ -17,7 +17,7 @@ private const val IDENT = "ident"
 
 @Component
 class PdlClient(
-    @Value("\${PDL_BASE_URL}")
+    @param:Value("\${PDL_BASE_URL}")
     private val pdlApiUrl: String,
     private val pdlRestTemplate: RestTemplate,
 ) {

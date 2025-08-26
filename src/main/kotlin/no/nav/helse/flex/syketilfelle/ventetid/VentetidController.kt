@@ -24,9 +24,9 @@ class VentetidController(
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     private val sykeforloepUtregner: SykeforloepUtregner,
     override val pdlClient: PdlClient,
-    @Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
+    @param:Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
     val sykmeldingerFrontendClientId: String,
-    @Value("\${FLEX_SYKMELDINGER_BACKEND_CLIENT_ID}")
+    @param:Value("\${FLEX_SYKMELDINGER_BACKEND_CLIENT_ID}")
     val flexSykmeldingerBackendClientId: String,
 ) : MedPdlClient {
     val log = logger()
