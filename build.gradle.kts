@@ -5,8 +5,8 @@ plugins {
     id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
-    kotlin("plugin.spring") version "2.1.21"
-    kotlin("jvm") version "2.1.21"
+    kotlin("plugin.spring") version "2.2.10"
+    kotlin("jvm") version "2.2.10"
 }
 
 group = "no.nav.helse.flex"
@@ -15,9 +15,6 @@ description = "flex-syketilfelle"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
 ext["okhttp3.version"] = "4.12" // Token-support tester trenger MockWebServer.
-
-val githubUser: String by project
-val githubPassword: String by project
 
 repositories {
     mavenCentral()
