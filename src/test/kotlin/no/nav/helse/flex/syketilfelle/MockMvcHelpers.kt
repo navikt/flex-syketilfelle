@@ -3,10 +3,10 @@ package no.nav.helse.flex.syketilfelle
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
-import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
 import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeRequest
 import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeResponse
 import no.nav.helse.flex.syketilfelle.ventetid.VentetidRequest
+import no.nav.helse.flex.syketilfelle.ventetid.VentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
@@ -64,7 +64,7 @@ fun FellesTestOppsett.hentSykeforloepMedSykmelding(
 fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     fnr: String,
     sykmeldingId: String,
-): ErUtenforVentetidResponse {
+): VentetidResponse {
     val json =
         mockMvc
             .perform(
