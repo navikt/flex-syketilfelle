@@ -1275,11 +1275,12 @@ class VentetidTest :
     }
 
     /**
-     * Når flagget 'harForsikring' er 'true' returneres det en venteperiode selv om perioden er innenfor ventetden.
-     * Venteperioden vil da være lik perioden, inkludert eventuelte egenmeldingsdager.
+     * Når flagget 'returnerPerioderInnenforVentetid' er 'true' returneres det en venteperiode selv om perioden er
+     * innenfor ventetden. Venteperioden vil da være lik perioden, inkludert eventuelte egenmeldingsdager. Typisk brukt
+     * fra sykepengesoknad-backend når bruker forsikring for sykmeldingsperioden.
      */
     @Nested
-    inner class SykmeldtHarForsikring {
+    inner class PerioderInnenforVentetid {
         @Test
         fun `Periode på 16 dager som har forsikring returnerer venteperiode`() {
             val melding =
@@ -1297,7 +1298,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -1321,7 +1322,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
@@ -1360,7 +1361,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding, harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding, returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
                 // Perioden slutter på en lørdag, som blir fjernet fra perioden.
@@ -1385,7 +1386,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -1426,7 +1427,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 10)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
@@ -1451,7 +1452,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 3)
@@ -1476,7 +1477,7 @@ class VentetidTest :
             hentVenteperiode(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(harForsikring = true),
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
             ).venteperiode.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 4)
@@ -1759,7 +1760,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode på 4 dager som slutter på lørdag er innefor ventetiden`() {
+        fun `Periode på 4 dager som slutter på lørdag er innenfor ventetiden`() {
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2020, Month.JUNE, 3),
@@ -2157,7 +2158,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode på 6 dager som slutter på lørdag er innefor ventetiden`() {
+        fun `Periode på 6 dager som slutter på lørdag er innenfor ventetiden`() {
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2022, Month.MARCH, 7),
