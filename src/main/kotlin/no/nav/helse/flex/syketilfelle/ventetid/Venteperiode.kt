@@ -6,7 +6,7 @@ import java.time.LocalDate
 data class VenteperiodeRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
-    val harForsikring: Boolean = false,
+    val returnerPerioderInnenforVentetid: Boolean = false,
 )
 
 data class VenteperiodeResponse(

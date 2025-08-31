@@ -106,9 +106,9 @@ class VentetidUtregner(
             )
         }
 
-        // Hvis perioden normalt ikke er utenfor ventetid, men 'harForsikring' er satt,
+        // Hvis perioden normalt ikke er utenfor ventetid, men 'returnerPerioderInnenforVentetid' er satt,
         // returneres hele perioden inkludert eventuelle egenmeldingsdager.
-        if (venteperiodeRequest.harForsikring) {
+        if (venteperiodeRequest.returnerPerioderInnenforVentetid) {
             perioder
                 .asSequence()
                 .filter { it.ressursId == sykmeldingId }
