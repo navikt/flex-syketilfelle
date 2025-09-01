@@ -1330,6 +1330,30 @@ class VentetidTest :
         }
 
         @Test
+        fun `Periode som slutter på lørdag returnerer én dag kortere venteperiode`() {
+            val melding =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 6),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(),
+            ).`should be false`()
+
+            hentVenteperiode(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
+            ).venteperiode.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 5)
+            }
+        }
+
+        @Test
         fun `Periode på 6 dager som har forsikring og 2 egenmeldingsdager returnerer venteperiode`() {
             val melding =
                 skapSykmeldingKafkaMessage(
