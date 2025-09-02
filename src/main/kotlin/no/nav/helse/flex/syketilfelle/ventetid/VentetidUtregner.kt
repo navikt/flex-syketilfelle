@@ -8,7 +8,10 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.utenKorrigerteSoknader
 import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import org.springframework.stereotype.Component
-import java.time.DayOfWeek.*
+import java.time.DayOfWeek.FRIDAY
+import java.time.DayOfWeek.MONDAY
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 import java.time.Month
 import java.time.OffsetDateTime
@@ -214,9 +217,6 @@ class VentetidUtregner(
                 val gjeldendePeriode = akkumulerteListe.last()
 
                 if (skalMerges(forrigePeriode, gjeldendePeriode)) {
-                    log.info(
-                        "Gjeldende periode: ${gjeldendePeriode.tilLoggbarPeriode()} merges med forrige periode: ${forrigePeriode.tilLoggbarPeriode()}",
-                    )
                     akkumulerteListe[akkumulerteListe.lastIndex] = mergePerioder(forrigePeriode, gjeldendePeriode)
                 } else {
                     akkumulerteListe.add(forrigePeriode)
@@ -323,11 +323,4 @@ class VentetidUtregner(
         val behandlingsdager: Boolean,
         val ressursId: String,
     )
-
-    private fun Periode.tilLoggbarPeriode() =
-        LoggbarPeriode(
-            id = ressursId,
-            fom = fom,
-            tom = tom,
-        )
 }
