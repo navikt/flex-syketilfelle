@@ -650,11 +650,12 @@ class VentetidTest :
     }
 
     /**
-     * Tidligere utbetalte perioder (perioder som i seg selv er utenfor ventetiden) teller på ventetiden for
-     * neste periode hvis oppholdet mellom den gamle og nye perioden er 16 dager eller mindre
+     * Tidligere utbetalte (perioder utenfor ventetiden) perioden teller på ventetide på neste periode hvis oppholdet
+     * mellom perioden er 16 dager eller mindre.
      *
      * Kort Periode: Sykmeldingsperiode på 16 dager eller mindre.
      * Lang Periode: Sykmeldingsperiode lengre enn 16 dager.
+     *
      */
     @Nested
     inner class OppholdMellomPerioder {

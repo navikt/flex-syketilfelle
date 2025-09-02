@@ -3,7 +3,7 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
-import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
+import no.nav.helse.flex.syketilfelle.exceptionhandler.ApiErrorException
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
@@ -15,7 +15,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
+import java.util.*
 
 @Controller
 class VentetidController(
@@ -44,11 +51,12 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody ventetidRequest: VentetidRequest,
     ): Boolean {
-        validerVenteperiodeRequest(ventetidRequest.tilVenteperiodeRequest(), sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
+        val gyldigSykmeldingId = sykmeldingId.validerSykmeldingId()
+        validerVenteperiodeRequest(ventetidRequest.tilVenteperiodeRequest(), gyldigSykmeldingId)
 
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
-            sykmeldingId = sykmeldingId,
+            sykmeldingId = gyldigSykmeldingId,
             ventetidRequest = ventetidRequest,
             identer = identer,
         )
@@ -67,12 +75,13 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody venteperiodeRequest: VenteperiodeRequest,
     ): VenteperiodeResponse {
-        validerVenteperiodeRequest(venteperiodeRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
+        val gyldigSykmeldingId = sykmeldingId.validerSykmeldingId()
+        validerVenteperiodeRequest(venteperiodeRequest, gyldigSykmeldingId)
 
         val venteperiode =
             ventetidUtregner.beregnVenteperiode(
-                sykmeldingId = sykmeldingId,
+                sykmeldingId = gyldigSykmeldingId,
                 venteperiodeRequest = venteperiodeRequest,
                 identer = identer,
             )
@@ -88,16 +97,17 @@ class VentetidController(
     fun erUtenforVentetid(
         @PathVariable("sykmeldingId") sykmeldingId: String,
     ): VentetidResponse {
+        val gyldigSykmeldingId = sykmeldingId.validerSykmeldingId()
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         val identer = pdlClient.hentFolkeregisterIdenter(fnr)
 
         val utenforVentetid =
-            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, identer, VentetidRequest())
+            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(gyldigSykmeldingId, identer, VentetidRequest())
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
             sykeforloep
-                .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
+                .find { it.sykmeldinger.any { sm -> sm.id == gyldigSykmeldingId } }
                 ?.oppfolgingsdato
 
         return VentetidResponse(utenforVentetid, oppfolgingsdato)
@@ -130,20 +140,36 @@ class VentetidController(
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
         if (clientId !in listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId)) {
-            throw IngenTilgang("Uventet client id $clientId")
+            throw IngenTilgangException("Uventet clientId: $clientId")
         }
 
         return claims
     }
 
     private fun JwtTokenClaims.fnrFraIdportenTokenX(): String = this.getStringClaim("pid")
+
+    private fun String.validerSykmeldingId(): String =
+        try {
+            UUID.fromString(this).toString()
+        } catch (_: IllegalArgumentException) {
+            throw UgyldigSykmeldingIdException("Ugyldig sykmeldingId: må være UUID.")
+        }
 }
 
-private class IngenTilgang(
+private class IngenTilgangException(
     override val message: String,
-) : AbstractApiError(
+) : ApiErrorException(
         message = message,
         httpStatus = HttpStatus.FORBIDDEN,
         reason = "INGEN_TILGANG",
+        loglevel = LogLevel.WARN,
+    )
+
+private class UgyldigSykmeldingIdException(
+    override val message: String,
+) : ApiErrorException(
+        message = message,
+        httpStatus = HttpStatus.BAD_REQUEST,
+        reason = "UGYLDIG_SYKMELDING_ID",
         loglevel = LogLevel.WARN,
     )

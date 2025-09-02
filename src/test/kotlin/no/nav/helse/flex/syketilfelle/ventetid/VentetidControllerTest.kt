@@ -103,4 +103,109 @@ class VentetidControllerTest :
                     .content(venteperiodeRequest.serialisertTilString()),
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
+
+    @Test
+    fun `Ugyldig sykmeldingId returnerer 400 BadRequest ved kall til erUtenforVentetid`() {
+        val sykemeldingId = "er-ikke-uuid"
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/$sykemeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `Uppercase sykmeldingId er gyldig for erUtenforVentetidfor`() {
+        val sykemeldingId = sykmeldingId.uppercase()
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/$sykemeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `Ugyldig sykmeldingId returnerer 400 BadRequest ved kall til venteperiode`() {
+        val sykemeldingId = "er-ikke-uuid"
+        val venteperiodeRequest = VenteperiodeRequest()
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/ventetid/$sykemeldingId/venteperiode")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(venteperiodeRequest.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `Avvik mellom sykmeldingId i path og body returnerer 400 BadRequest for erUtenforVentetid`() {
+        val sykmeldingId = UUID.randomUUID().toString()
+        val request = VentetidRequest(sykmeldingKafkaMessage = skapSykmeldingKafkaMessage())
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
+    fun `Avvik mellom sykmeldingId i path og body returnerer 400 BadRequest for venteperiode`() {
+        val sykmeldingId = UUID.randomUUID().toString()
+        val request = VenteperiodeRequest(sykmeldingKafkaMessage = skapSykmeldingKafkaMessage())
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
+    fun `Samme UUID i path og body med ulik case er OK for erUtenforVentetid`() {
+        val sykmeldingKafkaMessage = skapSykmeldingKafkaMessage()
+        val sykmeldignId = sykmeldingKafkaMessage.sykmelding.id.uppercase()
+        val request = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage)
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/ventetid/$sykmeldignId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    @Test
+    fun `Samme UUID i path og body med ulik case er OK for venteperiode`() {
+        val sykmeldingKafkaMessage = skapSykmeldingKafkaMessage()
+        val sykmeldignId = sykmeldingKafkaMessage.sykmelding.id.uppercase()
+        val request = VenteperiodeRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage)
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .post("/api/v1/ventetid/$sykmeldignId/venteperiode")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(request.serialisertTilString()),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+    }
 }

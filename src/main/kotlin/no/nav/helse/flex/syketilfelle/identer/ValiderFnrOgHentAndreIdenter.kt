@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.identer
 
 import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
-import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
+import no.nav.helse.flex.syketilfelle.exceptionhandler.ApiErrorException
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import org.springframework.http.HttpStatus
 
@@ -31,7 +31,7 @@ interface MedPdlClient {
 }
 
 class FlereIdenterVedHentingException :
-    AbstractApiError(
+    ApiErrorException(
         message = "Kan ikke ha flere identer i input når vi skal hente flere identer",
         httpStatus = HttpStatus.BAD_REQUEST,
         reason = "FLERE_IDENTER_OG_HENTING",
@@ -39,7 +39,7 @@ class FlereIdenterVedHentingException :
     )
 
 class ManglerIdenterException :
-    AbstractApiError(
+    ApiErrorException(
         message = "Må ha hvertfall en ident i input",
         httpStatus = HttpStatus.BAD_REQUEST,
         reason = "MANGLER_IDENTER",
@@ -47,7 +47,7 @@ class ManglerIdenterException :
     )
 
 class FeilIdentException :
-    AbstractApiError(
+    ApiErrorException(
         message = "Forventer ident med 11 siffer",
         httpStatus = HttpStatus.BAD_REQUEST,
         reason = "UGYLDIG_FNR",

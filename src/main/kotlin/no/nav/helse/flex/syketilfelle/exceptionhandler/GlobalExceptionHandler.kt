@@ -21,7 +21,7 @@ class GlobalExceptionHandler {
         request: HttpServletRequest,
     ): ResponseEntity<Any> =
         when (ex) {
-            is AbstractApiError -> {
+            is ApiErrorException -> {
                 when (ex.loglevel) {
                     LogLevel.WARN -> log.warn(ex.message, ex)
                     LogLevel.ERROR -> log.error(ex.message, ex)
@@ -48,7 +48,7 @@ private data class ApiError(
     val reason: String,
 )
 
-abstract class AbstractApiError(
+abstract class ApiErrorException(
     message: String,
     val httpStatus: HttpStatus,
     val reason: String,

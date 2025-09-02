@@ -2,7 +2,7 @@ package no.nav.helse.flex.syketilfelle.clientidvalidation
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
-import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
+import no.nav.helse.flex.syketilfelle.exceptionhandler.ApiErrorException
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.objectMapper
@@ -52,7 +52,7 @@ class ClientIdValidation(
 class UkjentClientException(
     message: String,
     grunn: Throwable? = null,
-) : AbstractApiError(
+) : ApiErrorException(
         message = message,
         httpStatus = HttpStatus.FORBIDDEN,
         reason = "UKJENT_CLIENT",
