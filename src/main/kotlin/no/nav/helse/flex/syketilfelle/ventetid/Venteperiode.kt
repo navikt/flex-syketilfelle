@@ -3,16 +3,17 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import java.time.LocalDate
 
-data class ErUtenforVentetidRequest(
+data class VenteperiodeRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+    val returnerPerioderInnenforVentetid: Boolean = false,
 )
 
-data class Tilleggsopplysninger(
-    val egenmeldingsperioder: List<Datospenn>?,
+data class VenteperiodeResponse(
+    val venteperiode: Venteperiode?,
 )
 
-data class Datospenn(
+data class Venteperiode(
     val fom: LocalDate,
     val tom: LocalDate,
 )
