@@ -30,7 +30,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for ventetid feiler hvis audience er feil`() {
+    fun `Authorization for erUtenforVentetid feiler hvis audience er feil`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -41,7 +41,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for ventetid feiler hvis token mangler`() {
+    fun `Authorization for erUtenforVentetid feiler hvis token mangler`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -51,7 +51,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for ventetid feiler hvis clientId er feil`() {
+    fun `Authorization for erUtenforVentetid feiler hvis clientId er feil`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -62,45 +62,45 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for venteperiode feiler hvis audience er feil`() {
-        val venteperiodeRequest = VenteperiodeRequest()
+    fun `Authorization for ventetid feiler hvis audience er feil`() {
+        val ventetidRequest = VentetidRequest()
         mockMvc
             .perform(
                 MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
                     .header(
                         "Authorization",
                         "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id", audience = "facebook")}",
                     ).header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(venteperiodeRequest.serialisertTilString()),
+                    .content(ventetidRequest.serialisertTilString()),
             ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
-    fun `Authorization for venteperiode feiler hvis token mangler`() {
-        val venteperiodeRequest = VenteperiodeRequest()
+    fun `Authorization for ventetid feiler hvis token mangler`() {
+        val ventetidRequest = VentetidRequest()
         mockMvc
             .perform(
                 MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
                     .header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(venteperiodeRequest.serialisertTilString()),
+                    .content(ventetidRequest.serialisertTilString()),
             ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
-    fun `Authorization for venteperiode feiler hvis clientId er feil`() {
-        val venteperiodeRequest = VenteperiodeRequest()
+    fun `Authorization for ventetid feiler hvis clientId er feil`() {
+        val ventetidRequest = VentetidRequest()
         mockMvc
             .perform(
                 MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
                     .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
                     .header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(venteperiodeRequest.serialisertTilString()),
+                    .content(ventetidRequest.serialisertTilString()),
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 }

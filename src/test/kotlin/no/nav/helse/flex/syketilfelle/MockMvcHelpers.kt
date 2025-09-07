@@ -3,8 +3,8 @@ package no.nav.helse.flex.syketilfelle
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
-import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeRequest
-import no.nav.helse.flex.syketilfelle.ventetid.VenteperiodeResponse
+import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
+import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
 import no.nav.helse.flex.syketilfelle.ventetid.VentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.VentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -64,7 +64,7 @@ fun FellesTestOppsett.hentSykeforloepMedSykmelding(
 fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     fnr: String,
     sykmeldingId: String,
-): VentetidResponse {
+): ErUtenforVentetidResponse {
     val json =
         mockMvc
             .perform(
@@ -78,20 +78,20 @@ fun FellesTestOppsett.erUtenforVentetidSomBrukerTokenX(
     return objectMapper.readValue(json)
 }
 
-fun FellesTestOppsett.hentVenteperiode(
+fun FellesTestOppsett.hentVentetid(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,
-    venteperiodeRequest: VenteperiodeRequest,
+    ventetidRequest: VentetidRequest,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
-): VenteperiodeResponse {
+): VentetidResponse {
     val json =
         mockMvc
             .perform(
-                post("/api/v1/ventetid/$sykmeldingId/venteperiode")
+                post("/api/v1/ventetid/$sykmeldingId/ventetid")
                     .header("Authorization", "Bearer $token")
                     .header("fnr", fnr.joinToString(separator = ", "))
-                    .content(objectMapper.writeValueAsString(venteperiodeRequest))
+                    .content(objectMapper.writeValueAsString(ventetidRequest))
                     .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)
@@ -105,7 +105,7 @@ fun FellesTestOppsett.erUtenforVentetid(
     fnr: List<String>,
     hentAndreIdenter: Boolean = true,
     sykmeldingId: String,
-    ventetidRequest: VentetidRequest,
+    erUtenforVentetidRequest: ErUtenforVentetidRequest,
     token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
 ): Boolean {
     val json =
@@ -114,7 +114,7 @@ fun FellesTestOppsett.erUtenforVentetid(
                 post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
                     .header("Authorization", "Bearer $token")
                     .header("fnr", fnr.joinToString(separator = ", "))
-                    .content(objectMapper.writeValueAsString(ventetidRequest))
+                    .content(objectMapper.writeValueAsString(erUtenforVentetidRequest))
                     .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)

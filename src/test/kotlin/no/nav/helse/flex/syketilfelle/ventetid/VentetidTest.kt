@@ -3,7 +3,7 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
-import no.nav.helse.flex.syketilfelle.hentVenteperiode
+import no.nav.helse.flex.syketilfelle.hentVentetid
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
@@ -38,10 +38,10 @@ class VentetidTest :
     /**
      * 1. juli 2024 er en mandag.
      *
-     * Venteperioden: 16 dager.
+     * Ventetid: 16 dager.
      *
-     * Alle kalenderdager telles i venteperioden på 16 dager. Også helgedager. Samtidig betaler
-     * ikke Nav for helgedager. Derfor telles lørdag og søndag hvis venteperioden starter i en helg, men
+     * Alle kalenderdager telles i ventetiden på 16 dager. Også helgedager. Samtidig betaler
+     * ikke Nav for helgedager. Derfor telles lørdag og søndag hvis ventetiden starter i en helg, men
      * ikke hvis den avsluttes i en helg.
      */
     @Nested
@@ -57,14 +57,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -78,14 +78,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -102,14 +102,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -123,14 +123,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -144,14 +144,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 14)
             }
@@ -168,14 +168,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
@@ -204,26 +204,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -243,26 +243,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -285,26 +285,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -327,26 +327,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -369,26 +369,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -417,38 +417,38 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -474,38 +474,38 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -534,45 +534,45 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
 
         @Test
-        fun `To perioder til sammen 17 dager og siste periode er én dag lang er utenfor ventetden`() {
+        fun `To perioder til sammen 17 dager og siste periode er én dag lang er utenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -588,20 +588,20 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -635,14 +635,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -674,7 +674,7 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
         }
 
@@ -694,14 +694,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 12)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 27)
             }
@@ -723,15 +723,15 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            // Venteperiode fra lang periode er gjeldende for kort periode når opphold er mindre enn 17 dager.
-            hentVenteperiode(
+            // Ventetiden fra lang periode er gjeldende for kort periode når opphold er mindre enn 17 dager.
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -753,7 +753,7 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
         }
     }
@@ -780,7 +780,7 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
         }
 
@@ -800,14 +800,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
@@ -856,14 +856,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
     }
 
@@ -895,14 +895,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
@@ -938,14 +938,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 14)
             }
@@ -963,7 +963,7 @@ class VentetidTest :
                 Tilleggsopplysninger(
                     egenmeldingsperioder =
                         listOf(
-                            Datospenn(
+                            FomTomPeriode(
                                 fom = LocalDate.of(2024, Month.JUNE, 30),
                                 tom = LocalDate.of(2024, Month.JUNE, 30),
                             ),
@@ -973,14 +973,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(tilleggsopplysninger = tilleggsopplysninger),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
@@ -1001,14 +1001,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1029,14 +1029,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1044,14 +1044,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1075,14 +1075,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1090,14 +1090,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1121,14 +1121,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1136,14 +1136,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
             }
@@ -1170,26 +1170,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1210,26 +1210,26 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1250,38 +1250,38 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
     }
 
     /**
-     * Når flagget 'returnerPerioderInnenforVentetid' er 'true' returneres det en venteperiode selv om perioden er
-     * innenfor ventetden. Venteperioden vil da være lik perioden, inkludert eventuelte egenmeldingsdager. Typisk brukt
-     * fra sykepengesoknad-backend når bruker forsikring for sykmeldingsperioden.
+     * Når flagget 'returnerPerioderInnenforVentetid' er 'true' returneres det en ventetid selv om perioden er
+     * innenfor ventetiden. Ventetiden vil da være lik sykmeldingsperioden, inkludert eventuelte egenmeldingsdager.
+     * Typisk brukt fra sykepengesoknad-backend når bruker har forsikring.
      */
     @Nested
     inner class PerioderInnenforVentetid {
         @Test
-        fun `Periode på 16 dager som har forsikring returnerer venteperiode`() {
+        fun `Periode på 16 dager som har forsikring returnerer ventetid`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1291,21 +1291,21 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
 
         @Test
-        fun `Periode på 1 dag som har forsikring returnerer venteperiode`() {
+        fun `Periode på 1 dag som har forsikring returnerer ventetid`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1315,21 +1315,21 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
             }
         }
 
         @Test
-        fun `Periode som slutter på lørdag returnerer én dag kortere venteperiode`() {
+        fun `Periode som slutter på lørdag returnerer én dag kortere ventetid`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1339,21 +1339,21 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 5)
             }
         }
 
         @Test
-        fun `Periode på 6 dager som har forsikring og 2 egenmeldingsdager returnerer venteperiode`() {
+        fun `Periode på 6 dager som har forsikring og 2 egenmeldingsdager returnerer ventetid`() {
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1378,14 +1378,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding, returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding, returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
                 // Perioden slutter på en lørdag, som blir fjernet fra perioden.
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 5)
@@ -1403,14 +1403,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
@@ -1444,21 +1444,21 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 10)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
 
         @Test
-        fun `Periode på 3 dager ved redusert arbeidsgiverperiode returnerer venteperiode`() {
+        fun `Periode på 3 dager ved redusert arbeidsgiverperiode returnerer ventetid`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2020, Month.JUNE, 1),
@@ -1469,14 +1469,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 3)
             }
@@ -1494,14 +1494,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(returnerPerioderInnenforVentetid = true),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 4)
             }
@@ -1527,14 +1527,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1549,14 +1549,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 4)
             }
@@ -1580,14 +1580,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 9)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 12)
             }
@@ -1611,14 +1611,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1639,14 +1639,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 4)
             }
@@ -1670,14 +1670,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1698,14 +1698,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 4)
             }
@@ -1729,14 +1729,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 5)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 8)
             }
@@ -1769,14 +1769,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.MAY, 31)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 3)
             }
@@ -1794,14 +1794,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1816,14 +1816,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.JUNE, 7)
                 it.tom `should be equal to` LocalDate.of(2020, Month.JUNE, 10)
             }
@@ -1841,14 +1841,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2020, Month.MARCH, 13)
                 it.tom `should be equal to` LocalDate.of(2020, Month.MARCH, 16)
             }
@@ -1866,14 +1866,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2021, Month.SEPTEMBER, 28)
                 it.tom `should be equal to` LocalDate.of(2021, Month.OCTOBER, 1)
             }
@@ -1892,14 +1892,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2021, Month.SEPTEMBER, 30)
                 it.tom `should be equal to` LocalDate.of(2021, Month.OCTOBER, 3)
             }
@@ -1925,14 +1925,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -1947,14 +1947,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 10)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 15)
             }
@@ -1978,14 +1978,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 16)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 21)
             }
@@ -2009,14 +2009,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -2037,14 +2037,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 7)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 12)
             }
@@ -2068,14 +2068,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -2096,14 +2096,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 6)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 11)
             }
@@ -2127,14 +2127,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 3)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 8)
             }
@@ -2167,14 +2167,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 6)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 11)
             }
@@ -2192,14 +2192,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(),
-            ).venteperiode `should be equal to` null
+                ventetidRequest = VentetidRequest(),
+            ).ventetid `should be equal to` null
         }
 
         @Test
@@ -2214,14 +2214,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.MARCH, 13)
                 it.tom `should be equal to` LocalDate.of(2022, Month.MARCH, 18)
             }
@@ -2239,14 +2239,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2021, Month.DECEMBER, 1)
                 it.tom `should be equal to` LocalDate.of(2021, Month.DECEMBER, 6)
             }
@@ -2264,14 +2264,14 @@ class VentetidTest :
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be true`()
 
-            hentVenteperiode(
+            hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                venteperiodeRequest = VenteperiodeRequest(sykmeldingKafkaMessage = melding),
-            ).venteperiode.also {
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2022, Month.JULY, 5)
             }
