@@ -63,14 +63,14 @@ class VentetidUtregner(
     fun beregnOmSykmeldingErUtenforVentetid(
         sykmeldingId: String,
         identer: List<String>,
-        ventetidRequest: VentetidRequest,
-    ): Boolean = beregnVenteperiode(sykmeldingId, identer, ventetidRequest.tilVenteperiodeRequest()) != null
+        erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    ): Boolean = beregnVenteperiode(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
 
     fun beregnVenteperiode(
         sykmeldingId: String,
         identer: List<String>,
-        venteperiodeRequest: VenteperiodeRequest,
-    ): Venteperiode? {
+        ventetidRequest: VentetidRequest,
+    ): FomTomPeriode? {
         val biter =
             syketilfellebitRepository
                 .findByFnrIn(identer)
@@ -78,7 +78,7 @@ class VentetidUtregner(
                 .map { it.tilSyketilfellebit() }
                 .utenKorrigerteSoknader()
 
-        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, venteperiodeRequest)
+        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, ventetidRequest)
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
@@ -103,7 +103,7 @@ class VentetidUtregner(
                 .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
 
         perioder.beregnVenteperiode()?.let { beregnetVenteperiode ->
-            return Venteperiode(
+            return FomTomPeriode(
                 fom = beregnetVenteperiode.fom,
                 tom = beregnVenteperiodeTom(beregnetVenteperiode.fom, perioder),
             )
@@ -111,12 +111,12 @@ class VentetidUtregner(
 
         // Hvis perioden normalt ikke er utenfor ventetid, men 'returnerPerioderInnenforVentetid' er satt,
         // returneres hele perioden inkludert eventuelle egenmeldingsdager.
-        if (venteperiodeRequest.returnerPerioderInnenforVentetid) {
+        if (ventetidRequest.returnerPerioderInnenforVentetid) {
             perioder
                 .asSequence()
                 .filter { it.ressursId == sykmeldingId }
                 .maxByOrNull { it.tom }
-                ?.let { return Venteperiode(it.fom, it.tom) }
+                ?.let { return FomTomPeriode(it.fom, it.tom) }
         }
 
         return null
@@ -124,7 +124,7 @@ class VentetidUtregner(
 
     private fun List<Periode>.beregnVenteperiode(): Periode? {
         // Hvis det er mindre enn 17 siden forrige periode og forrige periode var utenfor ventetid, returneres forrige
-        // periodes venteperiode.
+        // periodes ventetid.
         if (size >= 2) {
             val (_, forrigePeriode) = this
             if (!erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetid()) {
@@ -149,13 +149,13 @@ class VentetidUtregner(
         baseBiter: List<Syketilfellebit>,
         sykmeldingId: String,
         fnrs: List<String>,
-        venteperiodeRequest: VenteperiodeRequest,
+        ventetidRequest: VentetidRequest,
     ): List<Syketilfellebit> =
         baseBiter.toMutableList().apply {
-            venteperiodeRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
+            ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
                 addAll(sykmeldingMessage.mapTilBiter())
             }
-            venteperiodeRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
+            ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
                 addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, fnrs.first()))
             }
         }
@@ -309,12 +309,6 @@ class VentetidUtregner(
         val nestePeriode = this.getOrNull(index + 1) ?: return false
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
-
-    private data class LoggbarPeriode(
-        val id: String,
-        val fom: LocalDate,
-        val tom: LocalDate,
-    )
 
     private data class Periode(
         val fom: LocalDate,

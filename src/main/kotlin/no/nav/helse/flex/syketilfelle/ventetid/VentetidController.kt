@@ -42,41 +42,16 @@ class VentetidController(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @PathVariable sykmeldingId: String,
-        @RequestBody ventetidRequest: VentetidRequest,
+        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
-        validerVenteperiodeRequest(ventetidRequest.tilVenteperiodeRequest(), sykmeldingId)
+        validerVenteperiodeRequest(erUtenforVentetidRequest.tilVentetidRequest(), sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
             sykmeldingId = sykmeldingId,
-            ventetidRequest = ventetidRequest,
+            erUtenforVentetidRequest = erUtenforVentetidRequest,
             identer = identer,
         )
-    }
-
-    @PostMapping(
-        value = ["/api/v1/ventetid/{sykmeldingId}/venteperiode"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ProtectedWithClaims(issuer = "azureator")
-    @ResponseBody
-    fun hentVenteperiode(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @PathVariable sykmeldingId: String,
-        @RequestBody venteperiodeRequest: VenteperiodeRequest,
-    ): VenteperiodeResponse {
-        validerVenteperiodeRequest(venteperiodeRequest, sykmeldingId)
-        val identer = hentIdenter(fnr, hentAndreIdenter)
-
-        val venteperiode =
-            ventetidUtregner.beregnVenteperiode(
-                sykmeldingId = sykmeldingId,
-                venteperiodeRequest = venteperiodeRequest,
-                identer = identer,
-            )
-        return VenteperiodeResponse(venteperiode)
     }
 
     @GetMapping(
@@ -87,12 +62,12 @@ class VentetidController(
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun erUtenforVentetid(
         @PathVariable("sykmeldingId") sykmeldingId: String,
-    ): VentetidResponse {
+    ): ErUtenforVentetidResponse {
         val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
         val identer = pdlClient.hentFolkeregisterIdenter(fnr)
 
         val utenforVentetid =
-            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, identer, VentetidRequest())
+            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
@@ -100,11 +75,36 @@ class VentetidController(
                 .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
                 ?.oppfolgingsdato
 
-        return VentetidResponse(utenforVentetid, oppfolgingsdato)
+        return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
+    }
+
+    @PostMapping(
+        value = ["/api/v1/ventetid/{sykmeldingId}/ventetid"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+    )
+    @ProtectedWithClaims(issuer = "azureator")
+    @ResponseBody
+    fun hentVenteperiode(
+        @RequestHeader fnr: String,
+        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @PathVariable sykmeldingId: String,
+        @RequestBody ventetidRequest: VentetidRequest,
+    ): VentetidResponse {
+        validerVenteperiodeRequest(ventetidRequest, sykmeldingId)
+        val identer = hentIdenter(fnr, hentAndreIdenter)
+
+        val venteperiode =
+            ventetidUtregner.beregnVenteperiode(
+                sykmeldingId = sykmeldingId,
+                ventetidRequest = ventetidRequest,
+                identer = identer,
+            )
+        return VentetidResponse(venteperiode)
     }
 
     private fun validerVenteperiodeRequest(
-        venteperiodeRequest: VenteperiodeRequest,
+        ventetidRequest: VentetidRequest,
         sykmeldingId: String,
     ) {
         clientIdValidation.validateClientId(
@@ -113,7 +113,7 @@ class VentetidController(
                 app = "sykepengesoknad-backend",
             ),
         )
-        with(venteperiodeRequest) {
+        with(ventetidRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
                 throw IllegalArgumentException("sykmeldingId i path er ikke samme som i request body.")
             }
