@@ -227,7 +227,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `To perioder til 17 dager er utenfor ventetiden`() {
+        fun `To perioder til sammen 17 dager er utenfor ventetiden`() {
             val melding1 =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1281,7 +1281,7 @@ class VentetidTest :
     @Nested
     inner class PerioderInnenforVentetid {
         @Test
-        fun `Periode på 16 dager som har forsikring returnerer ventetid`() {
+        fun `Periode på 16 returnerer ventetid lik perioden`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1305,7 +1305,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode på 1 dag som har forsikring returnerer ventetid`() {
+        fun `Periode på 1 dag returnerer ventetid lik perioden`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1329,7 +1329,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode som slutter på lørdag returnerer én dag kortere ventetid`() {
+        fun `Periode som slutter på lørdag returnerer én dag kortere ventetid enn perioden`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1353,7 +1353,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode på 6 dager som har forsikring og 2 egenmeldingsdager returnerer ventetid`() {
+        fun `Periode på 6 dager og 2 egenmeldingsdager returnerer ventetid lik perioden med egenmeldingsdager`() {
             val melding =
                 skapSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1393,7 +1393,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode normalt utenfor ventetiden skal ikke påvirkes av forsikring`() {
+        fun `Periode normalt utenfor ventetiden påvirkes ikke av 'returnerPerioderInnenforVentetid'`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
@@ -1421,7 +1421,7 @@ class VentetidTest :
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
+                    tom = LocalDate.of(2024, Month.JULY, 9),
                 )
 
             with(melding) {
@@ -1433,7 +1433,7 @@ class VentetidTest :
                                 listOf(
                                     p.copy(),
                                     p.copy(
-                                        fom = LocalDate.of(2024, Month.JULY, 10),
+                                        fom = LocalDate.of(2024, Month.JULY, 11),
                                         tom = LocalDate.of(2024, Month.JULY, 16),
                                     ),
                                 ),
@@ -1452,13 +1452,58 @@ class VentetidTest :
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 10)
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 11)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
 
         @Test
-        fun `Periode på 3 dager ved redusert arbeidsgiverperiode returnerer ventetid`() {
+        fun `To perioder til sammen 16 dager returnerer ventetid lik merget periode`() {
+            val melding1 =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 9),
+                ).also { it.publiser() }
+
+            val melding2 =
+                skapApenSykmeldingKafkaMessage(
+                    fom = LocalDate.of(2024, Month.JULY, 10),
+                    tom = LocalDate.of(2024, Month.JULY, 16),
+                ).also { it.publiser() }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding1.sykmelding.id,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ).`should be false`()
+
+            hentVentetid(
+                listOf(fnr),
+                sykmeldingId = melding1.sykmelding.id,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 9)
+            }
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            ).`should be false`()
+
+            hentVentetid(
+                listOf(fnr),
+                sykmeldingId = melding2.sykmelding.id,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).ventetid.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
+
+        @Test
+        fun `Periode på 3 dager ved redusert arbeidsgiverperiode returnerer ventetid lik perioden`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2020, Month.JUNE, 1),
@@ -1483,7 +1528,7 @@ class VentetidTest :
         }
 
         @Test
-        fun `Periode normalt utenfor ventetiden ved redusert arbeidsgiverperiode påvirkes ikke av forsikring`() {
+        fun `Periode utenfor ventetiden ved redusert arbeidsgiverperiode påvirkes ikke av 'returnerPerioderInnenforVentetid'`() {
             val melding =
                 skapApenSykmeldingKafkaMessage(
                     fom = LocalDate.of(2020, Month.JUNE, 1),
