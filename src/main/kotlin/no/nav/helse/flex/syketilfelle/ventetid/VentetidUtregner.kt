@@ -226,14 +226,23 @@ class VentetidUtregner(
     }
 
     private fun mergePerioder(
-        tidligerePeriode: Periode,
-        senestePeriode: Periode,
-    ): Periode =
-        senestePeriode.copy(
+        forrigePeriode: Periode,
+        gjeldendePeriode: Periode,
+    ): Periode {
+        val ressursId =
+            if (gjeldendePeriode.overlapper(forrigePeriode)) {
+                forrigePeriode.ressursId
+            } else {
+                gjeldendePeriode.ressursId
+            }
+
+        return gjeldendePeriode.copy(
             // Bruker tidligste fom-dato og setter redusertVentePeriode hvis en av periodene har det.
-            fom = minOf(tidligerePeriode.fom, senestePeriode.fom),
-            redusertVentePeriode = tidligerePeriode.redusertVentePeriode || senestePeriode.redusertVentePeriode,
+            fom = minOf(forrigePeriode.fom, gjeldendePeriode.fom),
+            redusertVentePeriode = forrigePeriode.redusertVentePeriode || gjeldendePeriode.redusertVentePeriode,
+            ressursId = ressursId,
         )
+    }
 
     private fun skalMerges(
         gjeldendePeriode: Periode,
@@ -309,6 +318,8 @@ class VentetidUtregner(
         val nestePeriode = this.getOrNull(index + 1) ?: return false
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
+
+    private fun Periode.overlapper(annen: Periode): Boolean = annen.tom in this.fom..this.tom
 
     private data class Periode(
         val fom: LocalDate,
