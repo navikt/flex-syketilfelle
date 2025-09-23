@@ -20,8 +20,8 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.util.function.Supplier
 
-const val PDL_REST_TEMPLATE_CONNECT_TIMEOUT = 1L
-const val PDL_REST_TEMPLATE_READ_TIMEOUT = 1L
+const val PDL_REST_TEMPLATE_CONNECT_TIMEOUT = 2L
+const val PDL_REST_TEMPLATE_READ_TIMEOUT = 5L
 
 @EnableOAuth2Client(cacheEnabled = true)
 @Configuration
