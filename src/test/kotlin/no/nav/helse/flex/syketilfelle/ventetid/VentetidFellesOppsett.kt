@@ -1,6 +1,8 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGSENDT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
@@ -10,16 +12,29 @@ import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
 import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import org.awaitility.Awaitility.await
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 interface VentetidFellesOppsett {
     var sykmeldingLagring: SykmeldingLagring
+    var syketilfellebitRepository: SyketilfellebitRepository
     val fnr: String
 
     fun MottattSykmeldingKafkaMessage.publiser() {
         sykmeldingLagring.handterMottattSykmelding("key", this, SYKMELDINGMOTTATT_TOPIC)
+    }
+
+    fun SykmeldingKafkaMessage.publiser() {
+        sykmeldingLagring.handterSykmelding("key", this, SYKMELDINGSENDT_TOPIC)
+    }
+
+    fun verifiserAtBiterErLagret(forventetAntallBiter: Int) {
+        await().atMost(5, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.count().toInt() == forventetAntallBiter
+        }
     }
 
     fun skapApenSykmeldingKafkaMessage(
