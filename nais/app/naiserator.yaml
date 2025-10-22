@@ -81,6 +81,8 @@ spec:
           namespace: team-esyfo
         - application: syfosminfotrygd
           namespace: teamsykmelding
+        - application: flex-internal-frontend
+          namespace: flex
     outbound:
       external:
   {{#each external-host}}

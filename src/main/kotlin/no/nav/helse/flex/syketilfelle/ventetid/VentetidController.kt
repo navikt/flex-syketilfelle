@@ -8,6 +8,8 @@ import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
+import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
@@ -23,6 +25,8 @@ class VentetidController(
     private val ventetidUtregner: VentetidUtregner,
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     private val sykeforloepUtregner: SykeforloepUtregner,
+    private val sykmeldingLagring: SykmeldingLagring,
+    private val syketilfellebitRepository: SyketilfellebitRepository,
     override val pdlClient: PdlClient,
     @param:Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
     val sykmeldingerFrontendClientId: String,
@@ -44,7 +48,7 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
-        validerVenteperiodeRequest(erUtenforVentetidRequest.tilVentetidRequest(), sykmeldingId)
+        validerVentetidRequest(erUtenforVentetidRequest.tilVentetidRequest(), sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
@@ -85,13 +89,13 @@ class VentetidController(
     )
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
-    fun hentVenteperiode(
+    fun hentVentetid(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @PathVariable sykmeldingId: String,
         @RequestBody ventetidRequest: VentetidRequest,
     ): VentetidResponse {
-        validerVenteperiodeRequest(ventetidRequest, sykmeldingId)
+        validerVentetidRequest(ventetidRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         val venteperiode =
@@ -103,14 +107,48 @@ class VentetidController(
         return VentetidResponse(venteperiode)
     }
 
-    private fun validerVenteperiodeRequest(
+    @GetMapping(
+        value = ["/api/v1/internal/ventetid/{sykmeldingId}"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+    )
+    @ProtectedWithClaims(issuer = "azureator")
+    @ResponseBody
+    fun hentVentetidInternal(
+        @PathVariable sykmeldingId: String,
+    ): VentetidResponse {
+        clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        val fnr =
+            syketilfellebitRepository
+                .findByRessursId(sykmeldingId)
+                .map { it.fnr }
+                .distinct()
+                .single()
+        val identer = hentIdenter(fnr, true)
+
+        val venteperiode =
+            ventetidUtregner.beregnVenteperiode(
+                sykmeldingId = sykmeldingId,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+                identer = identer,
+            )
+        return VentetidResponse(venteperiode)
+    }
+
+    private fun validerVentetidRequest(
         ventetidRequest: VentetidRequest,
         sykmeldingId: String,
     ) {
         clientIdValidation.validateClientId(
-            NamespaceAndApp(
-                namespace = "flex",
-                app = "sykepengesoknad-backend",
+            listOf(
+                NamespaceAndApp(
+                    namespace = "flex",
+                    app = "sykepengesoknad-backend",
+                ),
+                NamespaceAndApp(
+                    namespace = "flex",
+                    app = "flex-internal-frontend",
+                ),
             ),
         )
         with(ventetidRequest) {

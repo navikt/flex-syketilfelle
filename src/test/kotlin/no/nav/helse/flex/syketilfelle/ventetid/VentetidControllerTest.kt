@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
+import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -70,7 +71,12 @@ class VentetidControllerTest :
                     .post("/api/v1/ventetid/$sykmeldingId/ventetid")
                     .header(
                         "Authorization",
-                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id", audience = "facebook")}",
+                        "Bearer ${
+                            server.azureToken(
+                                subject = "sykepengesoknad-backend-client-id",
+                                audience = "facebook",
+                            )
+                        }",
                     ).header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ventetidRequest.serialisertTilString()),
@@ -102,5 +108,42 @@ class VentetidControllerTest :
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ventetidRequest.serialisertTilString()),
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Hent ventetid som flex-internal-frontend`() {
+        """
+        [
+          {
+            "syketilfellebitId": "43e1c0c8-6a73-419a-8a20-42a77461d1ad",
+            "fnr": "$fnr",
+            "opprettet": "2025-09-01T00:00:00.000000Z",
+            "inntruffet": "2025-09-01T00:00:00.000000Z",
+            "orgnummer": null,
+            "tags": "SYKMELDING,BEKREFTET,PERIODE,INGEN_AKTIVITET",
+            "ressursId": "$sykmeldingId",
+            "korrigererSendtSoknad": null,
+            "fom": "2025-09-01",
+            "tom": "2025-09-18",
+            "publisert": true,
+            "slettet": null,
+            "tombstonePublisert": null
+          }
+        ] 
+        """.trimIndent().tilSyketilfellebitDbRecords().also {
+            syketilfellebitRepository.saveAll(it)
+        }
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/v1/internal/ventetid/$sykmeldingId")
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
+                    ).contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString `should be equal to` """{"ventetid":{"fom":"2025-09-01","tom":"2025-09-16"}}"""
     }
 }
