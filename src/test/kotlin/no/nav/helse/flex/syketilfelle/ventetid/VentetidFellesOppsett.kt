@@ -1,5 +1,8 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.flex.syketilfelle.objectMapper
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGSENDT_TOPIC
@@ -30,6 +33,8 @@ interface VentetidFellesOppsett {
     fun SykmeldingKafkaMessage.publiser() {
         sykmeldingLagring.handterSykmelding("key", this, SYKMELDINGSENDT_TOPIC)
     }
+
+    fun String.tilSyketilfellebitDbRecords(): List<SyketilfellebitDbRecord> = objectMapper.readValue(this)
 
     fun verifiserAtBiterErLagret(forventetAntallBiter: Int) {
         await().atMost(5, TimeUnit.SECONDS).until {
