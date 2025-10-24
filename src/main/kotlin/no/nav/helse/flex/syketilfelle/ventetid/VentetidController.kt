@@ -126,12 +126,16 @@ class VentetidController(
                 .single()
         val identer = hentIdenter(fnr, true)
 
+        log.info("Henter ventetid for sykmelding $sykmeldingId med fnr $fnr")
+
         val venteperiode =
             ventetidUtregner.beregnVenteperiode(
                 sykmeldingId = sykmeldingId,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
                 identer = identer,
             )
+
+        log.info("Fant ventetid $venteperiode for sykmelding $sykmeldingId.")
         return VentetidResponse(venteperiode)
     }
 
