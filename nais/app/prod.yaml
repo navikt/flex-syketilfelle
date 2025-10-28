@@ -9,6 +9,7 @@ replicas_min: 3
 replicas_max: 4
 cpu: 200m
 memory: 1000Mi
+allowAllUsers: false
 external-host:
   - pdl-api.prod-fss-pub.nais.io
 env:

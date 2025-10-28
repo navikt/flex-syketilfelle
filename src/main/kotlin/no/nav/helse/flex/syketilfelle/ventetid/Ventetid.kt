@@ -34,29 +34,6 @@ data class VentetidResponse(
     val ventetid: FomTomPeriode? = null,
 )
 
-data class VentetidInternalResponse(
-    var erUtenforVentetid: Boolean,
-    val ventetid: FomTomPeriode,
-    var sykmeldingsperiode: FomTomPeriode?,
-    val syketilfellebiter: List<SyketilfellebitInternal> = emptyList(),
-)
-
-data class SyketilfellebitInternal(
-    val syketilfellebitId: String,
-    val fnr: String,
-    val opprettet: java.time.OffsetDateTime,
-    val inntruffet: java.time.OffsetDateTime,
-    val orgnummer: String?,
-    val tags: String,
-    val ressursId: String,
-    val korrigererSendtSoknad: String?,
-    val fom: LocalDate,
-    val tom: LocalDate,
-    val publisert: Boolean,
-    val slettet: java.time.OffsetDateTime?,
-    val tombstonePublisert: java.time.OffsetDateTime?,
-)
-
 data class FomTomPeriode(
     val fom: LocalDate,
     val tom: LocalDate,

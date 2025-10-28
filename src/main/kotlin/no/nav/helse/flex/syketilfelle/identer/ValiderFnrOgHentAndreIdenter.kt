@@ -28,6 +28,11 @@ interface MedPdlClient {
             this
         }
     }
+
+    fun hentIdenter(
+        fnr: String,
+        hentAndreIdenter: Boolean,
+    ): List<String> = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
 }
 
 class FlereIdenterVedHentingException :

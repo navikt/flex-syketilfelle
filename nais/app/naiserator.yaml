@@ -45,6 +45,12 @@ spec:
     application:
       enabled: true
       tenant: {{azureTenant}}
+      allowAllUsers: {{allowAllUsers}}
+      {{#unless allowAllUsers}}
+      claims:
+        groups:
+          - id: "5206a646-a99e-4cd5-90e4-758cf7948cc8" # Begrens tilgang til Team Flex i produksjon.
+      {{/unless}}
   kafka:
     pool: {{kafkaPool}}
   tokenx:

@@ -8,8 +8,6 @@ import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
-import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
@@ -17,7 +15,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 
 @Controller
 class VentetidController(
@@ -25,8 +29,6 @@ class VentetidController(
     private val ventetidUtregner: VentetidUtregner,
     private val tokenValidationContextHolder: TokenValidationContextHolder,
     private val sykeforloepUtregner: SykeforloepUtregner,
-    private val sykmeldingLagring: SykmeldingLagring,
-    private val syketilfellebitRepository: SyketilfellebitRepository,
     override val pdlClient: PdlClient,
     @param:Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
     val sykmeldingerFrontendClientId: String,
@@ -107,74 +109,6 @@ class VentetidController(
         return VentetidResponse(venteperiode)
     }
 
-    @GetMapping(
-        value = ["/api/v1/flex/ventetid/{sykmeldingId}"],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ProtectedWithClaims(issuer = "azureator")
-    @ResponseBody
-    fun hentVentetidInternal(
-        @PathVariable sykmeldingId: String,
-    ): VentetidInternalResponse {
-        clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
-        val fnr =
-            syketilfellebitRepository
-                .findByRessursId(sykmeldingId)
-                .map { it.fnr }
-                .distinct()
-                .single()
-        val identer = hentIdenter(fnr, true)
-
-        val erUtenforVentetid =
-            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
-                sykmeldingId = sykmeldingId,
-                identer = identer,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            )
-
-        val venteperiode =
-            ventetidUtregner.beregnVenteperiode(
-                sykmeldingId = sykmeldingId,
-                identer = identer,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            )
-
-        val sykmeldingsperiode =
-            syketilfellebitRepository
-                .findByRessursId(sykmeldingId)
-                .firstOrNull()
-                ?.let { FomTomPeriode(it.fom, it.tom) }
-
-        val syketilfellebiter =
-            syketilfellebitRepository
-                .findByFnrIn(identer)
-                .sortedBy { it.opprettet }
-                .map {
-                    SyketilfellebitInternal(
-                        syketilfellebitId = it.syketilfellebitId,
-                        fnr = it.fnr,
-                        opprettet = it.opprettet,
-                        inntruffet = it.inntruffet,
-                        orgnummer = it.orgnummer,
-                        tags = it.tags,
-                        ressursId = it.ressursId,
-                        korrigererSendtSoknad = it.korrigererSendtSoknad,
-                        fom = it.fom,
-                        tom = it.tom,
-                        publisert = it.publisert,
-                        slettet = it.slettet,
-                        tombstonePublisert = it.tombstonePublistert,
-                    )
-                }
-
-        return VentetidInternalResponse(
-            erUtenforVentetid = erUtenforVentetid,
-            ventetid = venteperiode!!,
-            sykmeldingsperiode = sykmeldingsperiode,
-            syketilfellebiter = syketilfellebiter,
-        )
-    }
-
     private fun validerVentetidRequest(
         ventetidRequest: VentetidRequest,
         sykmeldingId: String,
@@ -197,11 +131,6 @@ class VentetidController(
             }
         }
     }
-
-    private fun hentIdenter(
-        fnr: String,
-        hentAndreIdenter: Boolean,
-    ): List<String> = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
 
     private fun validerTokenXClaims(): JwtTokenClaims {
         val context = tokenValidationContextHolder.getTokenValidationContext()
