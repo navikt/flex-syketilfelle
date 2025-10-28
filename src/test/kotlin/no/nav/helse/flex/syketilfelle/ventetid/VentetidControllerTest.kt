@@ -1,7 +1,9 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
+import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 class VentetidControllerTest :
@@ -134,16 +138,52 @@ class VentetidControllerTest :
             syketilfellebitRepository.saveAll(it)
         }
 
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .get("/api/v1/internal/ventetid/$sykmeldingId")
-                    .header(
-                        "Authorization",
-                        "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
-                    ).contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn()
-            .response.contentAsString `should be equal to` """{"ventetid":{"fom":"2025-09-01","tom":"2025-09-16"}}"""
+        val json =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders
+                        .get("/api/v1/flex/ventetid/$sykmeldingId")
+                        .header(
+                            "Authorization",
+                            "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
+                        ).contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        val respons: VentetidInternalResponse = objectMapper.readValue(json)
+        val forventetResponse =
+            VentetidInternalResponse(
+                erUtenforVentetid = true,
+                ventetid =
+                    FomTomPeriode(
+                        LocalDate.of(2025, 9, 1),
+                        LocalDate.of(2025, 9, 16),
+                    ),
+                sykmeldingsperiode =
+                    FomTomPeriode(
+                        LocalDate.of(2025, 9, 1),
+                        LocalDate.of(2025, 9, 18),
+                    ),
+                syketilfellebiter =
+                    listOf(
+                        SyketilfellebitInternal(
+                            syketilfellebitId = "43e1c0c8-6a73-419a-8a20-42a77461d1ad",
+                            fnr = fnr,
+                            opprettet = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z"),
+                            inntruffet = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z"),
+                            orgnummer = null,
+                            tags = "SYKMELDING,BEKREFTET,PERIODE,INGEN_AKTIVITET",
+                            ressursId = sykmeldingId,
+                            korrigererSendtSoknad = null,
+                            fom = LocalDate.of(2025, 9, 1),
+                            tom = LocalDate.of(2025, 9, 18),
+                            publisert = true,
+                            slettet = null,
+                            tombstonePublisert = null,
+                        ),
+                    ),
+            )
+        respons `should be equal to` forventetResponse
     }
 }
