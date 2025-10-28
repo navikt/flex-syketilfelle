@@ -108,15 +108,14 @@ class VentetidController(
     }
 
     @GetMapping(
-        value = ["/api/v1/internal/ventetid/{sykmeldingId}"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        value = ["/api/v1/flex/ventetid/{sykmeldingId}"],
         produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
     fun hentVentetidInternal(
         @PathVariable sykmeldingId: String,
-    ): VentetidResponse {
+    ): VentetidInternalResponse {
         clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
         val fnr =
             syketilfellebitRepository
@@ -126,13 +125,54 @@ class VentetidController(
                 .single()
         val identer = hentIdenter(fnr, true)
 
+        val erUtenforVentetid =
+            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
+                sykmeldingId = sykmeldingId,
+                identer = identer,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            )
+
         val venteperiode =
             ventetidUtregner.beregnVenteperiode(
                 sykmeldingId = sykmeldingId,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
                 identer = identer,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             )
-        return VentetidResponse(venteperiode)
+
+        val sykmeldingsperiode =
+            syketilfellebitRepository
+                .findByRessursId(sykmeldingId)
+                .firstOrNull()
+                ?.let { FomTomPeriode(it.fom, it.tom) }
+
+        val syketilfellebiter =
+            syketilfellebitRepository
+                .findByFnrIn(identer)
+                .sortedBy { it.opprettet }
+                .map {
+                    SyketilfellebitInternal(
+                        syketilfellebitId = it.syketilfellebitId,
+                        fnr = it.fnr,
+                        opprettet = it.opprettet,
+                        inntruffet = it.inntruffet,
+                        orgnummer = it.orgnummer,
+                        tags = it.tags,
+                        ressursId = it.ressursId,
+                        korrigererSendtSoknad = it.korrigererSendtSoknad,
+                        fom = it.fom,
+                        tom = it.tom,
+                        publisert = it.publisert,
+                        slettet = it.slettet,
+                        tombstonePublisert = it.tombstonePublistert,
+                    )
+                }
+
+        return VentetidInternalResponse(
+            erUtenforVentetid = erUtenforVentetid,
+            ventetid = venteperiode!!,
+            sykmeldingsperiode = sykmeldingsperiode,
+            syketilfellebiter = syketilfellebiter,
+        )
     }
 
     private fun validerVentetidRequest(
