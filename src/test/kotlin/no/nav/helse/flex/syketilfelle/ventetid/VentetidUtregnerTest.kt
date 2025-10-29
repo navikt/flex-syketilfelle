@@ -202,6 +202,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -240,6 +242,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 9),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -283,6 +287,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 21),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -325,6 +331,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 21),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -366,6 +374,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 15),
                     tom = LocalDate.of(2024, Month.JULY, 21),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -414,6 +424,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 11),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(3)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -471,6 +483,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 11),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(3)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -532,6 +546,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 17),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(3)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -586,6 +602,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 17),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -633,6 +651,8 @@ class VentetidUtregnerTest :
                 )
             }.also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -672,6 +692,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 31),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -691,6 +713,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 12),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -720,6 +744,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 21),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -751,6 +777,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.AUGUST, 16),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -778,6 +806,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -797,6 +827,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -826,6 +858,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 20),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -883,6 +917,8 @@ class VentetidUtregnerTest :
                             ),
                     ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(3)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -911,6 +947,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 8),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -941,6 +979,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 8),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -969,6 +1009,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JUNE, 25),
                     tom = LocalDate.of(2024, Month.JULY, 8),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -999,6 +1041,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 8),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1027,6 +1071,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JUNE, 25),
                     tom = LocalDate.of(2024, Month.JULY, 8),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1077,6 +1123,8 @@ class VentetidUtregnerTest :
                 sykmeldingId = melding.sykmelding.id,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
             ).`should be false`()
+
+            verifiserAtBiterErLagret(1)
 
             hentVentetid(
                 listOf(fnr),
@@ -1196,6 +1244,8 @@ class VentetidUtregnerTest :
                         ),
                 )
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1224,6 +1274,8 @@ class VentetidUtregnerTest :
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1251,6 +1303,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 10),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1298,6 +1352,8 @@ class VentetidUtregnerTest :
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -1343,6 +1399,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 31),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1393,6 +1451,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 30),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -1433,6 +1493,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 30),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
@@ -1472,6 +1534,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 18),
                     tom = LocalDate.of(2024, Month.JULY, 30),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1514,6 +1578,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1538,6 +1604,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 1),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1561,6 +1629,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 6),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(1)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1630,6 +1700,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2024, Month.JULY, 31),
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1671,6 +1743,8 @@ class VentetidUtregnerTest :
                 )
             }.also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1700,6 +1774,8 @@ class VentetidUtregnerTest :
                     fom = LocalDate.of(2024, Month.JULY, 10),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1741,6 +1817,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1765,6 +1843,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2020, Month.JUNE, 6),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(1)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1799,6 +1879,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1820,6 +1902,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2020, Month.JUNE, 4),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(1)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1852,6 +1936,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1883,6 +1969,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1910,6 +1998,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2020, Month.JUNE, 11),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1942,6 +2032,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -1969,6 +2061,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2020, Month.JUNE, 4),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -2000,6 +2094,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2020, Month.JUNE, 8),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -2197,6 +2293,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(1)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -2218,6 +2316,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2022, Month.MARCH, 15),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(1)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -2250,6 +2350,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -2281,6 +2383,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -2308,6 +2412,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2022, Month.MARCH, 21),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -2340,6 +2446,8 @@ class VentetidUtregnerTest :
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
 
+            verifiserAtBiterErLagret(2)
+
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
@@ -2367,6 +2475,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2022, Month.MARCH, 11),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -2398,6 +2508,8 @@ class VentetidUtregnerTest :
                     tom = LocalDate.of(2022, Month.MARCH, 8),
                     harRedusertArbeidsgiverperiode = true,
                 ).also { it.publiser() }
+
+            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
