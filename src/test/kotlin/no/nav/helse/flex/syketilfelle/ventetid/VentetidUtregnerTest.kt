@@ -1,15 +1,13 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.erUtenforVentetid
-import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
-import no.nav.helse.flex.syketilfelle.hentVentetid
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
@@ -26,6 +24,9 @@ class VentetidUtregnerTest :
     VentetidFellesOppsett {
     @Autowired
     override lateinit var sykmeldingLagring: SykmeldingLagring
+
+    @Autowired
+    private lateinit var ventetidUtregner: VentetidUtregner
 
     @BeforeEach
     @AfterEach
@@ -55,16 +56,16 @@ class VentetidUtregnerTest :
                 )
 
             erUtenforVentetid(
-                listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
+                identer = listOf(fnr),
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
-            ).`should be false`()
+            ) `should be` false
 
             hentVentetid(
-                listOf(fnr),
+                identer = listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -109,7 +110,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -130,7 +131,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -211,7 +212,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -223,7 +224,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -250,7 +251,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -292,7 +293,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -334,7 +335,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -376,7 +377,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -424,7 +425,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -436,7 +437,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -448,7 +449,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding3.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -481,7 +482,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -493,7 +494,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -541,7 +542,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -553,7 +554,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -892,7 +893,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
     }
 
@@ -1080,7 +1081,11 @@ class VentetidUtregnerTest :
             hentVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding, returnerPerioderInnenforVentetid = true),
+                ventetidRequest =
+                    VentetidRequest(
+                        sykmeldingKafkaMessage = melding,
+                        returnerPerioderInnenforVentetid = true,
+                    ),
             ).ventetid.also {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
@@ -1229,7 +1234,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -1398,7 +1403,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1410,7 +1415,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -1438,7 +1443,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1450,7 +1455,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -1478,7 +1483,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1490,7 +1495,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
     }
 
@@ -1804,7 +1809,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -1888,7 +1893,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -1947,7 +1952,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2071,7 +2076,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2202,7 +2207,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2286,7 +2291,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2345,7 +2350,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2469,7 +2474,7 @@ class VentetidUtregnerTest :
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).ventetid `should be equal to` null
+            ).ventetid `should be` null
         }
 
         @Test
@@ -2548,34 +2553,28 @@ class VentetidUtregnerTest :
         }
     }
 
-    @Nested
-    inner class BrukerTokenX {
-        @Test
-        fun `Periode på 16 dager er utenfor ventetiden`() {
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+    private fun erUtenforVentetid(
+        identer: List<String>,
+        sykmeldingId: String,
+        erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    ): Boolean =
+        ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
+            sykmeldingId = sykmeldingId,
+            identer = identer,
+            erUtenforVentetidRequest = erUtenforVentetidRequest,
+        )
 
-            erUtenforVentetidSomBrukerTokenX(
-                fnr,
-                sykmeldingId = melding.sykmelding.id,
-            ).erUtenforVentetid `should be equal to` false
-        }
-
-        @Test
-        fun `Periode på 17 dager er utenfor ventetiden`() {
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
-
-            erUtenforVentetidSomBrukerTokenX(
-                fnr,
-                sykmeldingId = melding.sykmelding.id,
-            ).erUtenforVentetid `should be equal to` true
-        }
-    }
+    private fun hentVentetid(
+        identer: List<String>,
+        sykmeldingId: String,
+        ventetidRequest: VentetidRequest,
+    ): VentetidResponse =
+        VentetidResponse(
+            ventetid =
+                ventetidUtregner.beregnVenteperiode(
+                    sykmeldingId = sykmeldingId,
+                    identer = identer,
+                    ventetidRequest = ventetidRequest,
+                ),
+        )
 }

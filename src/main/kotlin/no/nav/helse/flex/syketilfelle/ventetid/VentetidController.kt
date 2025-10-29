@@ -50,7 +50,7 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
-        validerVentetidRequest(erUtenforVentetidRequest.tilVentetidRequest(), sykmeldingId)
+        validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
@@ -84,46 +84,12 @@ class VentetidController(
         return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
     }
 
-    @PostMapping(
-        value = ["/api/v1/ventetid/{sykmeldingId}/ventetid"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ProtectedWithClaims(issuer = "azureator")
-    @ResponseBody
-    fun hentVentetid(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @PathVariable sykmeldingId: String,
-        @RequestBody ventetidRequest: VentetidRequest,
-    ): VentetidResponse {
-        validerVentetidRequest(ventetidRequest, sykmeldingId)
-        val identer = hentIdenter(fnr, hentAndreIdenter)
-
-        val venteperiode =
-            ventetidUtregner.beregnVenteperiode(
-                sykmeldingId = sykmeldingId,
-                ventetidRequest = ventetidRequest,
-                identer = identer,
-            )
-        return VentetidResponse(venteperiode)
-    }
-
     private fun validerVentetidRequest(
-        ventetidRequest: VentetidRequest,
+        ventetidRequest: ErUtenforVentetidRequest,
         sykmeldingId: String,
     ) {
         clientIdValidation.validateClientId(
-            listOf(
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "sykepengesoknad-backend",
-                ),
-                NamespaceAndApp(
-                    namespace = "flex",
-                    app = "flex-internal-frontend",
-                ),
-            ),
+            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
         )
         with(ventetidRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
