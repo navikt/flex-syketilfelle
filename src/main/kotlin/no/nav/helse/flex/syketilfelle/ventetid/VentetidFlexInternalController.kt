@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import java.time.LocalDate
 
 @Controller
-class VentetidInternalController(
+class VentetidFlexInternalController(
     private val clientIdValidation: ClientIdValidation,
     private val ventetidUtregner: VentetidUtregner,
     private val syketilfellebitRepository: SyketilfellebitRepository,
@@ -26,7 +26,7 @@ class VentetidInternalController(
     )
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
-    fun hentVentetidInternal(
+    fun hentVentetidForFlexInternal(
         @PathVariable sykmeldingId: String,
     ): VentetidInternalResponse {
         clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
