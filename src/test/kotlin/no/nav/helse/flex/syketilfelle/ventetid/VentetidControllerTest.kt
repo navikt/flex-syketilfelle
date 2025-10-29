@@ -1,23 +1,25 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
+import no.nav.helse.flex.syketilfelle.erUtenforVentetid
+import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.objectMapper
-import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
-import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.`should be`
+import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.util.UUID
+import java.time.Month
+import java.util.*
 
 class VentetidControllerTest :
     FellesTestOppsett(),
@@ -35,7 +37,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for erUtenforVentetid feiler hvis audience er feil`() {
+    fun `Kall til erUtenforVentetid som bruker feiler hvis audience er feil`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -46,7 +48,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for erUtenforVentetid feiler hvis token mangler`() {
+    fun `Kall til erUtenforVentetid som bruker feiler hvis token mangler`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -56,7 +58,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for erUtenforVentetid feiler hvis clientId er feil`() {
+    fun `Kall til erUtenforVentetid som bruker feiler hvis clientId er feil`() {
         mockMvc
             .perform(
                 MockMvcRequestBuilders
@@ -67,123 +69,68 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `Authorization for ventetid feiler hvis audience er feil`() {
-        val ventetidRequest = VentetidRequest()
+    fun `Kall til erUtenforVentetid feiler hvis token mangler er feil`() {
         mockMvc
             .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
-                    .header(
-                        "Authorization",
-                        "Bearer ${
-                            server.azureToken(
-                                subject = "sykepengesoknad-backend-client-id",
-                                audience = "facebook",
-                            )
-                        }",
-                    ).header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(ventetidRequest.serialisertTilString()),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Authorization for ventetid feiler hvis token mangler`() {
-        val ventetidRequest = VentetidRequest()
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
+                post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
                     .header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(ventetidRequest.serialisertTilString()),
+                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest()))
+                    .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
-    fun `Authorization for ventetid feiler hvis clientId er feil`() {
-        val ventetidRequest = VentetidRequest()
+    fun `Kall til erUtenforVentetid feiler hvis subject er feil`() {
         mockMvc
             .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/ventetid/$sykmeldingId/ventetid")
+                post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
                     .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
                     .header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(ventetidRequest.serialisertTilString()),
+                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest()))
+                    .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
-    fun `Hent ventetid som flex-internal-frontend`() {
-        """
-        [
-          {
-            "syketilfellebitId": "43e1c0c8-6a73-419a-8a20-42a77461d1ad",
-            "fnr": "$fnr",
-            "opprettet": "2025-09-01T00:00:00.000000Z",
-            "inntruffet": "2025-09-01T00:00:00.000000Z",
-            "orgnummer": null,
-            "tags": "SYKMELDING,BEKREFTET,PERIODE,INGEN_AKTIVITET",
-            "ressursId": "$sykmeldingId",
-            "korrigererSendtSoknad": null,
-            "fom": "2025-09-01",
-            "tom": "2025-09-18",
-            "publisert": true,
-            "slettet": null,
-            "tombstonePublisert": null
-          }
-        ] 
-        """.trimIndent().tilSyketilfellebitDbRecords().also {
-            syketilfellebitRepository.saveAll(it)
-        }
-
-        val json =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders
-                        .get("/api/v1/flex/ventetid/$sykmeldingId")
-                        .header(
-                            "Authorization",
-                            "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
-                        ).contentType(MediaType.APPLICATION_JSON),
-                ).andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn()
-                .response.contentAsString
-
-        val respons: VentetidInternalResponse = objectMapper.readValue(json)
-        val forventetResponse =
-            VentetidInternalResponse(
-                erUtenforVentetid = true,
-                ventetid =
-                    FomTomPeriode(
-                        LocalDate.of(2025, 9, 1),
-                        LocalDate.of(2025, 9, 16),
-                    ),
-                sykmeldingsperiode =
-                    FomTomPeriode(
-                        LocalDate.of(2025, 9, 1),
-                        LocalDate.of(2025, 9, 18),
-                    ),
-                syketilfellebiter =
-                    listOf(
-                        SyketilfellebitInternal(
-                            syketilfellebitId = "43e1c0c8-6a73-419a-8a20-42a77461d1ad",
-                            fnr = fnr,
-                            opprettet = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z"),
-                            inntruffet = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z"),
-                            orgnummer = null,
-                            tags = "SYKMELDING,BEKREFTET,PERIODE,INGEN_AKTIVITET",
-                            ressursId = sykmeldingId,
-                            korrigererSendtSoknad = null,
-                            fom = LocalDate.of(2025, 9, 1),
-                            tom = LocalDate.of(2025, 9, 18),
-                            publisert = true,
-                            slettet = null,
-                            tombstonePublisert = null,
-                        ),
-                    ),
+    fun `Periode på 17 dager er utenfor ventetiden`() {
+        val melding =
+            skapSykmeldingKafkaMessage(
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
             )
-        respons `should be equal to` forventetResponse
+
+        erUtenforVentetid(
+            listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
+        ).`should be true`()
+    }
+
+    @Test
+    fun `Periode på 16 dager er innefor ventetiden som bruker`() {
+        val melding =
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 16),
+            ).also { it.publiser() }
+
+        erUtenforVentetidSomBruker(
+            fnr,
+            sykmeldingId = melding.sykmelding.id,
+        ).erUtenforVentetid `should be` false
+    }
+
+    @Test
+    fun `Periode på 17 dager er utenfor ventetiden som bruker`() {
+        val melding =
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            ).also { it.publiser() }
+
+        erUtenforVentetidSomBruker(
+            fnr,
+            sykmeldingId = melding.sykmelding.id,
+        ).erUtenforVentetid `should be` true
     }
 }

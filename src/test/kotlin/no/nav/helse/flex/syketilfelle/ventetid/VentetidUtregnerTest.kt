@@ -1,7 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBrukerTokenX
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
@@ -2551,37 +2550,6 @@ class VentetidUtregnerTest :
                 it!!.fom `should be equal to` LocalDate.of(2022, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2022, Month.JULY, 5)
             }
-        }
-    }
-
-    @Nested
-    inner class BrukerTokenX {
-        @Test
-        fun `Periode på 16 dager er utenfor ventetiden`() {
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
-
-            erUtenforVentetidSomBrukerTokenX(
-                fnr,
-                sykmeldingId = melding.sykmelding.id,
-            ).erUtenforVentetid `should be` false
-        }
-
-        @Test
-        fun `Periode på 17 dager er utenfor ventetiden`() {
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
-
-            erUtenforVentetidSomBrukerTokenX(
-                fnr,
-                sykmeldingId = melding.sykmelding.id,
-            ).erUtenforVentetid `should be` true
         }
     }
 
