@@ -97,12 +97,14 @@ class VentetidControllerTest :
             skapSykmeldingKafkaMessage(
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
-            )
+            ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
 
         erUtenforVentetid(
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
         ).`should be true`()
     }
 
@@ -113,6 +115,8 @@ class VentetidControllerTest :
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 16),
             ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
 
         erUtenforVentetidSomBruker(
             fnr,
@@ -127,6 +131,8 @@ class VentetidControllerTest :
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
             ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
 
         erUtenforVentetidSomBruker(
             fnr,
