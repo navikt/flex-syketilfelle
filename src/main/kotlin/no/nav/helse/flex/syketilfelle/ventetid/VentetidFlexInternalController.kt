@@ -39,14 +39,14 @@ class VentetidFlexInternalController(
         val identer = hentIdenter(fnr, true)
 
         val erUtenforVentetid =
-            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
+            ventetidUtregner.erUtenforVentetid(
                 sykmeldingId = sykmeldingId,
                 identer = identer,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             )
 
-        val venteperiode =
-            ventetidUtregner.beregnVenteperiode(
+        val ventetid =
+            ventetidUtregner.beregnVentetid(
                 sykmeldingId = sykmeldingId,
                 identer = identer,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
@@ -82,7 +82,7 @@ class VentetidFlexInternalController(
 
         return VentetidInternalResponse(
             erUtenforVentetid = erUtenforVentetid,
-            ventetid = venteperiode!!,
+            ventetid = ventetid!!,
             sykmeldingsperiode = sykmeldingsperiode,
             syketilfellebiter = syketilfellebiter,
         )

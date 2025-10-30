@@ -60,13 +60,13 @@ class VentetidUtregner(
             )
     }
 
-    fun beregnOmSykmeldingErUtenforVentetid(
+    fun erUtenforVentetid(
         sykmeldingId: String,
         identer: List<String>,
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean = beregnVenteperiode(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
+    ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
 
-    fun beregnVenteperiode(
+    fun beregnVentetid(
         sykmeldingId: String,
         identer: List<String>,
         ventetidRequest: VentetidRequest,
@@ -102,10 +102,10 @@ class VentetidUtregner(
                 .mergePerioder()
                 .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
 
-        perioder.beregnVenteperiode()?.let { beregnetVenteperiode ->
+        perioder.beregnVentetid()?.let { ventetid ->
             return FomTomPeriode(
-                fom = beregnetVenteperiode.fom,
-                tom = beregnVenteperiodeTom(beregnetVenteperiode.fom, perioder),
+                fom = ventetid.fom,
+                tom = beregnVentetidTilDato(ventetid.fom, perioder),
             )
         }
 
@@ -122,7 +122,7 @@ class VentetidUtregner(
         return null
     }
 
-    private fun List<Periode>.beregnVenteperiode(): Periode? {
+    private fun List<Periode>.beregnVentetid(): Periode? {
         // Hvis det er mindre enn 17 siden forrige periode og forrige periode var utenfor ventetid, returneres forrige
         // periodes ventetid.
         if (size >= 2) {
@@ -131,7 +131,7 @@ class VentetidUtregner(
                 return forrigePeriode
             }
         }
-        // Går gjennom periodene og finner den første som kvalifiserer som venteperiode.
+        // Går gjennom periodene og finner den første som kvalifiserer som ventetid.
         for ((index, periode) in withIndex()) {
             when {
                 periode.erLengreEnnVentetid() -> return periode
@@ -142,8 +142,7 @@ class VentetidUtregner(
         return null
     }
 
-    private fun Periode.erLengreEnnVentetid(): Boolean =
-        erLengreEnnStandardVentetid() || (redusertVentePeriode && erLengreEnnKoronaVentetid())
+    private fun Periode.erLengreEnnVentetid(): Boolean = erLengreEnnStandardVentetid() || (redusertVentetid && erLengreEnnKoronaVentetid())
 
     private fun lagSykmeldingBiter(
         baseBiter: List<Syketilfellebit>,
@@ -181,7 +180,7 @@ class VentetidUtregner(
         Periode(
             tom = this.tom,
             fom = this.fom,
-            redusertVentePeriode = this.tags.contains(Tag.REDUSERT_ARBEIDSGIVERPERIODE),
+            redusertVentetid = this.tags.contains(Tag.REDUSERT_ARBEIDSGIVERPERIODE),
             behandlingsdager = this.tags.contains(Tag.BEHANDLINGSDAGER),
             ressursId = this.ressursId,
         )
@@ -237,9 +236,9 @@ class VentetidUtregner(
             }
 
         return gjeldendePeriode.copy(
-            // Bruker tidligste fom-dato og setter redusertVentePeriode hvis en av periodene har det.
+            // Bruker tidligste fom-dato og setter redusertVentetid hvis en av periodene har det.
             fom = minOf(forrigePeriode.fom, gjeldendePeriode.fom),
-            redusertVentePeriode = forrigePeriode.redusertVentePeriode || gjeldendePeriode.redusertVentePeriode,
+            redusertVentetid = forrigePeriode.redusertVentetid || gjeldendePeriode.redusertVentetid,
             ressursId = ressursId,
         )
     }
@@ -283,17 +282,17 @@ class VentetidUtregner(
     private fun Periode.skalJusteresForHelg(sykmeldingId: String): Boolean =
         ressursId == sykmeldingId && (tom.dayOfWeek == SATURDAY || tom.dayOfWeek == SUNDAY)
 
-    private fun beregnVenteperiodeTom(
+    private fun beregnVentetidTilDato(
         fom: LocalDate,
         perioder: List<Periode>,
     ): LocalDate {
-        val harRedusertVenteperiode = perioder.any { it.redusertVentePeriode }
+        val harRedusertVentetid = perioder.any { it.redusertVentetid }
         val erKoronaPeriodeMedSeksDager = perioder.any { it.erKoronaPeriodeMedSeksDager() }
         val erKoronaPeriodeMedFireDager = perioder.any { it.erKoronaPeriodeMedFireDager() }
 
         return when {
-            harRedusertVenteperiode && erKoronaPeriodeMedSeksDager -> fom.plusDays(SEKS_DAGER - 1L)
-            harRedusertVenteperiode && erKoronaPeriodeMedFireDager -> fom.plusDays(FIRE_DAGER - 1L)
+            harRedusertVentetid && erKoronaPeriodeMedSeksDager -> fom.plusDays(SEKS_DAGER - 1L)
+            harRedusertVentetid && erKoronaPeriodeMedFireDager -> fom.plusDays(FIRE_DAGER - 1L)
             else -> fom.plusDays(SEKSTEN_DAGER - 1L)
         }
     }
@@ -324,7 +323,7 @@ class VentetidUtregner(
     private data class Periode(
         val fom: LocalDate,
         val tom: LocalDate,
-        val redusertVentePeriode: Boolean,
+        val redusertVentetid: Boolean,
         val behandlingsdager: Boolean,
         val ressursId: String,
     )

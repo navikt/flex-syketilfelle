@@ -2670,7 +2670,7 @@ class VentetidUtregnerTest :
         sykmeldingId: String,
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean =
-        ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
+        ventetidUtregner.erUtenforVentetid(
             sykmeldingId = sykmeldingId,
             identer = identer,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
@@ -2683,7 +2683,7 @@ class VentetidUtregnerTest :
     ): VentetidResponse =
         VentetidResponse(
             ventetid =
-                ventetidUtregner.beregnVenteperiode(
+                ventetidUtregner.beregnVentetid(
                     sykmeldingId = sykmeldingId,
                     identer = identer,
                     ventetidRequest = ventetidRequest,

@@ -53,7 +53,7 @@ class VentetidController(
         validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
-        return ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(
+        return ventetidUtregner.erUtenforVentetid(
             sykmeldingId = sykmeldingId,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
             identer = identer,
@@ -73,7 +73,7 @@ class VentetidController(
         val identer = pdlClient.hentFolkeregisterIdenter(fnr)
 
         val utenforVentetid =
-            ventetidUtregner.beregnOmSykmeldingErUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
+            ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
