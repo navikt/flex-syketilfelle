@@ -17,9 +17,12 @@ class SlettAvvisteSykmeldingerJobb(
 
     @Scheduled(initialDelay = 1, fixedDelay = 60 * 24, timeUnit = TimeUnit.MINUTES)
     fun run() {
+        log.info("Sjekker om er leder for å slette avviste sykmeldinger")
         if (!leaderElection.isLeader()) {
+            log.info("Er ikke leder, avslutter jobb")
             return
         }
+        log.info("Er leder, starter jobb for å slette avviste sykmeldinger")
 
         val avvisteSykmeldingIder = sykmeldingIder
         val slettetTidspunkt = OffsetDateTime.parse("2025-11-06T14:30:00Z")
