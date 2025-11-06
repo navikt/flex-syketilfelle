@@ -15,7 +15,7 @@ class SlettAvvisteSykmeldingerJobb(
 ) {
     private val log = logger()
 
-    @Scheduled(initialDelay = 1, fixedDelay = 60 * 24, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelay = 1, fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
     fun run() {
         log.info("Sjekker om er leder for å slette avviste sykmeldinger")
         if (!leaderElection.isLeader()) {
