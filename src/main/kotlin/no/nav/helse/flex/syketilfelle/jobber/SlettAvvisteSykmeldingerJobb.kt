@@ -33,10 +33,10 @@ class SlettAvvisteSykmeldingerJobb(
 
         log.info("skal slette ${biter.size} avviste sykmeldinger")
 
-//        biter.forEach {
-//            syketilfellebitRepository.save(it)
-//            log.info("Slettet syketilfellebit med id ${it.syketilfellebitId}, ressursId ${it.ressursId}")
-//        }
+        biter.forEach {
+            syketilfellebitRepository.save(it)
+            log.info("Slettet syketilfellebit med id ${it.syketilfellebitId}, ressursId ${it.ressursId}")
+        }
     }
 }
 
