@@ -13,6 +13,8 @@ interface SyketilfellebitRepository : CrudRepository<SyketilfellebitDbRecord, St
 
     fun findByRessursId(ressursId: String): List<SyketilfellebitDbRecord>
 
+    fun findAllByRessursIdIn(ressursIds: List<String>): List<SyketilfellebitDbRecord>
+
     fun findFirst300ByPublisertOrderByOpprettetAsc(publisert: Boolean): List<SyketilfellebitDbRecord>
 
     fun findFirst300ByTombstonePublistertIsNullAndSlettetIsNotNullOrderByOpprettetAsc(): List<SyketilfellebitDbRecord>
