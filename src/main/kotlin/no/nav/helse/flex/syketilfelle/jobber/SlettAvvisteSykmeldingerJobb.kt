@@ -30,9 +30,9 @@ class SlettAvvisteSykmeldingerJobb(
         val biter =
             syketilfellebitRepository
                 .findAllByRessursIdIn(avvisteSykmeldingIder)
-                .filter {
-                    it.slettet == null
-                }.map { it.copy(slettet = slettetTidspunkt) }
+                .filter { it.slettet == null }
+                .filterNot { it.tags.contains("NY") }
+                .map { it.copy(slettet = slettetTidspunkt) }
 
         log.info("skal slette ${biter.size} avviste sykmeldinger")
 
@@ -556,6 +556,7 @@ private val sykmeldingIder =
         "dec3d477-4182-4f3c-b1a5-7515a1af69bc",
         "5411c826-5fbb-4f53-a14c-8e21b7d60d58",
         "9a7853a1-4a3e-496a-86db-649b8e6d8363",
+        "05752f92-2b72-4fd7-8281-2fd183c9fc3f",
         "92c5babe-bea2-42d4-a8c7-ebab0b90008b",
         "526d137f-e379-4bdf-9f09-361761f64b32",
         "0dadffe4-2e07-4ece-a280-a4f7bb65882d",
@@ -765,6 +766,7 @@ private val sykmeldingIder =
         "a517295f-cc9f-4705-be40-c9fec8618af8",
         "21ccb8f9-2f1f-4964-b63f-e0f82201af5b",
         "85584385-c447-4bf0-81d2-4e4cb46eacc6",
+        "b62ede94-10a6-4f39-a46a-9816c9ad0f28",
         "aabfb231-49a4-41cb-a638-9026e5d3d0ec",
         "5023d017-a2d5-4cd3-96cd-8457e7827272",
         "b0a23cdf-d1eb-4886-82c2-ab92adcdcf64",
@@ -1116,6 +1118,7 @@ private val sykmeldingIder =
         "29fff19c-2537-435b-ad9d-473eaca37a44",
         "992b5cf2-9dd2-43a2-8f0f-fa6b798497c1",
         "b2cd163f-8aa2-42ed-844f-e5850a68b3bb",
+        "ff0f3ed9-5140-41e1-b8a2-560ed4a30cb3",
         "b6db7347-19f4-4e9b-ae36-c19c012859b7",
         "4920725f-9913-415f-9624-0415d5b0d5a7",
         "b541030e-be61-42e9-bbe7-a327d61fb8ad",
@@ -1404,6 +1407,7 @@ private val sykmeldingIder =
         "67f4fcee-a5ec-47bd-a002-adf60f34a159",
         "3107c658-2279-4b4c-89af-01b7c277627b",
         "0dd27f90-9cf6-4746-b7df-603c0f831f53",
+        "3e54d7b2-6781-4379-87a7-dde5f2e0ac30",
         "ec7a94cb-96a9-40da-8893-5921524dc24c",
         "a4508f64-5dc3-44e0-8983-22e1b19a4bb7",
         "3bc9f445-cc4e-4608-ae6f-382c311318b7",
@@ -1875,6 +1879,7 @@ private val sykmeldingIder =
         "e837a9a7-7231-4896-829c-acfe4ab75d3d",
         "28a7f5ed-5baf-4fae-bea6-90d74e623c5a",
         "9a4447a8-41e2-44e0-9638-b17ad953d3e4",
+        "b6c4e6c5-8d94-49ea-9950-9504c7c63d8b",
         "f1cc7875-2c38-447b-8435-c8ecb9408d15",
         "e23a5268-faed-442b-87a9-29dbb7aa1f58",
         "48998e64-5cb4-43ae-8fbf-6325320f4150",
