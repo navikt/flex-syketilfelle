@@ -149,7 +149,7 @@ private fun SoknadsperiodeDTO.tagsForKorrigertArbeidstid(statustag: Tag): Set<Ta
                 Tag.KORRIGERT_ARBEIDSTID,
                 Tag.BEHANDLINGSDAGER,
             )
-        faktiskGrad!! <= 0 -> listOf(Tag.SYKEPENGESOKNAD, statustag, Tag.KORRIGERT_ARBEIDSTID, Tag.FULL_AKTIVITET)
+        faktiskGrad!! <= 0 -> listOf(Tag.SYKEPENGESOKNAD, statustag, Tag.KORRIGERT_ARBEIDSTID, Tag.INGEN_AKTIVITET)
         faktiskGrad!! in 1..99 ->
             listOf(
                 Tag.SYKEPENGESOKNAD,
@@ -157,7 +157,7 @@ private fun SoknadsperiodeDTO.tagsForKorrigertArbeidstid(statustag: Tag): Set<Ta
                 Tag.KORRIGERT_ARBEIDSTID,
                 Tag.GRADERT_AKTIVITET,
             )
-        else -> listOf(Tag.SYKEPENGESOKNAD, statustag, Tag.KORRIGERT_ARBEIDSTID, Tag.INGEN_AKTIVITET)
+        else -> listOf(Tag.SYKEPENGESOKNAD, statustag, Tag.KORRIGERT_ARBEIDSTID, Tag.FULL_AKTIVITET)
     }.toSet()
 
 private fun SykepengesoknadDTO.egenmelding(opprettet: OffsetDateTime) =

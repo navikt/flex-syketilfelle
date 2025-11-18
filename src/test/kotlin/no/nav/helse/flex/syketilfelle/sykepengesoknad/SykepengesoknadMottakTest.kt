@@ -208,6 +208,10 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
         biter[3].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, FULLTID)
         biter[4].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, DELTID)
         biter[5].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, FERIE)
+        biter[7].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET)
+        biter[8].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET)
+        biter[9].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, FULL_AKTIVITET)
+        biter[10].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, BEHANDLINGSDAGER)
         biter[12].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, FRAVAR_FOR_SYKMELDING)
 
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(14)

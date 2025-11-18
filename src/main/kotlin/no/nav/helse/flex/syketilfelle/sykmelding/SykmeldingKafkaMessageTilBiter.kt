@@ -117,16 +117,16 @@ private fun SykmeldingsperiodeAGDTO.finnTagsForPeriode(sykmeldingKafkaMessage: S
     tags.add(Tag.PERIODE)
 
     fun SykmeldingsperiodeAGDTO.finnTagsForGrad(): Tag {
-        val grad = this.gradert?.grad
+        val sykmeldingsgrad = this.gradert?.grad
 
         return when (this.type) {
             PeriodetypeDTO.BEHANDLINGSDAGER -> Tag.BEHANDLINGSDAGER
             PeriodetypeDTO.AKTIVITET_IKKE_MULIG -> Tag.INGEN_AKTIVITET
             else -> {
                 when {
-                    grad == null -> Tag.UKJENT_AKTIVITET
-                    grad <= 0 -> Tag.FULL_AKTIVITET
-                    grad >= 100 -> Tag.INGEN_AKTIVITET
+                    sykmeldingsgrad == null -> Tag.UKJENT_AKTIVITET
+                    sykmeldingsgrad <= 0 -> Tag.FULL_AKTIVITET
+                    sykmeldingsgrad >= 100 -> Tag.INGEN_AKTIVITET
                     else -> Tag.GRADERT_AKTIVITET
                 }
             }
