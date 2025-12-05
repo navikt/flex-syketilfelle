@@ -53,10 +53,10 @@ dependencies {
     implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
     implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
 
-    testImplementation(platform("org.testcontainers:testcontainers-bom:$testContainersVersion"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.testcontainers:kafka")
+    testImplementation("org.testcontainers:testcontainers:$testContainersVersion")
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testContainersVersion")
+    testImplementation("org.testcontainers:testcontainers-kafka:$testContainersVersion")
     testImplementation("org.awaitility:awaitility")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
