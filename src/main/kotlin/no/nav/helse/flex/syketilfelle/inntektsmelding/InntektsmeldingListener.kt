@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.stereotype.Component
 
-const val INNTEKTSMELDING_TOPIC = "helsearbeidsgiver." + "privat-sykepenger-inntektsmelding"
+const val INNTEKTSMELDING_TOPIC = "helsearbeidsgiver." + "inntektsmelding-bruker"
 
 @Component
 class InntektsmeldingListener(
