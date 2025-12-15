@@ -81,7 +81,14 @@ class VentetidController(
                 .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
                 ?.oppfolgingsdato
 
-        return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
+        val ventetid =
+            ventetidUtregner.beregnVentetid(
+                sykmeldingId = sykmeldingId,
+                identer = identer,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            )
+
+        return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato, ventetid)
     }
 
     private fun validerVentetidRequest(
