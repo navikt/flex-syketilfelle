@@ -8,6 +8,7 @@ import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
 import org.amshove.kluent.`should be`
+import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -137,6 +138,14 @@ class VentetidControllerTest :
         erUtenforVentetidSomBruker(
             fnr,
             sykmeldingId = melding.sykmelding.id,
-        ).erUtenforVentetid `should be` true
+        ).also {
+            it.erUtenforVentetid `should be` true
+            it.oppfolgingsdato `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+            it.ventetid `should be equal to`
+                FomTomPeriode(
+                    LocalDate.of(2024, Month.JULY, 1),
+                    LocalDate.of(2024, Month.JULY, 16),
+                )
+        }
     }
 }
