@@ -69,11 +69,16 @@ class VentetidController(
     fun erUtenforVentetid(
         @PathVariable("sykmeldingId") sykmeldingId: String,
     ): ErUtenforVentetidResponse {
-        val fnr = validerTokenXClaims().fnrFraIdportenTokenX()
-        val identer = pdlClient.hentFolkeregisterIdenter(fnr)
+        val identer = pdlClient.hentFolkeregisterIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
 
-        val utenforVentetid =
+        val erUtenforVentetid =
             ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
+        val ventetid =
+            ventetidUtregner.beregnVentetid(
+                sykmeldingId = sykmeldingId,
+                identer = identer,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            )
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
@@ -81,7 +86,7 @@ class VentetidController(
                 .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
                 ?.oppfolgingsdato
 
-        return ErUtenforVentetidResponse(utenforVentetid, oppfolgingsdato)
+        return ErUtenforVentetidResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
     }
 
     private fun validerVentetidRequest(

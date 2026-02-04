@@ -18,6 +18,7 @@ fun ErUtenforVentetidRequest.tilVentetidRequest(): VentetidRequest =
 data class ErUtenforVentetidResponse(
     val erUtenforVentetid: Boolean,
     val oppfolgingsdato: LocalDate?,
+    val ventetid: FomTomPeriode? = null,
 )
 
 data class Tilleggsopplysninger(
