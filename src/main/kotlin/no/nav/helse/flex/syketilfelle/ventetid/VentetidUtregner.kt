@@ -13,15 +13,12 @@ import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
-import java.time.Month
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.DAYS
 import java.time.temporal.TemporalAdjusters.next
 import java.time.temporal.TemporalAdjusters.nextOrSame
 import java.time.temporal.TemporalAdjusters.previous
 
-const val SEKS_DAGER = 6L
-const val FIRE_DAGER = 4L
 const val SEKSTEN_DAGER = 16L
 
 @Component
@@ -30,13 +27,6 @@ class VentetidUtregner(
 ) {
     val log = logger()
 
-    final val koronaPeriodeMedFireDager =
-        LocalDate.of(2020, Month.MARCH, 16).rangeTo(LocalDate.of(2021, Month.SEPTEMBER, 30))
-
-    final val koronaPeriodeMedSeksDager =
-        LocalDate.of(2021, Month.DECEMBER, 6).rangeTo(LocalDate.of(2022, Month.JUNE, 30))
-
-    // Skiller ut konstanter sånn at settet ikke gjenopprettes for hvert kall.
     private companion object {
         private val AKTIVITET_TAGS =
             setOf(
@@ -105,7 +95,7 @@ class VentetidUtregner(
         perioder.beregnVentetid()?.let { ventetid ->
             return FomTomPeriode(
                 fom = ventetid.fom,
-                tom = beregnVentetidTilDato(ventetid.fom, perioder),
+                tom = ventetid.fom.plusDays(SEKSTEN_DAGER - 1L),
             )
         }
 
@@ -135,6 +125,8 @@ class VentetidUtregner(
         for ((index, periode) in withIndex()) {
             when {
                 periode.erLengreEnnVentetid() -> return periode
+                // Returnerer ikke periodre korterer en antall ventetidsdager Brukes av 'erUtenforVentetid()' til å
+                // beregne om en periode er utenfor ventetid eller ikke.
                 erForLengeSidenForrigePeriode(index) -> return null
             }
         }
@@ -142,7 +134,7 @@ class VentetidUtregner(
         return null
     }
 
-    private fun Periode.erLengreEnnVentetid(): Boolean = erLengreEnnStandardVentetid() || (redusertVentetid && erLengreEnnKoronaVentetid())
+    private fun Periode.erLengreEnnVentetid(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
     private fun lagSykmeldingBiter(
         baseBiter: List<Syketilfellebit>,
@@ -180,7 +172,6 @@ class VentetidUtregner(
         Periode(
             tom = this.tom,
             fom = this.fom,
-            redusertVentetid = this.tags.contains(Tag.REDUSERT_ARBEIDSGIVERPERIODE),
             behandlingsdager = this.tags.contains(Tag.BEHANDLINGSDAGER),
             ressursId = this.ressursId,
         )
@@ -236,9 +227,7 @@ class VentetidUtregner(
             }
 
         return gjeldendePeriode.copy(
-            // Bruker tidligste fom-dato og setter redusertVentetid hvis en av periodene har det.
             fom = minOf(forrigePeriode.fom, gjeldendePeriode.fom),
-            redusertVentetid = forrigePeriode.redusertVentetid || gjeldendePeriode.redusertVentetid,
             ressursId = ressursId,
         )
     }
@@ -282,36 +271,6 @@ class VentetidUtregner(
     private fun Periode.skalJusteresForHelg(sykmeldingId: String): Boolean =
         ressursId == sykmeldingId && (tom.dayOfWeek == SATURDAY || tom.dayOfWeek == SUNDAY)
 
-    private fun beregnVentetidTilDato(
-        fom: LocalDate,
-        perioder: List<Periode>,
-    ): LocalDate {
-        val harRedusertVentetid = perioder.any { it.redusertVentetid }
-        val erKoronaPeriodeMedSeksDager = perioder.any { it.erKoronaPeriodeMedSeksDager() }
-        val erKoronaPeriodeMedFireDager = perioder.any { it.erKoronaPeriodeMedFireDager() }
-
-        return when {
-            harRedusertVentetid && erKoronaPeriodeMedSeksDager -> fom.plusDays(SEKS_DAGER - 1L)
-            harRedusertVentetid && erKoronaPeriodeMedFireDager -> fom.plusDays(FIRE_DAGER - 1L)
-            else -> fom.plusDays(SEKSTEN_DAGER - 1L)
-        }
-    }
-
-    private fun Periode.erLengreEnnStandardVentetid(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
-
-    private fun Periode.erLengreEnnKoronaVentetid(): Boolean =
-        when {
-            erKoronaPeriodeMedSeksDager() -> DAYS.between(this.fom, this.tom) >= SEKS_DAGER - 1L
-            erKoronaPeriodeMedFireDager() -> DAYS.between(this.fom, this.tom) >= FIRE_DAGER - 1L
-            else -> false
-        }
-
-    private fun Periode.erKoronaPeriodeMedSeksDager(): Boolean =
-        koronaPeriodeMedSeksDager.contains(this.fom) || koronaPeriodeMedSeksDager.contains(this.tom)
-
-    private fun Periode.erKoronaPeriodeMedFireDager(): Boolean =
-        koronaPeriodeMedFireDager.contains(this.fom) || koronaPeriodeMedFireDager.contains(this.tom)
-
     private fun List<Periode>.erForLengeSidenForrigePeriode(index: Int): Boolean {
         val gjeldendePeriode = this[index]
         val nestePeriode = this.getOrNull(index + 1) ?: return false
@@ -323,7 +282,6 @@ class VentetidUtregner(
     private data class Periode(
         val fom: LocalDate,
         val tom: LocalDate,
-        val redusertVentetid: Boolean,
         val behandlingsdager: Boolean,
         val ressursId: String,
     )

@@ -45,7 +45,6 @@ interface VentetidFellesOppsett {
     fun skapApenSykmeldingKafkaMessage(
         fom: LocalDate = LocalDate.now(),
         tom: LocalDate = LocalDate.now(),
-        harRedusertArbeidsgiverperiode: Boolean = false,
         type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
     ): MottattSykmeldingKafkaMessage {
         val sykmeldingId = UUID.randomUUID().toString()
@@ -55,7 +54,6 @@ interface VentetidFellesOppsett {
                     fom = fom,
                     tom = tom,
                     sykmeldingId = sykmeldingId,
-                    harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
                     type = type,
                 ),
             kafkaMetadata =
@@ -71,11 +69,10 @@ interface VentetidFellesOppsett {
     fun skapSykmeldingKafkaMessage(
         fom: LocalDate = LocalDate.now(),
         tom: LocalDate = LocalDate.now(),
-        harRedusertArbeidsgiverperiode: Boolean = false,
         type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
         sporsmals: List<SporsmalOgSvarDTO>? = null,
     ): SykmeldingKafkaMessage {
-        val apen = skapApenSykmeldingKafkaMessage(fom, tom, harRedusertArbeidsgiverperiode, type)
+        val apen = skapApenSykmeldingKafkaMessage(fom, tom, type)
 
         return SykmeldingKafkaMessage(
             sykmelding = apen.sykmelding,
