@@ -11,7 +11,6 @@ fun skapArbeidsgiverSykmelding(
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
     sykmeldingId: String = UUID.randomUUID().toString(),
-    harRedusertArbeidsgiverperiode: Boolean = false,
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
 ): ArbeidsgiverSykmelding =
     ArbeidsgiverSykmelding(
@@ -34,7 +33,7 @@ fun skapArbeidsgiverSykmelding(
         behandletTidspunkt = OffsetDateTime.now(),
         syketilfelleStartDato = null,
         egenmeldt = false,
-        harRedusertArbeidsgiverperiode = harRedusertArbeidsgiverperiode,
+        harRedusertArbeidsgiverperiode = false,
         behandler =
             BehandlerAGDTO(
                 fornavn = "Lege",

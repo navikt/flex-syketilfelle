@@ -4,7 +4,6 @@ import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
-import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
@@ -137,50 +136,6 @@ class SykmeldingMottakTest : FellesTestOppsett() {
         assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
         assertThat(biter[0].orgnummer).isEqualTo("12344")
         assertThat(biter[0].tags).isEqualTo(setOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.INGEN_AKTIVITET))
-    }
-
-    @Test
-    fun `tar imot åpen sykmelding og redusert arbeidsgiverperiode`() {
-        val kafkaMessage =
-            MottattSykmeldingKafkaMessage(
-                sykmelding =
-                    sykmelding.copy(
-                        sykmeldingsperioder =
-                            listOf(
-                                SykmeldingsperiodeAGDTO(
-                                    fom = LocalDate.of(2020, 3, 12),
-                                    tom = LocalDate.of(2020, 6, 19),
-                                    reisetilskudd = false,
-                                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                    aktivitetIkkeMulig = null,
-                                    behandlingsdager = null,
-                                    gradert = null,
-                                    innspillTilArbeidsgiver = null,
-                                ),
-                            ),
-                        harRedusertArbeidsgiverperiode = true,
-                    ),
-                kafkaMetadata = kafkaMetadata,
-            )
-        producerPåMottattTopic(kafkaMessage)
-        await().atMost(10, TimeUnit.SECONDS).until {
-            syketilfellebitRepository.findByFnr(fnr).size == 1
-        }
-        val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
-        assertThat(biter).hasSize(1)
-        assertThat(biter[0].fom).isEqualTo(LocalDate.of(2020, 3, 12))
-        assertThat(biter[0].tom).isEqualTo(LocalDate.of(2020, 6, 19))
-        assertThat(biter[0].ressursId).isEqualTo(sykmelding.id)
-        assertThat(biter[0].orgnummer).isNull()
-        assertThat(biter[0].tags).isEqualTo(
-            setOf(
-                Tag.SYKMELDING,
-                Tag.NY,
-                Tag.PERIODE,
-                Tag.INGEN_AKTIVITET,
-                Tag.REDUSERT_ARBEIDSGIVERPERIODE,
-            ),
-        )
     }
 
     @Test
