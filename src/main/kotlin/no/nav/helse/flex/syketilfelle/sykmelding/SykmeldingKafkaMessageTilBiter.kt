@@ -141,10 +141,6 @@ private fun SykmeldingsperiodeAGDTO.finnTagsForPeriode(sykmeldingKafkaMessage: S
     }
     tags.add(this.finnTagsForGrad())
 
-    if (sykmeldingKafkaMessage.sykmelding.harRedusertArbeidsgiverperiode) {
-        tags.add(Tag.REDUSERT_ARBEIDSGIVERPERIODE)
-    }
-
     return tags.toSet()
 }
 
