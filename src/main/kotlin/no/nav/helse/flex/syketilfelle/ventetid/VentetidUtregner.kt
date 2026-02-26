@@ -174,6 +174,7 @@ class VentetidUtregner(
             fom = this.fom,
             behandlingsdager = this.tags.contains(Tag.BEHANDLINGSDAGER),
             ressursId = this.ressursId,
+            erAnnetFravaer = this.tags.contains(Tag.ANNET_FRAVAR),
         )
 
     private fun Periode.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom: LocalDate): Periode =
@@ -273,7 +274,8 @@ class VentetidUtregner(
 
     private fun List<Periode>.erForLengeSidenForrigePeriode(index: Int): Boolean {
         val gjeldendePeriode = this[index]
-        val nestePeriode = this.getOrNull(index + 1) ?: return false
+        // Egenmeldingsdager skal ikke tas med i beregningen av tid siden forrige perode.
+        val nestePeriode = this.drop(index + 1).firstOrNull { !it.erAnnetFravaer } ?: return false
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
 
@@ -284,5 +286,6 @@ class VentetidUtregner(
         val tom: LocalDate,
         val behandlingsdager: Boolean,
         val ressursId: String,
+        val erAnnetFravaer: Boolean,
     )
 }
