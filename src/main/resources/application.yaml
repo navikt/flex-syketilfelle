@@ -16,18 +16,17 @@ spring:
 
 management:
   endpoint:
-    prometheus.enabled: true
     health.probes.enabled: true
+    prometheus:
+      access: read_only
   endpoints.web:
-    base-path: /internal
+    base-path: "/internal"
     exposure.include: health, prometheus
   health:
     livenessstate.enabled: true
     readinessState.enabled: true
   prometheus:
-    metrics:
-      export:
-        enabled: true
+    metrics.export.enabled: true
 
 logging.config: "classpath:logback.xml"
 
