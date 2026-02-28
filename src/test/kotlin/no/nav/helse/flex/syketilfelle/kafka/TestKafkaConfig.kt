@@ -1,6 +1,10 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
+import no.nav.helse.flex.syketilfelle.inntektsmelding.INNTEKTSMELDING_TOPIC
+import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGSENDT_TOPIC
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -24,6 +28,38 @@ class TestKafkaConfig(
     fun lagSykmeldingBekreftetTopic(): NewTopic =
         TopicBuilder
             .name(SYKMELDINGBEKREFTET_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun lagSykmeldingSendtTopic(): NewTopic =
+        TopicBuilder
+            .name(SYKMELDINGSENDT_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun lagSykmeldingMottattTopic(): NewTopic =
+        TopicBuilder
+            .name(SYKMELDINGMOTTATT_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun lagInntektsmeldingTopic(): NewTopic =
+        TopicBuilder
+            .name(INNTEKTSMELDING_TOPIC)
+            .partitions(1)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun lagSyketilfellebitTopic(): NewTopic =
+        TopicBuilder
+            .name(SYKETILFELLEBIT_TOPIC)
             .partitions(1)
             .replicas(1)
             .build()

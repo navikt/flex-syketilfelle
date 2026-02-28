@@ -45,7 +45,7 @@ no.nav.security.jwt:
 AZURE_APP_PRE_AUTHORIZED_APPS: "[{\"name\":\"dev-fss:flex:sykepengesoknad-backend\",\"clientId\":\"sykepengesoknad-backend-client-id\"},{\"name\":\"dev-fss:teamsykmelding:sparenaproxy\",\"clientId\":\"sparenaproxy-client-id\"},{\"name\":\"dev-gcp:flex:flex-internal-frontend\",\"clientId\":\"flex-internal-frontend-client-id\"}]"
 
 aiven-kafka:
-  auto-offset-reset: latest
+  auto-offset-reset: earliest
   security-protocol: PLAINTEXT
 
 KAFKA_TRUSTSTORE_PATH: ""
