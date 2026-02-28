@@ -86,6 +86,9 @@ tasks {
             exceptionFormat = FULL
         }
         failFast = false
+        reports.html.required.set(false)
+        reports.junitXml.required.set(false)
+        maxParallelForks = 2
     }
 }
 
