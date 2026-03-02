@@ -70,6 +70,17 @@ class VentetidControllerTest :
     }
 
     @Test
+    fun `Kall til erUtenforVentetid som bruker feiler hvis det ikke finnes ventetid`() {
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
     fun `Kall til erUtenforVentetid feiler hvis token mangler er feil`() {
         mockMvc
             .perform(

@@ -13,7 +13,6 @@ import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,11 +36,7 @@ class VentetidController(
 ) : MedPdlClient {
     val log = logger()
 
-    @PostMapping(
-        value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
+    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
     @ProtectedWithClaims(issuer = "azureator")
     @ResponseBody
     fun erUtenforVentetid(
@@ -60,25 +55,26 @@ class VentetidController(
         )
     }
 
-    @GetMapping(
-        "/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid",
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ResponseBody
+    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid")
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
+    @ResponseBody
     fun erUtenforVentetid(
-        @PathVariable("sykmeldingId") sykmeldingId: String,
+        @PathVariable sykmeldingId: String,
     ): ErUtenforVentetidResponse {
         val identer = pdlClient.hentFolkeregisterIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
 
-        val erUtenforVentetid =
-            ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
+        val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
         val ventetid =
             ventetidUtregner.beregnVentetid(
                 sykmeldingId = sykmeldingId,
                 identer = identer,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             )
+
+        // Det skal alltid returneres ventetid når returnerPerioderInnenforVentetid er true.
+        if (ventetid == null) {
+            throw IngenVentetidException("Fant ingen ventetid for sykmeldingId: $sykmeldingId")
+        }
 
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
@@ -98,7 +94,7 @@ class VentetidController(
         )
         with(ventetidRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
-                throw IllegalArgumentException("sykmeldingId i path er ikke samme som i request body.")
+                throw IllegalArgumentException("Forskjellig sykmeldingId i path requestBody")
             }
         }
     }
@@ -108,16 +104,15 @@ class VentetidController(
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
         if (clientId !in listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId)) {
-            throw IngenTilgang("Uventet client id $clientId")
+            throw IngenTilgangExcpetion("Ukjent clientId: $clientId")
         }
-
         return claims
     }
 
     private fun JwtTokenClaims.fnrFraIdportenTokenX(): String = this.getStringClaim("pid")
 }
 
-private class IngenTilgang(
+private class IngenTilgangExcpetion(
     override val message: String,
 ) : AbstractApiError(
         message = message,
@@ -125,3 +120,7 @@ private class IngenTilgang(
         reason = "INGEN_TILGANG",
         loglevel = LogLevel.WARN,
     )
+
+private class IngenVentetidException(
+    string: String,
+) : RuntimeException(string)

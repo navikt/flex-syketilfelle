@@ -72,7 +72,7 @@ class VentetidUtregner(
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter til sykmelding $sykmeldingId i flex-syketilfelledatabasen.")
+            log.warn("Fant ikke biter tilhørende sykmelding: $sykmeldingId ved beregning av ventetid.")
             return null
         }
 
@@ -99,7 +99,7 @@ class VentetidUtregner(
             )
         }
 
-        // Hvis perioden normalt ikke er utenfor ventetid, men 'returnerPerioderInnenforVentetid' er satt,
+        // Hvis perioden er innenfor ventetid, men 'returnerPerioderInnenforVentetid' er satt,
         // returneres hele perioden inkludert eventuelle egenmeldingsdager.
         if (ventetidRequest.returnerPerioderInnenforVentetid) {
             perioder

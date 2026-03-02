@@ -17,26 +17,27 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(java.lang.Exception::class)
     fun handleException(
-        ex: Exception,
+        e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<Any> =
-        when (ex) {
+        when (e) {
             is AbstractApiError -> {
-                when (ex.loglevel) {
-                    LogLevel.WARN -> log.warn(ex.message, ex)
-                    LogLevel.ERROR -> log.error(ex.message, ex)
+                when (e.loglevel) {
+                    LogLevel.WARN -> log.warn(e.message, e)
+                    LogLevel.ERROR -> log.error(e.message, e)
                     LogLevel.OFF -> {
                     }
                 }
 
-                ResponseEntity(ApiError(ex.reason), ex.httpStatus)
+                ResponseEntity(ApiError(e.reason), e.httpStatus)
             }
+
             is JwtTokenInvalidClaimException -> skapResponseEntity(HttpStatus.UNAUTHORIZED)
             is JwtTokenUnauthorizedException -> skapResponseEntity(HttpStatus.UNAUTHORIZED)
             is MissingRequestHeaderException -> skapResponseEntity(HttpStatus.BAD_REQUEST)
             is HttpMediaTypeNotAcceptableException -> skapResponseEntity(HttpStatus.NOT_ACCEPTABLE)
             else -> {
-                log.error("Internal server error - ${ex.message} - ${request.method}: ${request.requestURI}", ex)
+                log.error("Internal server error - ${e.message} - ${request.method}: ${request.requestURI}", e)
                 skapResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
