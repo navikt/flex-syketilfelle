@@ -89,7 +89,7 @@ class VentetidUtregner(
                 .filter { it.fom <= sykmeldingSisteTom }
                 .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom) }
                 .toList()
-                .mergePerioder()
+                .mergePerioder(sykmeldingId)
                 .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
 
         perioder.beregnVentetid()?.let { ventetid ->
@@ -195,8 +195,7 @@ class VentetidUtregner(
         }.map { mandag -> this.copy(fom = mandag, tom = mandag) }.toList()
     }
 
-    // Slår sammen periode som ligger kant i kant, eller som har kun helgedager mellom periodene.
-    private fun List<Periode>.mergePerioder(): List<Periode> {
+    private fun List<Periode>.mergePerioder(foretrukketRessursId: String): List<Periode> {
         if (size <= 1) return this
 
         // Sorter periodene med nyeste periode først for å enklere sjekke tid siden forrige periode.
@@ -208,7 +207,8 @@ class VentetidUtregner(
                 val gjeldendePeriode = akkumulerteListe.last()
 
                 if (skalMerges(forrigePeriode, gjeldendePeriode)) {
-                    akkumulerteListe[akkumulerteListe.lastIndex] = mergePerioder(forrigePeriode, gjeldendePeriode)
+                    akkumulerteListe[akkumulerteListe.lastIndex] =
+                        mergePerioder(forrigePeriode, gjeldendePeriode, foretrukketRessursId)
                 } else {
                     akkumulerteListe.add(forrigePeriode)
                 }
@@ -216,28 +216,11 @@ class VentetidUtregner(
             }.sortedByDescending { it.tom }
     }
 
-    private fun mergePerioder(
+    private fun skalMerges(
         forrigePeriode: Periode,
         gjeldendePeriode: Periode,
-    ): Periode {
-        val ressursId =
-            if (gjeldendePeriode.overlapper(forrigePeriode)) {
-                forrigePeriode.ressursId
-            } else {
-                gjeldendePeriode.ressursId
-            }
-
-        return gjeldendePeriode.copy(
-            fom = minOf(forrigePeriode.fom, gjeldendePeriode.fom),
-            ressursId = ressursId,
-        )
-    }
-
-    private fun skalMerges(
-        gjeldendePeriode: Periode,
-        nestePeriode: Periode,
     ): Boolean {
-        val dagerMellomPeriodene = DAYS.between(gjeldendePeriode.tom, nestePeriode.fom)
+        val dagerMellomPeriodene = DAYS.between(forrigePeriode.tom, gjeldendePeriode.fom)
 
         // Siden 'fom' og 'tom' i perioden er inclusive vil sammenhengende perioder returnere '1 dag'. En hel helg
         // mellom to perioder blir da 3 dager og derfor kan metoden returnerer tidlig hvis dager i mellom er > 3.
@@ -248,8 +231,28 @@ class VentetidUtregner(
         // Sjekk om alle dager mellom periodene er helgedager.
         return (1 until dagerMellomPeriodene)
             .asSequence()
-            .map { gjeldendePeriode.tom.plusDays(it) }
+            .map { forrigePeriode.tom.plusDays(it) }
             .all { it.dayOfWeek in setOf(SATURDAY, SUNDAY) }
+    }
+
+    private fun mergePerioder(
+        forrigePeriode: Periode,
+        gjeldendePeriode: Periode,
+        foretrukketRessursId: String,
+    ): Periode {
+        // Når to like perioder merges, kan rekkefølgen de kommer fra databasen være tilfeldig, så hvis én av
+        // periodene har ressursId lik foretrukketRessursId (aktuell sykmelding), vil den alltid overlever
+        // uavhengig av rekkefølge.
+        val valgtRessursId =
+            when (foretrukketRessursId) {
+                forrigePeriode.ressursId, gjeldendePeriode.ressursId -> foretrukketRessursId
+                else -> gjeldendePeriode.ressursId
+            }
+
+        return gjeldendePeriode.copy(
+            fom = minOf(forrigePeriode.fom, gjeldendePeriode.fom),
+            ressursId = valgtRessursId,
+        )
     }
 
     private fun List<Periode>.fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId: String): List<Periode> =
@@ -278,8 +281,6 @@ class VentetidUtregner(
         val nestePeriode = this.drop(index + 1).firstOrNull { !it.erAnnetFravaer } ?: return false
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
-
-    private fun Periode.overlapper(annen: Periode): Boolean = annen.tom in this.fom..this.tom
 
     private data class Periode(
         val fom: LocalDate,
