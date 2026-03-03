@@ -72,7 +72,7 @@ class VentetidUtregner(
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter til sykmelding $sykmeldingId i flex-syketilfelledatabasen.")
+            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId.")
             return null
         }
 
@@ -90,7 +90,7 @@ class VentetidUtregner(
                 .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom) }
                 .toList()
                 .mergePerioder(sykmeldingId)
-                .fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId)
+                .fjernHelgFraSluttenAvPerioden(sykmeldingId)
 
         perioder.beregnVentetid()?.let { ventetid ->
             return FomTomPeriode(
@@ -99,34 +99,37 @@ class VentetidUtregner(
             )
         }
 
-        // Hvis perioden normalt ikke er utenfor ventetid, men 'returnerPerioderInnenforVentetid' er satt,
-        // returneres hele perioden inkludert eventuelle egenmeldingsdager.
+        // Hvis 'returnerPerioderInnenforVentetid' er true, returneres hele perioden selv om den er innfor ventetiden.
         if (ventetidRequest.returnerPerioderInnenforVentetid) {
             perioder
                 .asSequence()
                 .filter { it.ressursId == sykmeldingId }
                 .maxByOrNull { it.tom }
                 ?.let { return FomTomPeriode(it.fom, it.tom) }
+
+            val harEkskluderteTags = aktuellSykmeldingBiter.any { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+            if (!harEkskluderteTags) {
+                log.error("Klarte ikke å kalkulere ventetid for sykmelding: $sykmeldingId.")
+            }
         }
 
         return null
     }
 
     private fun List<Periode>.beregnVentetid(): Periode? {
-        // Hvis det er mindre enn 17 siden forrige periode og forrige periode var utenfor ventetid, returneres forrige
-        // periodes ventetid.
+        // Hvis det er mindre enn 17 siden forrige periode, og forrige periode var utenfor ventetiden, returneres
+        // forrige periodes ventetid.
         if (size >= 2) {
             val (_, forrigePeriode) = this
-            if (!erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetid()) {
+            if (!erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetiden()) {
                 return forrigePeriode
             }
         }
-        // Går gjennom periodene og finner den første som kvalifiserer som ventetid.
+        // Går gjennom periodene og finner den første som kvalifiserer som ventetidsperiode.
         for ((index, periode) in withIndex()) {
             when {
-                periode.erLengreEnnVentetid() -> return periode
-                // Returnerer ikke periodre korterer en antall ventetidsdager Brukes av 'erUtenforVentetid()' til å
-                // beregne om en periode er utenfor ventetid eller ikke.
+                periode.erLengreEnnVentetiden() -> return periode
+                // Returnerer ikke periodre korterer en antall ventetidsdager.
                 erForLengeSidenForrigePeriode(index) -> return null
             }
         }
@@ -134,7 +137,7 @@ class VentetidUtregner(
         return null
     }
 
-    private fun Periode.erLengreEnnVentetid(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
+    private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
     private fun lagSykmeldingBiter(
         baseBiter: List<Syketilfellebit>,
@@ -222,7 +225,7 @@ class VentetidUtregner(
     ): Boolean {
         val dagerMellomPeriodene = DAYS.between(forrigePeriode.tom, gjeldendePeriode.fom)
 
-        // Siden 'fom' og 'tom' i perioden er inclusive vil sammenhengende perioder returnere '1 dag'. En hel helg
+        // Siden 'fom' og 'tom' i perioden er inklusiv, vil sammenhengende perioder returnere '1 dag'. En hel helg
         // mellom to perioder blir da 3 dager og derfor kan metoden returnerer tidlig hvis dager i mellom er > 3.
         if (dagerMellomPeriodene > 3) {
             return false
@@ -240,7 +243,7 @@ class VentetidUtregner(
         gjeldendePeriode: Periode,
         foretrukketRessursId: String,
     ): Periode {
-        // Når to like perioder merges, kan rekkefølgen de kommer fra databasen være tilfeldig, så hvis én av
+        // Når to like perioder merges, kan rekkefølgen fra databasen være tilfeldig, så hvis én av
         // periodene har ressursId lik foretrukketRessursId (aktuell sykmelding), vil den alltid overlever
         // uavhengig av rekkefølge.
         val valgtRessursId =
@@ -255,10 +258,9 @@ class VentetidUtregner(
         )
     }
 
-    private fun List<Periode>.fjernHelgFraSluttenAvPeriodenForSykmelding(sykmeldingId: String): List<Periode> =
+    private fun List<Periode>.fjernHelgFraSluttenAvPerioden(sykmeldingId: String): List<Periode> =
         map { periode ->
             when {
-                // Mandag til søndag blir mandag til fredag.
                 periode.skalJusteresForHelg(sykmeldingId) -> {
                     val sisteFredagIPerioden = periode.tom.with(previous(FRIDAY))
                     if (sisteFredagIPerioden >= periode.fom) {
@@ -277,7 +279,7 @@ class VentetidUtregner(
 
     private fun List<Periode>.erForLengeSidenForrigePeriode(index: Int): Boolean {
         val gjeldendePeriode = this[index]
-        // Egenmeldingsdager skal ikke tas med i beregningen av tid siden forrige perode.
+        // Egenmeldingsdager tas ikke med i beregningen av tid siden forrige perode.
         val nestePeriode = this.drop(index + 1).firstOrNull { !it.erAnnetFravaer } ?: return false
         return DAYS.between(nestePeriode.tom, gjeldendePeriode.fom) > SEKSTEN_DAGER
     }
