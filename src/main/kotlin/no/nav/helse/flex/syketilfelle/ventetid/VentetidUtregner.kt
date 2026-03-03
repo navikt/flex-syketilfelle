@@ -18,6 +18,8 @@ import java.time.temporal.ChronoUnit.DAYS
 import java.time.temporal.TemporalAdjusters.next
 import java.time.temporal.TemporalAdjusters.nextOrSame
 import java.time.temporal.TemporalAdjusters.previous
+import kotlin.collections.any
+import kotlin.collections.map
 
 const val SEKSTEN_DAGER = 16L
 
@@ -56,6 +58,53 @@ class VentetidUtregner(
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
 
+    fun finnPerioderMedSammeVentetid(
+        sykmeldingId: String,
+        identer: List<String>,
+    ): List<VentetidPeriode> {
+        val sykmeldingBiter = syketilfellebitRepository.findByRessursId(sykmeldingId)
+
+        if (sykmeldingBiter.isEmpty()) {
+            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId ved beregning av sykmeldinger med samme ventetid.")
+            return emptyList()
+        }
+
+        val sykmeldingVentetid =
+            beregnVentetid(
+                sykmeldingId = sykmeldingId,
+                identer = identer,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            )!!
+
+        val kandidatRessurser =
+            syketilfellebitRepository
+                .findByFnrIn(identer)
+                .map { it.tilSyketilfellebit() }
+                .utenKorrigerteSoknader()
+                .asSequence()
+                .filter { it.slettet == null }
+                .filter { it.tags.contains(Tag.SYKMELDING) }
+                .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
+                .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+                .map { it.ressursId }
+                .distinct()
+                .toList()
+
+        return kandidatRessurser.mapNotNull {
+            val ventetid =
+                beregnVentetid(
+                    sykmeldingId = it,
+                    identer = identer,
+                    ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+                )!!
+            if (ventetid.fom == sykmeldingVentetid.fom) {
+                VentetidPeriode(ressursId = it, ventetid = ventetid)
+            } else {
+                null
+            }
+        }
+    }
+
     fun beregnVentetid(
         sykmeldingId: String,
         identer: List<String>,
@@ -72,7 +121,7 @@ class VentetidUtregner(
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId.")
+            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId ved beregning av ventetid.")
             return null
         }
 

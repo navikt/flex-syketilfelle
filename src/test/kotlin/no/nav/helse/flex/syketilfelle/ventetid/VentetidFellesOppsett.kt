@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
+import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGSENDT_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
@@ -85,6 +86,29 @@ interface VentetidFellesOppsett {
                     arbeidsgiver = null,
                     sporsmals = sporsmals,
                 ),
+        )
+    }
+
+    fun lagSyketilfelleBit(
+        fnr: String,
+        ressursId: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        tags: List<Tag>,
+    ): SyketilfellebitDbRecord {
+        val now = OffsetDateTime.now()
+        return SyketilfellebitDbRecord(
+            syketilfellebitId = UUID.randomUUID().toString(),
+            fnr = fnr,
+            orgnummer = null,
+            opprettet = now,
+            inntruffet = now,
+            tags = tags.joinToString(separator = ",") { it.name },
+            ressursId = ressursId,
+            fom = fom,
+            tom = tom,
+            korrigererSendtSoknad = null,
+            publisert = true,
         )
     }
 }

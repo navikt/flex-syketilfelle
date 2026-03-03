@@ -33,6 +33,8 @@ interface MedPdlClient {
         fnr: String,
         hentAndreIdenter: Boolean,
     ): List<String> = fnr.split(", ").validerFnrOgHentAndreIdenter(hentAndreIdenter)
+
+    fun hentIdenter(fnr: String) = pdlClient.hentFolkeregisterIdenter(fnr)
 }
 
 class FlereIdenterVedHentingException :

@@ -39,3 +39,12 @@ data class FomTomPeriode(
     val fom: LocalDate,
     val tom: LocalDate,
 )
+
+data class VentetidPeriode(
+    val ressursId: String,
+    val ventetid: FomTomPeriode,
+)
+
+data class VentetidPeriodeResponse(
+    val ventetidPerioder: List<VentetidPeriode>,
+)
