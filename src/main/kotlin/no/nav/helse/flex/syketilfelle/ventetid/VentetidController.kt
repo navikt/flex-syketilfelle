@@ -13,7 +13,6 @@ import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,42 +36,15 @@ class VentetidController(
 ) : MedPdlClient {
     val log = logger()
 
-    @PostMapping(
-        value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"],
-        consumes = [MediaType.APPLICATION_JSON_VALUE],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ProtectedWithClaims(issuer = "azureator")
-    @ResponseBody
-    fun erUtenforVentetid(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @PathVariable sykmeldingId: String,
-        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean {
-        validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
-        val identer = hentIdenter(fnr, hentAndreIdenter)
-
-        return ventetidUtregner.erUtenforVentetid(
-            sykmeldingId = sykmeldingId,
-            erUtenforVentetidRequest = erUtenforVentetidRequest,
-            identer = identer,
-        )
-    }
-
-    @GetMapping(
-        "/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid",
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
+    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid")
     @ResponseBody
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun erUtenforVentetid(
-        @PathVariable("sykmeldingId") sykmeldingId: String,
+        @PathVariable sykmeldingId: String,
     ): ErUtenforVentetidResponse {
         val identer = pdlClient.hentFolkeregisterIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
 
-        val erUtenforVentetid =
-            ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
+        val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
         val ventetid =
             ventetidUtregner.beregnVentetid(
                 sykmeldingId = sykmeldingId,
@@ -98,9 +70,28 @@ class VentetidController(
         )
         with(ventetidRequest) {
             if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
-                throw IllegalArgumentException("sykmeldingId i path er ikke samme som i request body.")
+                throw IllegalArgumentException("Forskjellig sykmeldingId i path og requestBody")
             }
         }
+    }
+
+    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
+    fun erUtenforVentetid(
+        @RequestHeader fnr: String,
+        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @PathVariable sykmeldingId: String,
+        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    ): Boolean {
+        validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
+        val identer = hentIdenter(fnr, hentAndreIdenter)
+
+        return ventetidUtregner.erUtenforVentetid(
+            sykmeldingId = sykmeldingId,
+            erUtenforVentetidRequest = erUtenforVentetidRequest,
+            identer = identer,
+        )
     }
 
     private fun validerTokenXClaims(): JwtTokenClaims {
@@ -108,7 +99,7 @@ class VentetidController(
         val claims = context.getClaims("tokenx")
         val clientId = claims.getStringClaim("client_id")
         if (clientId !in listOf(sykmeldingerFrontendClientId, flexSykmeldingerBackendClientId)) {
-            throw IngenTilgang("Uventet client id $clientId")
+            throw IngenTilgang("Uventet clientId: $clientId")
         }
 
         return claims

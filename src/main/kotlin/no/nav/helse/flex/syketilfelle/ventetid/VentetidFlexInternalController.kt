@@ -6,7 +6,6 @@ import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.Name
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.core.api.ProtectedWithClaims
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,12 +19,9 @@ class VentetidFlexInternalController(
     private val syketilfellebitRepository: SyketilfellebitRepository,
     override val pdlClient: PdlClient,
 ) : MedPdlClient {
-    @GetMapping(
-        value = ["/api/v1/flex/ventetid/{sykmeldingId}"],
-        produces = [MediaType.APPLICATION_JSON_VALUE],
-    )
-    @ProtectedWithClaims(issuer = "azureator")
+    @GetMapping(value = ["/api/v1/flex/ventetid/{sykmeldingId}"])
     @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
     fun hentVentetidForFlexInternal(
         @PathVariable sykmeldingId: String,
     ): VentetidInternalResponse {
