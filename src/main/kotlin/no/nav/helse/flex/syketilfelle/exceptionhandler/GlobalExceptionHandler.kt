@@ -36,8 +36,7 @@ class GlobalExceptionHandler {
             is MissingRequestHeaderException -> skapResponseEntity(HttpStatus.BAD_REQUEST)
             is HttpMediaTypeNotAcceptableException -> skapResponseEntity(HttpStatus.NOT_ACCEPTABLE)
             else -> {
-                val safeUri = request.requestURI.replace(Regex("[\\r\\n]"), "")
-                log.error("Internal server error - ${ex.message} - ${request.method}: $safeUri", ex)
+                log.error("Internal server error - ${ex.message} - ${request.method}: ${request.requestURI}", ex)
                 skapResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
