@@ -4,6 +4,8 @@ import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
+import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
+import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
@@ -155,5 +158,124 @@ class VentetidControllerTest :
                     LocalDate.of(2024, Month.JULY, 16),
                 )
         }
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis audience er feil`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis token mangler`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis clientId er feil`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid feiler hvis token mangler`() {
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid feiler hvis subject er feil`() {
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
+                    .header("fnr", fnr)
+                    .content(objectMapper.writeValueAsString(SammeVentetidRequest()))
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid som bruker returnerer riktig periode`() {
+        val melding =
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
+            ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
+
+        val response =
+            finnPerioderMedSammeVentetidSomBruker(
+                fnr = fnr,
+                sykmeldingId = melding.sykmelding.id,
+            )
+
+        response.ventetidPerioder.size `should be equal to` 1
+        response.ventetidPerioder.first().also {
+            it.ressursId `should be equal to` melding.sykmelding.id
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+        }
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid returnerer riktig periode`() {
+        val melding =
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
+            ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
+
+        val response =
+            finnPerioderMedSammeVentetid(
+                fnr = listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+            )
+
+        response.ventetidPerioder.size `should be equal to` 1
+        response.ventetidPerioder.first().also {
+            it.ressursId `should be equal to` melding.sykmelding.id
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+        }
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid feiler hvis fnr ikke matcher biter`() {
+        val melding =
+            skapApenSykmeldingKafkaMessage(
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
+            ).also { it.publiser() }
+
+        verifiserAtBiterErLagret(1)
+
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/${melding.sykmelding.id}/perioderMedSammeVentetid")
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}",
+                    ).contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
     }
 }

@@ -18,6 +18,8 @@ import java.time.temporal.ChronoUnit.DAYS
 import java.time.temporal.TemporalAdjusters.next
 import java.time.temporal.TemporalAdjusters.nextOrSame
 import java.time.temporal.TemporalAdjusters.previous
+import kotlin.collections.any
+import kotlin.collections.map
 
 const val SEKSTEN_DAGER = 16L
 
@@ -56,6 +58,55 @@ class VentetidUtregner(
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
 
+    fun finnPerioderMedSammeVentetid(
+        sykmeldingId: String,
+        identer: List<String>,
+        sammeVentetidRequest: SammeVentetidRequest,
+    ): List<SammeVentetidPeriode> {
+        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid = true)
+
+        // Sender med VentetidRequest i tilfelle Kafka-meldingen ikke er lagret enda.
+        val sykmeldingVentetid =
+            beregnVentetid(
+                sykmeldingId = sykmeldingId,
+                identer = identer,
+                ventetidRequest = ventetidRequest,
+            )!!
+
+        val biterFraRequest = sammeVentetidRequest.sykmeldingKafkaMessage?.mapTilBiter() ?: emptyList()
+
+        val kandidatRessurser =
+            (
+                syketilfellebitRepository
+                    .findByFnrIn(identer)
+                    .filter { it.slettet == null }
+                    .map { it.tilSyketilfellebit() }
+                    .utenKorrigerteSoknader() + biterFraRequest
+            ).asSequence()
+                .filter { it.tags.contains(Tag.SYKMELDING) }
+                .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
+                .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+                .map { it.ressursId }
+                .distinct()
+                .toList()
+
+        return kandidatRessurser.mapNotNull {
+            val ventetid =
+                beregnVentetid(
+                    sykmeldingId = it,
+                    identer = identer,
+                    // Sender med samme VentetidRequest fra request på hvert kall for sikre riktig beregning av
+                    // ventetid selv om Kafka-meldingen ikke er lagret enda.
+                    ventetidRequest = ventetidRequest,
+                )!!
+            if (ventetid.fom == sykmeldingVentetid.fom) {
+                SammeVentetidPeriode(ressursId = it, ventetid = ventetid)
+            } else {
+                null
+            }
+        }
+    }
+
     fun beregnVentetid(
         sykmeldingId: String,
         identer: List<String>,
@@ -72,7 +123,7 @@ class VentetidUtregner(
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId.")
+            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId ved beregning av ventetid.")
             return null
         }
 
@@ -139,18 +190,21 @@ class VentetidUtregner(
 
     private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
+    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen og eventuelle tilleggsopplysninger (som
+    // egenmeldinger) fra forespørselen. Det kan resulterer i duplikate biter hvis den aktuelle sykmeldignen både er
+    // lagret i databasen og sendt med i sykmeldingKafkaMessage. Duplikate biter blir slått sammen i mergePerioder().
     private fun lagSykmeldingBiter(
-        baseBiter: List<Syketilfellebit>,
+        eksisterendeBiter: List<Syketilfellebit>,
         sykmeldingId: String,
-        fnrs: List<String>,
+        identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): List<Syketilfellebit> =
-        baseBiter.toMutableList().apply {
+        eksisterendeBiter.toMutableList().apply {
             ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
                 addAll(sykmeldingMessage.mapTilBiter())
             }
             ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
-                addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, fnrs.first()))
+                addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, identer.first()))
             }
         }
 

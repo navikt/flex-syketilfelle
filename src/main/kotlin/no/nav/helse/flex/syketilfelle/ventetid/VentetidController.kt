@@ -42,7 +42,7 @@ class VentetidController(
     fun erUtenforVentetid(
         @PathVariable sykmeldingId: String,
     ): ErUtenforVentetidResponse {
-        val identer = pdlClient.hentFolkeregisterIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
+        val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
 
         val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
         val ventetid =
@@ -61,20 +61,6 @@ class VentetidController(
         return ErUtenforVentetidResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
     }
 
-    private fun validerVentetidRequest(
-        ventetidRequest: ErUtenforVentetidRequest,
-        sykmeldingId: String,
-    ) {
-        clientIdValidation.validateClientId(
-            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
-        )
-        with(ventetidRequest) {
-            if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
-                throw IllegalArgumentException("Forskjellig sykmeldingId i path og requestBody")
-            }
-        }
-    }
-
     @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
     @ResponseBody
     @ProtectedWithClaims(issuer = "azureator")
@@ -84,14 +70,68 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
         @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
     ): Boolean {
+        clientIdValidation.validateClientId(
+            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
+        )
         validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.erUtenforVentetid(
             sykmeldingId = sykmeldingId,
-            erUtenforVentetidRequest = erUtenforVentetidRequest,
             identer = identer,
+            erUtenforVentetidRequest = erUtenforVentetidRequest,
         )
+    }
+
+    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/perioderMedSammeVentetid")
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
+    fun perioderMedSammeVentetidSomBruker(
+        @PathVariable sykmeldingId: String,
+    ): SammeVentetidResponse {
+        val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
+        return SammeVentetidResponse(
+            ventetidPerioder =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmeldingId,
+                    identer,
+                    SammeVentetidRequest(),
+                ),
+        )
+    }
+
+    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/perioderMedSammeVentetid"])
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
+    fun perioderMedSammeVentetid(
+        @RequestHeader fnr: String,
+        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @PathVariable sykmeldingId: String,
+        @RequestBody sammeVentetidRequest: SammeVentetidRequest,
+    ): SammeVentetidResponse {
+        clientIdValidation.validateClientId(
+            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
+        )
+        return SammeVentetidResponse(
+            ventetidPerioder =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmeldingId,
+                    hentIdenter(fnr, hentAndreIdenter),
+                    sammeVentetidRequest,
+                ),
+        )
+    }
+
+    // TODO: ValiderSYkmeldingKafkaMessage sånn at metoden kan gjenbrukes
+    private fun validerVentetidRequest(
+        ventetidRequest: ErUtenforVentetidRequest,
+        sykmeldingId: String,
+    ) {
+        with(ventetidRequest) {
+            if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
+                throw IllegalArgumentException("Forskjellig sykmeldingId i path og requestBody")
+            }
+        }
     }
 
     private fun validerTokenXClaims(): JwtTokenClaims {

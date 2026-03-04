@@ -14,6 +14,13 @@ fun ErUtenforVentetidRequest.tilVentetidRequest(): VentetidRequest =
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
     )
 
+fun SammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid: Boolean): VentetidRequest =
+    VentetidRequest(
+        tilleggsopplysninger = tilleggsopplysninger,
+        sykmeldingKafkaMessage = sykmeldingKafkaMessage,
+        returnerPerioderInnenforVentetid = returnerPerioderInnenforVentetid,
+    )
+
 // Brukes i TokenX-response.
 data class ErUtenforVentetidResponse(
     val erUtenforVentetid: Boolean,
@@ -38,4 +45,18 @@ data class VentetidResponse(
 data class FomTomPeriode(
     val fom: LocalDate,
     val tom: LocalDate,
+)
+
+data class SammeVentetidRequest(
+    val tilleggsopplysninger: Tilleggsopplysninger? = null,
+    val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+)
+
+data class SammeVentetidPeriode(
+    val ressursId: String,
+    val ventetid: FomTomPeriode,
+)
+
+data class SammeVentetidResponse(
+    val ventetidPerioder: List<SammeVentetidPeriode>,
 )

@@ -5,6 +5,8 @@ import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
+import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidRequest
+import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
@@ -91,6 +93,47 @@ fun FellesTestOppsett.erUtenforVentetidSomBruker(
             .perform(
                 get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
                     .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun FellesTestOppsett.finnPerioderMedSammeVentetidSomBruker(
+    fnr: String,
+    sykmeldingId: String,
+    clientId: String = "backend-client-id",
+): SammeVentetidResponse {
+    val json =
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = clientId)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun FellesTestOppsett.finnPerioderMedSammeVentetid(
+    fnr: List<String>,
+    sykmeldingId: String,
+    hentAndreIdenter: Boolean = true,
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
+    sammeVentetidRequest: SammeVentetidRequest = SammeVentetidRequest(),
+): SammeVentetidResponse {
+    val json =
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .content(objectMapper.writeValueAsString(sammeVentetidRequest))
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)
             .andReturn()
