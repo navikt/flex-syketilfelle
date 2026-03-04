@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.UUID
 
-class PerioderMedSammeVentetidTest :
+class SammeVentetidPeriodeTest :
     FellesTestOppsett(),
     VentetidFellesOppsett {
     @Autowired
@@ -32,7 +32,7 @@ class PerioderMedSammeVentetidTest :
     final override val fnr = "11111111111"
 
     @Test
-    fun `Sykmelding som ikke er SENDT eller BEKREFTET tas med i beregningen`() {
+    fun `Sykmelding som ikke er SENDT eller BEKREFTET tas også med i beregningen`() {
         val sykmelding1 = UUID.randomUUID().toString()
         val sykmelding2 = UUID.randomUUID().toString()
 
@@ -60,7 +60,12 @@ class PerioderMedSammeVentetidTest :
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
 
-        val ventetidperioder: List<VentetidPeriode> = ventetidUtregner.finnPerioderMedSammeVentetid(sykmelding2, listOf(fnr))
+        val ventetidperioder: List<no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidPeriode> =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmelding2,
+                listOf(fnr),
+                SammeVentetidRequest(),
+            )
 
         ventetidperioder.shouldHaveSize(2).also { venteperiode ->
             venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
@@ -120,7 +125,12 @@ class PerioderMedSammeVentetidTest :
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
 
-        val ventetidperioder: List<VentetidPeriode> = ventetidUtregner.finnPerioderMedSammeVentetid(sykmelding2, listOf(fnr))
+        val ventetidperioder: List<no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidPeriode> =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmelding2,
+                listOf(fnr),
+                SammeVentetidRequest(),
+            )
 
         ventetidperioder.shouldHaveSize(2).also { venteperiode ->
             venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
@@ -174,7 +184,12 @@ class PerioderMedSammeVentetidTest :
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
 
-        val ventetidperioder: List<VentetidPeriode> = ventetidUtregner.finnPerioderMedSammeVentetid(sykmelding2, listOf(fnr))
+        val ventetidperioder: List<no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidPeriode> =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmelding2,
+                listOf(fnr),
+                SammeVentetidRequest(),
+            )
 
         ventetidperioder.shouldHaveSize(2).also { venteperiode ->
             venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
@@ -222,7 +237,12 @@ class PerioderMedSammeVentetidTest :
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
 
-        val ventetidperioder = ventetidUtregner.finnPerioderMedSammeVentetid(sykmelding2, listOf(fnr))
+        val ventetidperioder =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmelding2,
+                listOf(fnr),
+                SammeVentetidRequest(),
+            )
         ventetidperioder.shouldHaveSize(2).also { venteperiode ->
             venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
             ventetidperioder.none { it.ressursId == sykmeldingAnnenPerson } `should be` true
@@ -240,7 +260,7 @@ class PerioderMedSammeVentetidTest :
     }
 
     @Test
-    fun `Sykmelding tilhørende person med to identer tas med i beregningen `() {
+    fun `Sykmelding tilhørende person med to identer tas med i beregningen`() {
         val sykmelding1 = UUID.randomUUID().toString()
         val sykmelding2 = UUID.randomUUID().toString()
 
@@ -261,7 +281,12 @@ class PerioderMedSammeVentetidTest :
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
 
-        val ventetidperioder = ventetidUtregner.finnPerioderMedSammeVentetid(sykmelding2, listOf(fnr, "22222222222"))
+        val ventetidperioder =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmelding2,
+                listOf(fnr, "22222222222"),
+                SammeVentetidRequest(),
+            )
         ventetidperioder.shouldHaveSize(2).also { venteperiode ->
             venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
         }
@@ -272,6 +297,129 @@ class PerioderMedSammeVentetidTest :
         }
 
         ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+        }
+    }
+
+    @Test
+    fun `Sykmelding send med request tas med i beregningen`() {
+        val sykmelding1 = UUID.randomUUID().toString()
+        val sykmelding2 = UUID.randomUUID().toString()
+
+        val sykmeldingKafkaMessage =
+            skapSykmeldingKafkaMessage(
+                fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+            )
+
+        listOf(
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmelding1,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 8),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            ),
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmelding2,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 9),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 15),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            ),
+        ).also { syketilfellebitRepository.saveAll(it) }
+
+        val ventetidperioder =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                SammeVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            )
+
+        ventetidperioder.shouldHaveSize(3).also { venteperiode ->
+            venteperiode.map { it.ressursId }.containsAll(
+                listOf(sykmelding1, sykmelding2, sykmeldingKafkaMessage.sykmelding.id),
+            ) `should be`
+                true
+        }
+
+        ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 6)
+        }
+
+        ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+        }
+
+        ventetidperioder.first { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+        }
+    }
+
+    @Test
+    fun `Sykmelding både lagret og sendt med i request tas med i beregningen`() {
+        val sykmelding1 = UUID.randomUUID().toString()
+        val sykmelding2 = UUID.randomUUID().toString()
+
+        val sykmeldingKafkaMessage =
+            skapSykmeldingKafkaMessage(
+                fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+            )
+
+        listOf(
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmelding1,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 8),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            ),
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmelding2,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 9),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 15),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            ),
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmeldingKafkaMessage.sykmelding.id,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            ),
+        ).also { syketilfellebitRepository.saveAll(it) }
+
+        val ventetidperioder =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                SammeVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            )
+
+        ventetidperioder.shouldHaveSize(3).also { venteperiode ->
+            venteperiode.map { it.ressursId }.containsAll(
+                listOf(sykmelding1, sykmelding2, sykmeldingKafkaMessage.sykmelding.id),
+            ) `should be`
+                true
+        }
+
+        ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 6)
+        }
+
+        ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+        }
+
+        ventetidperioder.first { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }.also {
             it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
             it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
         }

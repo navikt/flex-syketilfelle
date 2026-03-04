@@ -78,8 +78,8 @@ class VentetidController(
 
         return ventetidUtregner.erUtenforVentetid(
             sykmeldingId = sykmeldingId,
-            erUtenforVentetidRequest = erUtenforVentetidRequest,
             identer = identer,
+            erUtenforVentetidRequest = erUtenforVentetidRequest,
         )
     }
 
@@ -88,9 +88,16 @@ class VentetidController(
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun perioderMedSammeVentetidSomBruker(
         @PathVariable sykmeldingId: String,
-    ): VentetidPeriodeResponse {
+    ): SammeVentetidResponse {
         val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
-        return VentetidPeriodeResponse(ventetidPerioder = ventetidUtregner.finnPerioderMedSammeVentetid(sykmeldingId, identer))
+        return SammeVentetidResponse(
+            ventetidPerioder =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmeldingId,
+                    identer,
+                    SammeVentetidRequest(),
+                ),
+        )
     }
 
     @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/perioderMedSammeVentetid"])
@@ -100,15 +107,22 @@ class VentetidController(
         @RequestHeader fnr: String,
         @RequestParam(required = false) hentAndreIdenter: Boolean = true,
         @PathVariable sykmeldingId: String,
-    ): VentetidPeriodeResponse {
+        @RequestBody sammeVentetidRequest: SammeVentetidRequest,
+    ): SammeVentetidResponse {
         clientIdValidation.validateClientId(
             listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
         )
-        return VentetidPeriodeResponse(
-            ventetidPerioder = ventetidUtregner.finnPerioderMedSammeVentetid(sykmeldingId, hentIdenter(fnr, hentAndreIdenter)),
+        return SammeVentetidResponse(
+            ventetidPerioder =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmeldingId,
+                    hentIdenter(fnr, hentAndreIdenter),
+                    sammeVentetidRequest,
+                ),
         )
     }
 
+    // TODO: ValiderSYkmeldingKafkaMessage sånn at metoden kan gjenbrukes
     private fun validerVentetidRequest(
         ventetidRequest: ErUtenforVentetidRequest,
         sykmeldingId: String,

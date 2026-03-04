@@ -206,12 +206,13 @@ class VentetidControllerTest :
                 post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
                     .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
                     .header("fnr", fnr)
+                    .content(objectMapper.writeValueAsString(SammeVentetidRequest()))
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
-    fun `perioderMedSammeVentetid som bruker returnerer riktig periode`() {
+    fun `Kall til perioderMedSammeVentetid som bruker returnerer riktig periode`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
@@ -235,7 +236,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `perioderMedSammeVentetid returnerer riktig periode`() {
+    fun `Kall til perioderMedSammeVentetid returnerer riktig periode`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
@@ -259,7 +260,7 @@ class VentetidControllerTest :
     }
 
     @Test
-    fun `perioderMedSammeVentetid feiler hvis fnr ikke matcher biter`() {
+    fun `Kall til perioderMedSammeVentetid feiler hvis fnr ikke matcher biter`() {
         val melding =
             skapApenSykmeldingKafkaMessage(
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
@@ -271,8 +272,10 @@ class VentetidControllerTest :
         mockMvc
             .perform(
                 get("/api/bruker/v2/ventetid/${melding.sykmelding.id}/perioderMedSammeVentetid")
-                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}")
-                    .contentType(MediaType.APPLICATION_JSON),
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}",
+                    ).contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
     }
 }

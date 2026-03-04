@@ -61,28 +61,28 @@ class VentetidUtregner(
     fun finnPerioderMedSammeVentetid(
         sykmeldingId: String,
         identer: List<String>,
-    ): List<VentetidPeriode> {
-        val sykmeldingBiter = syketilfellebitRepository.findByRessursId(sykmeldingId)
+        sammeVentetidRequest: SammeVentetidRequest,
+    ): List<SammeVentetidPeriode> {
+        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid = true)
 
-        if (sykmeldingBiter.isEmpty()) {
-            log.error("Fant ikke biter tilhørende sykmelding: $sykmeldingId ved beregning av sykmeldinger med samme ventetid.")
-            return emptyList()
-        }
-
+        // Sender med VentetidRequest i tilfelle Kafka-meldingen ikke er lagret enda.
         val sykmeldingVentetid =
             beregnVentetid(
                 sykmeldingId = sykmeldingId,
                 identer = identer,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+                ventetidRequest = ventetidRequest,
             )!!
 
+        val biterFraRequest = sammeVentetidRequest.sykmeldingKafkaMessage?.mapTilBiter() ?: emptyList()
+
         val kandidatRessurser =
-            syketilfellebitRepository
-                .findByFnrIn(identer)
-                .map { it.tilSyketilfellebit() }
-                .utenKorrigerteSoknader()
-                .asSequence()
-                .filter { it.slettet == null }
+            (
+                syketilfellebitRepository
+                    .findByFnrIn(identer)
+                    .filter { it.slettet == null }
+                    .map { it.tilSyketilfellebit() }
+                    .utenKorrigerteSoknader() + biterFraRequest
+            ).asSequence()
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
@@ -95,10 +95,12 @@ class VentetidUtregner(
                 beregnVentetid(
                     sykmeldingId = it,
                     identer = identer,
-                    ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+                    // Sender med samme VentetidRequest fra request på hvert kall for sikre riktig beregning av
+                    // ventetid selv om Kafka-meldingen ikke er lagret enda.
+                    ventetidRequest = ventetidRequest,
                 )!!
             if (ventetid.fom == sykmeldingVentetid.fom) {
-                VentetidPeriode(ressursId = it, ventetid = ventetid)
+                SammeVentetidPeriode(ressursId = it, ventetid = ventetid)
             } else {
                 null
             }
@@ -188,18 +190,21 @@ class VentetidUtregner(
 
     private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
+    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen og eventuelle tilleggsopplysninger (som
+    // egenmeldinger) fra forespørselen. Det kan resulterer i duplikate biter hvis den aktuelle sykmeldignen både er
+    // lagret i databasen og sendt med i sykmeldingKafkaMessage. Duplikate biter blir slått sammen i mergePerioder().
     private fun lagSykmeldingBiter(
-        baseBiter: List<Syketilfellebit>,
+        eksisterendeBiter: List<Syketilfellebit>,
         sykmeldingId: String,
-        fnrs: List<String>,
+        identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): List<Syketilfellebit> =
-        baseBiter.toMutableList().apply {
+        eksisterendeBiter.toMutableList().apply {
             ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
                 addAll(sykmeldingMessage.mapTilBiter())
             }
             ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
-                addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, fnrs.first()))
+                addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, identer.first()))
             }
         }
 
