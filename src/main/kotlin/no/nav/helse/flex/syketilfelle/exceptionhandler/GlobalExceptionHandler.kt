@@ -37,24 +37,14 @@ class GlobalExceptionHandler {
             is MissingRequestHeaderException -> skapResponseEntity(HttpStatus.BAD_REQUEST)
             is HttpMediaTypeNotAcceptableException -> skapResponseEntity(HttpStatus.NOT_ACCEPTABLE)
             else -> {
-                val safeMethod = sanitizeForLog(request.method)
-                val safeUri = sanitizeForLog(request.requestURI)
-                log.error(
-                    "Internal server error: {} {}",
-                    safeMethod,
-                    safeUri,
-                    e,
-                )
+                log.error("Internal server error: {} {}", sanitize(request.method), sanitize(request.requestURI), e)
                 skapResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
 }
 
-private fun sanitizeForLog(input: String?): String =
-    input
-        ?.replace(Regex("[\\p{Cc}\\p{Cf}]"), " ")
-        ?.trim()
-        ?: "<null>"
+// Fjerner kontroll- og formateringstegn (Cc/Cf) fra teksten for å hindre logginjeksjon.
+private fun sanitize(input: String) = input.replace(Regex("[\\p{Cc}\\p{Cf}]"), " ").trim()
 
 private fun skapResponseEntity(status: HttpStatus): ResponseEntity<Any> = ResponseEntity(ApiError(status.reasonPhrase), status)
 
