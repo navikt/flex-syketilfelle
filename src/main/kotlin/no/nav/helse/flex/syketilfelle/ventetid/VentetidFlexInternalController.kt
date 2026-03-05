@@ -4,6 +4,7 @@ import no.nav.helse.flex.syketilfelle.client.pdl.PdlClient
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation
 import no.nav.helse.flex.syketilfelle.clientidvalidation.ClientIdValidation.NamespaceAndApp
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
+import no.nav.helse.flex.syketilfelle.sanitizeForLog
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.stereotype.Controller
@@ -26,9 +27,11 @@ class VentetidFlexInternalController(
         @PathVariable sykmeldingId: String,
     ): VentetidInternalResponse {
         clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
         val fnr =
             syketilfellebitRepository
-                .findByRessursId(sykmeldingId)
+                .findByRessursId(sanitertSykmeldingId)
                 .map { it.fnr }
                 .distinct()
                 .single()
@@ -36,21 +39,21 @@ class VentetidFlexInternalController(
 
         val erUtenforVentetid =
             ventetidUtregner.erUtenforVentetid(
-                sykmeldingId = sykmeldingId,
+                sykmeldingId = sanitertSykmeldingId,
                 identer = identer,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             )
 
         val ventetid =
             ventetidUtregner.beregnVentetid(
-                sykmeldingId = sykmeldingId,
+                sykmeldingId = sanitertSykmeldingId,
                 identer = identer,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             )
 
         val sykmeldingsperiode =
             syketilfellebitRepository
-                .findByRessursId(sykmeldingId)
+                .findByRessursId(sanitertSykmeldingId)
                 .firstOrNull()
                 ?.let { FomTomPeriode(it.fom, it.tom) }
 
