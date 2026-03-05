@@ -7,6 +7,7 @@ import no.nav.helse.flex.syketilfelle.exceptionhandler.AbstractApiError
 import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
+import no.nav.helse.flex.syketilfelle.sanitizeForLog
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
@@ -43,11 +44,12 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
     ): ErUtenforVentetidResponse {
         val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
 
-        val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sykmeldingId, identer, ErUtenforVentetidRequest())
+        val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sanitertSykmeldingId, identer, ErUtenforVentetidRequest())
         val ventetid =
             ventetidUtregner.beregnVentetid(
-                sykmeldingId = sykmeldingId,
+                sykmeldingId = sanitertSykmeldingId,
                 identer = identer,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             )
@@ -55,7 +57,7 @@ class VentetidController(
         val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
         val oppfolgingsdato =
             sykeforloep
-                .find { it.sykmeldinger.any { sm -> sm.id == sykmeldingId } }
+                .find { it.sykmeldinger.any { sm -> sm.id == sanitertSykmeldingId } }
                 ?.oppfolgingsdato
 
         return ErUtenforVentetidResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
@@ -73,11 +75,13 @@ class VentetidController(
         clientIdValidation.validateClientId(
             listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
         )
-        validerVentetidRequest(erUtenforVentetidRequest, sykmeldingId)
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
+        validerVentetidRequest(erUtenforVentetidRequest, sanitertSykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.erUtenforVentetid(
-            sykmeldingId = sykmeldingId,
+            sykmeldingId = sanitertSykmeldingId,
             identer = identer,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
         )
@@ -90,10 +94,12 @@ class VentetidController(
         @PathVariable sykmeldingId: String,
     ): SammeVentetidResponse {
         val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
         return SammeVentetidResponse(
             ventetidPerioder =
                 ventetidUtregner.finnPerioderMedSammeVentetid(
-                    sykmeldingId,
+                    sanitertSykmeldingId,
                     identer,
                     SammeVentetidRequest(),
                 ),
@@ -112,10 +118,12 @@ class VentetidController(
         clientIdValidation.validateClientId(
             listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
         )
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
         return SammeVentetidResponse(
             ventetidPerioder =
                 ventetidUtregner.finnPerioderMedSammeVentetid(
-                    sykmeldingId,
+                    sanitertSykmeldingId,
                     hentIdenter(fnr, hentAndreIdenter),
                     sammeVentetidRequest,
                 ),

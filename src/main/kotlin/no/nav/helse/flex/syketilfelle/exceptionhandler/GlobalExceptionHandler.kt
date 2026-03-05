@@ -2,6 +2,7 @@ package no.nav.helse.flex.syketilfelle.exceptionhandler
 
 import jakarta.servlet.http.HttpServletRequest
 import no.nav.helse.flex.syketilfelle.logger
+import no.nav.helse.flex.syketilfelle.sanitizeForLog
 import no.nav.security.token.support.core.exceptions.JwtTokenInvalidClaimException
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException
 import org.springframework.http.HttpStatus
@@ -37,14 +38,11 @@ class GlobalExceptionHandler {
             is MissingRequestHeaderException -> skapResponseEntity(HttpStatus.BAD_REQUEST)
             is HttpMediaTypeNotAcceptableException -> skapResponseEntity(HttpStatus.NOT_ACCEPTABLE)
             else -> {
-                log.error("Internal server error: {} {}", request.method.sanitize(), request.requestURI.sanitize(), e)
+                log.error("Internal server error: {} {}", request.method.sanitizeForLog(), request.requestURI.sanitizeForLog(), e)
                 skapResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
 }
-
-// Fjerner kontroll- og formateringstegn (Cc/Cf) fra teksten for å hindre logginjeksjon.
-private fun String.sanitize() = replace(Regex("[\\p{Cc}\\p{Cf}]"), " ").trim()
 
 private fun skapResponseEntity(status: HttpStatus): ResponseEntity<Any> = ResponseEntity(ApiError(status.reasonPhrase), status)
 

@@ -23,9 +23,12 @@ fun main(args: Array<String>) {
 
 inline fun <reified T> T.logger(): Logger = LoggerFactory.getLogger(T::class.java)
 
-val objectMapper =
+val objectMapper: ObjectMapper =
     ObjectMapper()
         .registerModule(JavaTimeModule())
         .registerModule(KotlinModule.Builder().build())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+
+// Fjerner kontroll- og formateringstegn (Cc/Cf) fra teksten for å hindre logginjeksjon.
+fun String.sanitizeForLog() = replace(Regex("[\\p{Cc}\\p{Cf}]"), " ").trim()
