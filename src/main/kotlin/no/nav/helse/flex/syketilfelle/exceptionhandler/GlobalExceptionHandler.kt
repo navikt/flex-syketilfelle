@@ -37,7 +37,12 @@ class GlobalExceptionHandler {
             is MissingRequestHeaderException -> skapResponseEntity(HttpStatus.BAD_REQUEST)
             is HttpMediaTypeNotAcceptableException -> skapResponseEntity(HttpStatus.NOT_ACCEPTABLE)
             else -> {
-                log.error("Internal server error: {} {}", request.method.saniterForLogging(), request.requestURI.saniterForLogging(), e)
+                log.error(
+                    "Internal server error: {} {}",
+                    request.method?.replace(Regex("[\\p{Cc}\\p{Cf}]"), " "),
+                    request.requestURI?.replace(Regex("[\\p{Cc}\\p{Cf}]"), " "),
+                    e,
+                )
                 skapResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
             }
         }
@@ -62,6 +67,3 @@ enum class LogLevel {
     ERROR,
     OFF,
 }
-
-// Fjerner kontroll- og formateringstegn (Cc/Cf) fra teksten for å hindre logginjeksjon.
-private fun String?.saniterForLogging(): String? = this?.replace(Regex("[\\p{Cc}\\p{Cf}]"), " ")
