@@ -127,7 +127,7 @@ class VentetidUtregner(
             return null
         }
 
-        val sykmeldingSisteTom = aktuellSykmeldingBiter.maxOf { it.tom }
+        val sykmeldingSenesteTom = aktuellSykmeldingBiter.maxOf { it.tom }
 
         val perioder =
             sykmeldingBiter
@@ -137,8 +137,8 @@ class VentetidUtregner(
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
                 .map { it.tilPeriode() }
                 .flatMap { it.splittPeriodeMedBehandlingsdagerTilMandager() }
-                .filter { it.fom <= sykmeldingSisteTom }
-                .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom) }
+                .filter { it.fom <= sykmeldingSenesteTom }
+                .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSenesteTom) }
                 .toList()
                 .mergePerioder(sykmeldingId)
                 .fjernHelgFraSluttenAvPerioden(sykmeldingId)
@@ -255,7 +255,7 @@ class VentetidUtregner(
     private fun List<Periode>.mergePerioder(foretrukketRessursId: String): List<Periode> {
         if (size <= 1) return this
 
-        // Sorter periodene med nyeste periode først for å enklere sjekke tid siden forrige periode.
+        // Sorter periodene med sist tom først for å enklere sjekke tid siden forrige periode.
         val sortertePerioder = sortedByDescending { it.tom }
 
         return sortertePerioder

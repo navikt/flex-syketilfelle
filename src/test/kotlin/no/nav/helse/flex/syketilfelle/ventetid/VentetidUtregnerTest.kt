@@ -787,106 +787,19 @@ class VentetidUtregnerTest :
         }
     }
 
-    /**
-     * Når det finnes overlappende perioder, skal kun den delen av de tidligere periodene som er før eller samtidig
-     * med den nåværende periodens tom tas med.
-     */
     @Nested
     inner class OverlappendePerioder {
         @Test
-        fun `Inkluderer ikke del av overlappende periode som er etter aktuell periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).also { it.publiser() }
-
-            val melding =
+        fun `Siste sykmelding har flere periode og starter samtidig og slutter før første periode`() {
+            val melding1 =
                 skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
+                    fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                    tom = LocalDate.of(2025, Month.SEPTEMBER, 30),
                 ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-        }
-
-        @Test
-        fun `Inkluderer del av overlappende periode som er før aktuell periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JUNE, 30),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
-            }
-        }
-
-        @Test
-        fun `Inkluderer ikke del av overlappende periode utenfor ventetid ved aktuell periode utenfor ventetid`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 20),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
-            }
-        }
-
-        @Test
-        fun `Inkluderer ikke del av overlappende periode som er etter aktuell sykmelding med flere perioder`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).publiser()
 
             val sykmeldingKafkaMessage = skapApenSykmeldingKafkaMessage()
 
-            val melding =
+            val melding2 =
                 sykmeldingKafkaMessage
                     .copy(
                         sykmelding =
@@ -894,8 +807,8 @@ class VentetidUtregnerTest :
                                 sykmeldingsperioder =
                                     listOf(
                                         SykmeldingsperiodeAGDTO(
-                                            fom = LocalDate.of(2024, Month.JULY, 1),
-                                            tom = LocalDate.of(2024, Month.JULY, 8),
+                                            fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                                            tom = LocalDate.of(2025, Month.SEPTEMBER, 4),
                                             type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                                             reisetilskudd = false,
                                             aktivitetIkkeMulig = null,
@@ -904,8 +817,8 @@ class VentetidUtregnerTest :
                                             innspillTilArbeidsgiver = null,
                                         ),
                                         SykmeldingsperiodeAGDTO(
-                                            fom = LocalDate.of(2024, Month.JULY, 8),
-                                            tom = LocalDate.of(2024, Month.JULY, 16),
+                                            fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
+                                            tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                                             type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                                             reisetilskudd = false,
                                             aktivitetIkkeMulig = null,
@@ -921,222 +834,32 @@ class VentetidUtregnerTest :
 
             erUtenforVentetid(
                 listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
+                melding1.sykmelding.id,
+                ErUtenforVentetidRequest(),
+            ) `should be` true
 
             hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid `should be` null
-        }
-    }
-
-    @Nested
-    internal inner class OverlappendePerioderInnenforVentetid {
-        @Test
-        fun `Inkluderer ikke del av overlappende periode som er etter aktuell periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
+                sykmeldingId = melding1.sykmelding.id,
+                identer = listOf(fnr),
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
+            ).ventetid!!.also {
+                it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 16)
             }
-        }
-
-        @Test
-        fun `Inkluderer del av overlappende periode som er før aktuell periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 4),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
 
             erUtenforVentetid(
                 listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
+                melding2.sykmelding.id,
+                ErUtenforVentetidRequest(),
+            ) `should be` false
 
             hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
+                sykmeldingId = melding2.sykmelding.id,
+                identer = listOf(fnr),
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
-            }
-        }
-
-        @Test
-        fun `Bruker del av aktuell periode når det finnes overlappende periode som starter etter`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 8),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JUNE, 25),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 25)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
-            }
-        }
-
-        @Test
-        fun `Inkluderer ikke del av overlappende periode utenfor ventetid som er etter aktuell periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
-            }
-        }
-
-        @Test
-        fun `Bruker del av aktuell periode når det finnes overlappende periode utenfor ventetid som starter etter`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 31),
-            ).also { it.publiser() }
-
-            val melding =
-                skapApenSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JUNE, 25),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 25)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
-            }
-        }
-
-        @Test
-        fun `Bruker del av aktuell periode med egenmeldingsdager når det finnes overlappende periode`() {
-            skapApenSykmeldingKafkaMessage(
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.publiser() }
-
-            val melding =
-                skapSykmeldingKafkaMessage(
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 8),
-                    sporsmals =
-                        listOf(
-                            SporsmalOgSvarDTO(
-                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
-                                shortName = ShortNameDTO.PERIODE,
-                                svar =
-                                    """
-                                    [{
-                                     "fom":"${LocalDate.of(2024, Month.JUNE, 30)}",
-                                     "tom":"${LocalDate.of(2024, Month.JUNE, 30)}"
-                                    }]
-                                    """.trimIndent(),
-                                svartype = SvartypeDTO.PERIODER,
-                            ),
-                        ),
-                )
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
-            ).`should be false`()
-
-            verifiserAtBiterErLagret(1)
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest =
-                    VentetidRequest(
-                        sykmeldingKafkaMessage = melding,
-                        returnerPerioderInnenforVentetid = true,
-                    ),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 8)
+            ).ventetid!!.also {
+                it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
             }
         }
     }
