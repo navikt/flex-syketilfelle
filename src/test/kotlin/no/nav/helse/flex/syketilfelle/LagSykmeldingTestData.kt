@@ -157,9 +157,8 @@ fun lagSyketilfelleBit(
     tom: LocalDate,
     tags: List<Tag>,
     opprettet: OffsetDateTime = OffsetDateTime.now(),
-): SyketilfellebitDbRecord {
-    val now = OffsetDateTime.now()
-    return SyketilfellebitDbRecord(
+): SyketilfellebitDbRecord =
+    SyketilfellebitDbRecord(
         syketilfellebitId = UUID.randomUUID().toString(),
         fnr = fnr,
         orgnummer = null,
@@ -172,4 +171,3 @@ fun lagSyketilfelleBit(
         korrigererSendtSoknad = null,
         publisert = true,
     )
-}

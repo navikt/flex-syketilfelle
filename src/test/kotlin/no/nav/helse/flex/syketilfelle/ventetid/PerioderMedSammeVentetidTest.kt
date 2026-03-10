@@ -15,7 +15,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-class SammeVentetidPeriodeTest : FellesTestOppsett() {
+class PerioderMedSammeVentetidTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
