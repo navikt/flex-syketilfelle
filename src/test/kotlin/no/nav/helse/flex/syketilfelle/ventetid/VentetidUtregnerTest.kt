@@ -14,6 +14,7 @@ import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
+import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -903,12 +904,12 @@ class VentetidUtregnerTest : FellesTestOppsett() {
     @Nested
     inner class Egenmeldingsdager {
         @Test
-        fun `Sykmelding på 16 dager med 1 dag egenmelding er utenfor ventetiden`() {
-            val melding =
+        fun `Egenmeldingsdag uten opphold til sykmeldingsperioden tas med i ventetiden`() {
+            val sykmeldingKafkaMessage =
                 lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
+                    fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                    tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
                     sporsmals =
                         listOf(
                             SporsmalOgSvarDTO(
@@ -917,8 +918,8 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                                 svar =
                                     """
                                     [{
-                                     "fom":"${LocalDate.of(2024, Month.JUNE, 30)}",
-                                     "tom":"${LocalDate.of(2024, Month.JUNE, 30)}"
+                                     "fom":"${LocalDate.of(2025, Month.AUGUST, 31)}",
+                                     "tom":"${LocalDate.of(2025, Month.AUGUST, 31)}"
                                     }]
                                     """.trimIndent(),
                                 svartype = SvartypeDTO.PERIODER,
@@ -926,68 +927,26 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                         ),
                 )
 
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
-            ).`should be true`()
+            ventetidUtregner
+                .erUtenforVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).`should be true`()
 
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
-            }
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 31)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 15)
+                }
         }
 
         @Test
-        fun `Kort sykmelding med sammenhengende egenmeldingsperioder til sammen over 16 dager er utenfor ventetiden`() {
-            val melding =
-                lagBekreftetSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 15),
-                    sporsmals =
-                        listOf(
-                            SporsmalOgSvarDTO(
-                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
-                                shortName = ShortNameDTO.PERIODE,
-                                svar =
-                                    """
-                                    [{
-                                     "fom":"${LocalDate.of(2024, Month.JUNE, 29)}",
-                                     "tom":"${LocalDate.of(2024, Month.JUNE, 29)}"
-                                    },
-                                    {
-                                     "fom":"${LocalDate.of(2024, Month.JUNE, 30)}",
-                                     "tom":"${LocalDate.of(2024, Month.JUNE, 30)}"
-                                    }]
-                                    """.trimIndent(),
-                                svartype = SvartypeDTO.PERIODER,
-                            ),
-                        ),
-                )
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 29)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 14)
-            }
-        }
-
-        @Test
-        fun `Sykmelding på 16 dager og 1 dag egenmelding er utenfor ventetiden med data i tilleggsopplysninger`() {
+        fun `Egenmeldingsdag som tilleggsopplysning uten opphold til sykmeldingsperioden tas med i ventetiden`() {
             val melding =
                 lagMottattSykmeldingKafkaMessage(
                     fnr = fnr,
@@ -1022,6 +981,191 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
             }
+        }
+
+        @Test
+        fun `Egenmeldingsdag med helg mellom sykmeldingsperioden tas med i ventetiden`() {
+            val sykmeldingKafkaMessage =
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                    tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
+                    sporsmals =
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                shortName = ShortNameDTO.PERIODE,
+                                svar =
+                                    """
+                                    [{
+                                     "fom":"${LocalDate.of(2025, Month.AUGUST, 29)}",
+                                     "tom":"${LocalDate.of(2025, Month.AUGUST, 29)}"
+                                    }]
+                                    """.trimIndent(),
+                                svartype = SvartypeDTO.PERIODER,
+                            ),
+                        ),
+                )
+
+            ventetidUtregner
+                .erUtenforVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).`should be true`()
+
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 29)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 13)
+                }
+        }
+
+        @Test
+        fun `Egenmeldingsdag med ukedag mellom sykmeldingsperioden tas ikke med i ventetiden`() {
+            val sykmeldingKafkaMessage =
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
+                    tom = LocalDate.of(2025, Month.SEPTEMBER, 23),
+                    sporsmals =
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                shortName = ShortNameDTO.PERIODE,
+                                svar =
+                                    """
+                                    [{
+                                     "fom":"${LocalDate.of(2025, Month.SEPTEMBER, 1)}",
+                                     "tom":"${LocalDate.of(2025, Month.SEPTEMBER, 1)}"
+                                    }]
+                                    """.trimIndent(),
+                                svartype = SvartypeDTO.PERIODER,
+                            ),
+                        ),
+                )
+
+            ventetidUtregner
+                .erUtenforVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).`should be true`()
+
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 3)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 18)
+                }
+        }
+
+        @Test
+        fun `Egenmeldingsdager mellom to perioder som tilleggsopplysninger tas ikke med i ventetiden`() {
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2025, Month.JULY, 9),
+                tom = LocalDate.of(2025, Month.JULY, 25),
+            ).also { it.prosesser() }
+
+            val sykmeldingKafkaMessage =
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2025, Month.AUGUST, 14),
+                    tom = LocalDate.of(2025, Month.AUGUST, 21),
+                ).also { it.prosesser() }
+
+            val tilleggsopplysninger =
+                Tilleggsopplysninger(
+                    egenmeldingsperioder =
+                        listOf(
+                            FomTomPeriode(
+                                fom = LocalDate.of(2025, Month.AUGUST, 7),
+                                tom = LocalDate.of(2025, Month.AUGUST, 10),
+                            ),
+                        ),
+                )
+
+            ventetidUtregner
+                .erUtenforVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    erUtenforVentetidRequest =
+                        ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
+                ).`should be false`()
+
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    ventetidRequest =
+                        VentetidRequest(
+                            tilleggsopplysninger = tilleggsopplysninger,
+                            sykmeldingKafkaMessage = sykmeldingKafkaMessage,
+                            returnerPerioderInnenforVentetid = true,
+                        ),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
+                }
+        }
+
+        @Test
+        fun `Egenmeldingsdager mellom to perioder som svar tas ikke med i ventetiden`() {
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2025, Month.JULY, 9),
+                tom = LocalDate.of(2025, Month.JULY, 25),
+            ).also { it.prosesser() }
+
+            val sykmeldingKafkaMessage =
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2025, Month.AUGUST, 14),
+                    tom = LocalDate.of(2025, Month.AUGUST, 21),
+                    sporsmals =
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = "Hvilke dager var du borte fra jobb før datoen sykmeldingen gjelder fra?",
+                                shortName = ShortNameDTO.PERIODE,
+                                svar =
+                                    """
+                                    [{
+                                     "fom":"${LocalDate.of(2025, Month.AUGUST, 7)}",
+                                     "tom":"${LocalDate.of(2025, Month.AUGUST, 10)}"
+                                    }]
+                                    """.trimIndent(),
+                                svartype = SvartypeDTO.PERIODER,
+                            ),
+                        ),
+                ).also { it.prosesser() }
+
+            ventetidUtregner
+                .erUtenforVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                ).`should be false`()
+
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                    listOf(fnr),
+                    ventetidRequest =
+                        VentetidRequest(
+                            returnerPerioderInnenforVentetid = true,
+                        ),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
+                }
         }
     }
 
@@ -1631,6 +1775,470 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                     it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 10)
                     it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 25)
                 }
+        }
+
+        @Nested
+        inner class PerioderMedSammeVentetid {
+            @Test
+            fun `Sykmelding som ikke er SENDT eller BEKREFTET tas også med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder: List<SammeVentetidPeriode> =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding2,
+                        listOf(fnr),
+                        SammeVentetidRequest(),
+                    )
+
+                ventetidperioder.shouldHaveSize(2).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Egenmeldingsdager tas med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.JANUARY, 29),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 1),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.ANNET_FRAVAR),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder: List<SammeVentetidPeriode> =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding2,
+                        listOf(fnr),
+                        SammeVentetidRequest(),
+                    )
+
+                ventetidperioder.shouldHaveSize(2).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 29)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 29)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+                }
+            }
+
+            @Test
+            fun `Sykmelding med tags REISETILSKUDD eller AVVENTENDE tas ikke med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+                val sykmeldingReisetilskudd = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmeldingReisetilskudd,
+                        fom = LocalDate.of(2026, Month.JANUARY, 20),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 1),
+                        tags =
+                            listOf(
+                                Tag.SYKMELDING,
+                                Tag.BEKREFTET,
+                                Tag.PERIODE,
+                                Tag.REISETILSKUDD,
+                                Tag.INGEN_AKTIVITET,
+                            ),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmeldingReisetilskudd,
+                        fom = LocalDate.of(2026, Month.JANUARY, 20),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 1),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.AVVENTENDE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder: List<SammeVentetidPeriode> =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding2,
+                        listOf(fnr),
+                        SammeVentetidRequest(),
+                    )
+
+                ventetidperioder.shouldHaveSize(2).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
+                    ventetidperioder.none { it.ressursId == sykmeldingReisetilskudd } `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Sykmelding tilhørende en annen ident tas ikke med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+                val sykmeldingAnnenPerson = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = "22222222222",
+                        ressursId = sykmeldingAnnenPerson,
+                        fom = LocalDate.of(2026, Month.JANUARY, 20),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 1),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding2,
+                        listOf(fnr),
+                        SammeVentetidRequest(),
+                    )
+                ventetidperioder.shouldHaveSize(2).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
+                    ventetidperioder.none { it.ressursId == sykmeldingAnnenPerson } `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Sykmelding tilhørende person med to identer tas med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = "22222222222",
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 20),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding2,
+                        listOf(fnr, "22222222222"),
+                        SammeVentetidRequest(),
+                    )
+                ventetidperioder.shouldHaveSize(2).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1, sykmelding2)) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Sykmelding send med request tas med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 8),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 9),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 15),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val sykmeldingKafkaMessage =
+                    lagBekreftetSykmeldingKafkaMessage(
+                        fnr = fnr,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                    )
+
+                val ventetidperioder =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmeldingKafkaMessage.sykmelding.id,
+                        listOf(fnr),
+                        SammeVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                    )
+
+                ventetidperioder.shouldHaveSize(3).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(
+                        listOf(sykmelding1, sykmelding2, sykmeldingKafkaMessage.sykmelding.id),
+                    ) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 6)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Sykmelding både lagret og sendt med i request tas med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+
+                val sykmeldingKafkaMessage =
+                    lagBekreftetSykmeldingKafkaMessage(
+                        fnr = fnr,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                    )
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 8),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 9),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 15),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmeldingKafkaMessage.sykmelding.id,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmeldingKafkaMessage.sykmelding.id,
+                        listOf(fnr),
+                        SammeVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+                    )
+
+                ventetidperioder.shouldHaveSize(3).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(
+                        listOf(sykmelding1, sykmelding2, sykmeldingKafkaMessage.sykmelding.id),
+                    ) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 6)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmeldingKafkaMessage.sykmelding.id }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+            }
+
+            @Test
+            fun `Sykmelding som overlapper to andre sykmeldinger tas med i beregningen`() {
+                val sykmelding1 = UUID.randomUUID().toString()
+                val sykmelding2 = UUID.randomUUID().toString()
+                val sykmelding3 = UUID.randomUUID().toString()
+
+                listOf(
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding1,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 10),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding2,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 11),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                    lagSyketilfelleBit(
+                        fnr = fnr,
+                        ressursId = sykmelding3,
+                        fom = LocalDate.of(2026, Month.FEBRUARY, 5),
+                        tom = LocalDate.of(2026, Month.FEBRUARY, 15),
+                        tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                    ),
+                ).also { syketilfellebitRepository.saveAll(it) }
+
+                val ventetidperioder: List<SammeVentetidPeriode> =
+                    ventetidUtregner.finnPerioderMedSammeVentetid(
+                        sykmelding3,
+                        listOf(fnr),
+                        SammeVentetidRequest(),
+                    )
+
+                ventetidperioder.shouldHaveSize(3).also { venteperiode ->
+                    venteperiode.map { it.ressursId }.containsAll(
+                        listOf(sykmelding1, sykmelding2, sykmelding3),
+                    ) `should be` true
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding1 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 10)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding2 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+                }
+
+                ventetidperioder.first { it.ressursId == sykmelding3 }.also {
+                    it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
+                    // 14. og 15. februar er lørdag og søndag og tas derfor ikke med.
+                    it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 13)
+                }
+            }
         }
     }
 
