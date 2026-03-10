@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import no.nav.helse.flex.syketilfelle.tilSyketilfellebitDbRecord
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -10,12 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class DebugProduksjonTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
+class DebugProduksjonTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
@@ -25,7 +20,7 @@ class DebugProduksjonTest :
         syketilfellebitRepository.deleteAll()
     }
 
-    final override val fnr = "11111111111"
+    private val fnr = "11111111111"
 
     @Test
     fun `Perioder innenfor ventetid som er like returnerer ventetid`() {
@@ -62,39 +57,28 @@ class DebugProduksjonTest :
             "tombstonePublisert": null
           }
         ] 
-        """.trimIndent().tilSyketilfellebitDbRecords().also {
+        """.trimIndent().tilSyketilfellebitDbRecord().also {
             syketilfellebitRepository.saveAll(it)
         }
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = "a9d5ac93-0c06-4472-8fdb-88f5da6cd0f9",
-            ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 1)
-            it.tom `should be equal to` LocalDate.of(2026, Month.JANUARY, 12)
-        }
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = "42c3bb8e-0a18-491d-b01a-9c6af2af5cbf",
-            ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 1)
-            it.tom `should be equal to` LocalDate.of(2026, Month.JANUARY, 12)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = "a9d5ac93-0c06-4472-8fdb-88f5da6cd0f9",
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 1)
+                it.tom `should be equal to` LocalDate.of(2026, Month.JANUARY, 12)
+            }
+
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = "42c3bb8e-0a18-491d-b01a-9c6af2af5cbf",
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2026, Month.JANUARY, 1)
+                it.tom `should be equal to` LocalDate.of(2026, Month.JANUARY, 12)
+            }
     }
-
-    private fun hentVentetid(
-        identer: List<String>,
-        sykmeldingId: String,
-        ventetidRequest: VentetidRequest,
-    ): VentetidResponse =
-        VentetidResponse(
-            ventetid =
-                ventetidUtregner.beregnVentetid(
-                    sykmeldingId = sykmeldingId,
-                    identer = identer,
-                    ventetidRequest = ventetidRequest,
-                ),
-        )
 }

@@ -5,10 +5,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
-import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
-import no.nav.helse.flex.syketilfelle.opprettSendtSykmelding
-import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.ventPåRecords
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -31,13 +28,13 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `arbrbeidsgiverperioden regnes ut per arbeidsgiver`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
-        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato)
+    fun `Arbeidsgiverperioden regnes ut per arbeidsgiver`() {
+        val sykmelding1 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
+        val sykmelding2 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato)
 
-        opprettMottattSykmelding(sykmelding = sykmelding, fnr = fnr)
+        opprettMottattSykmelding(sykmelding = sykmelding1, fnr = fnr)
         opprettMottattSykmelding(sykmelding = sykmelding2, fnr = fnr)
-        opprettSendtSykmelding(sykmelding = sykmelding, fnr = fnr, orgnummer = orgnr1)
+        opprettSendtSykmelding(sykmelding = sykmelding1, fnr = fnr, orgnummer = orgnr1)
         opprettSendtSykmelding(sykmelding = sykmelding2, fnr = fnr, orgnummer = orgnr2)
 
         val soknad1 =
@@ -52,7 +49,7 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : FellesTestOppsett() {
                 egenmeldinger = emptyList(),
                 fnr = fnr,
                 status = SoknadsstatusDTO.SENDT,
-                sykmeldingId = sykmelding.id,
+                sykmeldingId = sykmelding1.id,
                 type = SoknadstypeDTO.ARBEIDSTAKERE,
             )
 

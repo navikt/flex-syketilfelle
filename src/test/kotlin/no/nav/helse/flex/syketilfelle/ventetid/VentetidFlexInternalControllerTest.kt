@@ -4,12 +4,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.objectMapper
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import no.nav.helse.flex.syketilfelle.tilSyketilfellebitDbRecord
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -17,14 +16,9 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-class VentetidFlexInternalControllerTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
-    final override val fnr = "11111111111"
+class VentetidFlexInternalControllerTest : FellesTestOppsett() {
     private val sykmeldingId = UUID.randomUUID().toString()
+    private val fnr = "11111111111"
 
     @BeforeEach
     @AfterEach
@@ -73,7 +67,7 @@ class VentetidFlexInternalControllerTest :
             "tombstonePublisert": null
           }
         ] 
-        """.trimIndent().tilSyketilfellebitDbRecords().also {
+        """.trimIndent().tilSyketilfellebitDbRecord().also {
             syketilfellebitRepository.saveAll(it)
         }
 

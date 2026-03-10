@@ -1,15 +1,24 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
-import no.nav.helse.flex.syketilfelle.*
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
+import no.nav.helse.flex.syketilfelle.azureToken
+import no.nav.helse.flex.syketilfelle.hentSykeforloep
+import no.nav.helse.flex.syketilfelle.hentSykeforloepMedSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
-import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.model.sykmeldingstatus.*
+import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
+import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be equal to`
 import org.assertj.core.api.Assertions.assertThat
@@ -39,7 +48,7 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `beregner for det enkleste tilfellet`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
+        val sykmelding = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettSendtSykmelding(sykmelding, nyttFnr)
@@ -64,9 +73,9 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `beregner for et forloep med mange etterfølgende sykmeldinger`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
-        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato.minusDays(13))
-        val sykmelding3 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(40), tom = basisDato.minusDays(25))
+        val sykmelding = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
+        val sykmelding2 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato.minusDays(13))
+        val sykmelding3 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(40), tom = basisDato.minusDays(25))
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettMottattSykmelding(sykmelding2, fnr)
@@ -103,8 +112,8 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `15 dager i mellom er samme forloep`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
-        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(16))
+        val sykmelding = lagArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
+        val sykmelding2 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(16))
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettMottattSykmelding(sykmelding2, fnr)
@@ -121,8 +130,8 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `16 dager i mellom er to forloep`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
-        val sykmelding2 = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(17))
+        val sykmelding = lagArbeidsgiverSykmelding(fom = basisDato, tom = basisDato.plusDays(10))
+        val sykmelding2 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(30), tom = basisDato.minusDays(17))
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettMottattSykmelding(sykmelding2, nyttFnr)
@@ -148,7 +157,7 @@ class SykeforloepTest : FellesTestOppsett() {
     @Test
     fun `sykmelding med flere perioder settes korrekt sammen`() {
         val sykmelding =
-            skapArbeidsgiverSykmelding().copy(
+            lagArbeidsgiverSykmelding().copy(
                 sykmeldingsperioder =
                     listOf(
                         SykmeldingsperiodeAGDTO(
@@ -248,7 +257,7 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `Tar med sykmelding i beregning av sykeforloep`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
+        val sykmelding = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
 
         val kafkaMetadata =
             KafkaMetadataDTO(
@@ -288,7 +297,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 kafkaMetadata = kafkaMetadata,
                 event = event.copy(),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
 
         val sykeforloep = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
 
@@ -414,17 +423,17 @@ class SykeforloepTest : FellesTestOppsett() {
 
     @Test
     fun `sletting av syketilfellebit splitter sykeforløpet`() {
-        val sykmelding1 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 10), tom = LocalDate.of(2022, 11, 20))
+        val sykmelding1 = lagArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 10), tom = LocalDate.of(2022, 11, 20))
 
         opprettMottattSykmelding(sykmelding1, fnr)
         opprettSendtSykmelding(sykmelding1, fnr)
 
-        val sykmelding2 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 21), tom = LocalDate.of(2023, 1, 9))
+        val sykmelding2 = lagArbeidsgiverSykmelding(fom = LocalDate.of(2022, 11, 21), tom = LocalDate.of(2023, 1, 9))
 
         opprettMottattSykmelding(sykmelding2, fnr)
         opprettSendtSykmelding(sykmelding2, fnr)
 
-        val sykmelding3 = skapArbeidsgiverSykmelding(fom = LocalDate.of(2022, 12, 28), tom = LocalDate.of(2023, 1, 9))
+        val sykmelding3 = lagArbeidsgiverSykmelding(fom = LocalDate.of(2022, 12, 28), tom = LocalDate.of(2023, 1, 9))
 
         opprettMottattSykmelding(sykmelding3, fnr)
         opprettSendtSykmelding(sykmelding3, fnr)

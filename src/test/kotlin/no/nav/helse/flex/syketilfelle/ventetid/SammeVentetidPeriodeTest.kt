@@ -1,8 +1,9 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagSyketilfelleBit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldHaveSize
@@ -12,14 +13,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
-import java.util.UUID
+import java.util.*
 
-class SammeVentetidPeriodeTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
+class SammeVentetidPeriodeTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
@@ -29,7 +25,7 @@ class SammeVentetidPeriodeTest :
         syketilfellebitRepository.deleteAll()
     }
 
-    final override val fnr = "11111111111"
+    private val fnr = "11111111111"
 
     @Test
     fun `Sykmelding som ikke er SENDT eller BEKREFTET tas også med i beregningen`() {
@@ -307,12 +303,6 @@ class SammeVentetidPeriodeTest :
         val sykmelding1 = UUID.randomUUID().toString()
         val sykmelding2 = UUID.randomUUID().toString()
 
-        val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
-                fom = LocalDate.of(2026, Month.FEBRUARY, 16),
-                tom = LocalDate.of(2026, Month.FEBRUARY, 22),
-            )
-
         listOf(
             lagSyketilfelleBit(
                 fnr = fnr,
@@ -329,6 +319,13 @@ class SammeVentetidPeriodeTest :
                 tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
             ),
         ).also { syketilfellebitRepository.saveAll(it) }
+
+        val sykmeldingKafkaMessage =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 16),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 22),
+            )
 
         val ventetidperioder =
             ventetidUtregner.finnPerioderMedSammeVentetid(
@@ -365,7 +362,8 @@ class SammeVentetidPeriodeTest :
         val sykmelding2 = UUID.randomUUID().toString()
 
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 16),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 22),
             )

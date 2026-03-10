@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import no.nav.helse.flex.syketilfelle.tilSyketilfellebitDbRecord
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -10,12 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class RedusertVenteperiodeTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
+class RedusertVenteperiodeTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
@@ -25,7 +20,7 @@ class RedusertVenteperiodeTest :
         syketilfellebitRepository.deleteAll()
     }
 
-    final override val fnr = "11111111111"
+    private val fnr = "11111111111"
 
     @Test
     fun `Redusert Venteperioder langt tilbake i tid påvirker ikke beregning av ventetid`() {
@@ -62,31 +57,18 @@ class RedusertVenteperiodeTest :
             "tombstonePublisert": null
           }
         ]
-        """.trimIndent().tilSyketilfellebitDbRecords().also {
+        """.trimIndent().tilSyketilfellebitDbRecord().also {
             syketilfellebitRepository.saveAll(it)
         }
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = "a2821114-194a-44c5-b27f-3db65ba83b44",
-            ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 10)
-            it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 25)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = "a2821114-194a-44c5-b27f-3db65ba83b44",
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 10)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 25)
+            }
     }
-
-    private fun hentVentetid(
-        identer: List<String>,
-        sykmeldingId: String,
-        ventetidRequest: VentetidRequest,
-    ): VentetidResponse =
-        VentetidResponse(
-            ventetid =
-                ventetidUtregner.beregnVentetid(
-                    sykmeldingId = sykmeldingId,
-                    identer = identer,
-                    ventetidRequest = ventetidRequest,
-                ),
-        )
 }

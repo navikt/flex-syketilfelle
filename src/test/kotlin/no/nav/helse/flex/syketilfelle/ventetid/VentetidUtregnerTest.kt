@@ -1,7 +1,8 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
@@ -19,12 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class VentetidUtregnerTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
+class VentetidUtregnerTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
@@ -34,7 +30,7 @@ class VentetidUtregnerTest :
         syketilfellebitRepository.deleteAll()
     }
 
-    final override val fnr = "11111111111"
+    private val fnr = "11111111111"
 
     /**
      * 1. juli 2024 er en mandag.
@@ -50,7 +46,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 16 dager er innenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 )
@@ -71,7 +68,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 17 dager er utenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                 )
@@ -95,7 +93,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 17 dager som slutter på lørdag er innenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 4),
                     tom = LocalDate.of(2024, Month.JULY, 20),
                 )
@@ -116,7 +115,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 17 dager som slutter på søndag er innenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 5),
                     tom = LocalDate.of(2024, Month.JULY, 21),
                 )
@@ -137,7 +137,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 17 dager som starter på lørdag er utenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JUNE, 29),
                     tom = LocalDate.of(2024, Month.JULY, 15),
                 )
@@ -161,7 +162,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 17 dager som starter på søndag er utenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JUNE, 30),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 )
@@ -191,16 +193,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen 16 dager er innenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 9),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -232,16 +236,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen 17 dager er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 8),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 9),
                     tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -276,16 +282,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen over 16 dager med lørdag mellom er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 12),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 14),
                     tom = LocalDate.of(2024, Month.JULY, 21),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -320,16 +328,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen over 16 dager med søndag mellom er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 13),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 15),
                     tom = LocalDate.of(2024, Month.JULY, 21),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -364,16 +374,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen over 16 dager med lørdag og søndag mellom er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 12),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 15),
                     tom = LocalDate.of(2024, Month.JULY, 21),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -408,22 +420,25 @@ class VentetidUtregnerTest :
         @Test
         fun `Tre perioder til sammen 16 dager er innenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 5),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 6),
                     tom = LocalDate.of(2024, Month.JULY, 10),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding3 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 11),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(3)
 
@@ -467,22 +482,25 @@ class VentetidUtregnerTest :
         @Test
         fun `Tre perioder til sammen 17 dager er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 5),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 6),
                     tom = LocalDate.of(2024, Month.JULY, 10),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding3 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 11),
                     tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(3)
 
@@ -529,22 +547,25 @@ class VentetidUtregnerTest :
         @Test
         fun `Tre perioder til sammen over 16 dager på grunn av helg er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 5),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 6),
                     tom = LocalDate.of(2024, Month.JULY, 12),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding3 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 14),
                     tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(3)
 
@@ -591,16 +612,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen 17 dager og siste periode er én dag lang er utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 17),
                     tom = LocalDate.of(2024, Month.JULY, 17),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -629,7 +652,8 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder i samme sykmelding merges likt perioder fra to sykmeldinger`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                 )
@@ -649,7 +673,7 @@ class VentetidUtregnerTest :
                                 ),
                         ),
                 )
-            }.also { it.publiser() }
+            }.also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -681,16 +705,18 @@ class VentetidUtregnerTest :
     inner class OppholdMellomPerioder {
         @Test
         fun `Kort periode påvirker ikke kort periode selv om opphold er kortere enn 17 dager`() {
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 18),
                     tom = LocalDate.of(2024, Month.JULY, 31),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -703,16 +729,18 @@ class VentetidUtregnerTest :
 
         @Test
         fun `Kort periode påvirker ikke lang periode selv om opphold er kortere enn 17 dager`() {
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 10),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 12),
                     tom = LocalDate.of(2024, Month.JULY, 31),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -734,16 +762,18 @@ class VentetidUtregnerTest :
 
         @Test
         fun `Lang periode påvirker kort periode teller hvis opphold er kortere enn 17 dager`() {
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 21),
                     tom = LocalDate.of(2024, Month.JULY, 31),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -766,16 +796,18 @@ class VentetidUtregnerTest :
 
         @Test
         fun `Lang periode påvirker ikke neste periode hvis opphold er lengre enn 16 dager`() {
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.AUGUST, 3),
                     tom = LocalDate.of(2024, Month.AUGUST, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -792,12 +824,13 @@ class VentetidUtregnerTest :
         @Test
         fun `Siste sykmelding har flere periode og starter samtidig og slutter før første periode`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
-            val sykmeldingKafkaMessage = skapApenSykmeldingKafkaMessage()
+            val sykmeldingKafkaMessage = lagMottattSykmeldingKafkaMessage(fnr)
 
             val melding2 =
                 sykmeldingKafkaMessage
@@ -828,7 +861,7 @@ class VentetidUtregnerTest :
                                         ),
                                     ),
                             ),
-                    ).also { it.publiser() }
+                    ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(3)
 
@@ -869,7 +902,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Sykmelding på 16 dager med 1 dag egenmelding er utenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
                     sporsmals =
@@ -908,7 +942,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Kort sykmelding med sammenhengende egenmeldingsperioder til sammen over 16 dager er utenfor ventetiden`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 15),
                     sporsmals =
@@ -951,10 +986,11 @@ class VentetidUtregnerTest :
         @Test
         fun `Sykmelding på 16 dager og 1 dag egenmelding er utenfor ventetiden med data i tilleggsopplysninger`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val tilleggsopplysninger =
                 Tilleggsopplysninger(
@@ -991,11 +1027,12 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang periode med behandlingsdager er innenfor ventetiden`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(1)
 
@@ -1015,17 +1052,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Kort periode med behandlingsdager etter sammenhengende lang periode utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JUNE, 1),
                     tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 2),
                     tom = LocalDate.of(2024, Month.JULY, 10),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1063,17 +1102,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang periode med behandlingsdager etter sammenhengende lang periode utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JUNE, 1),
                     tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1111,17 +1152,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang periode med behandlingsdager med en dag mellomrom til forrige lange periodeer utenfor ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JUNE, 1),
                     tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 2),
                     tom = LocalDate.of(2024, Month.JULY, 31),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1162,17 +1205,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang Avventede Sykmelding påvirker ikke ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                     type = PeriodetypeDTO.AVVENTENDE,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 18),
                     tom = LocalDate.of(2024, Month.JULY, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1204,17 +1249,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang sykmelding med Reisetilskudd påvirker ikke ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                     type = PeriodetypeDTO.REISETILSKUDD,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 18),
                     tom = LocalDate.of(2024, Month.JULY, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1246,17 +1293,19 @@ class VentetidUtregnerTest :
         @Test
         fun `Lang sykmelding med Behandlingsdager påvirker ikke ventetiden`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 18),
                     tom = LocalDate.of(2024, Month.JULY, 30),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1296,10 +1345,11 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 16 returnerer ventetid lik perioden`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(1)
 
@@ -1322,10 +1372,11 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 1 dag returnerer ventetid lik perioden`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 1),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(1)
 
@@ -1348,10 +1399,11 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode som slutter på lørdag returnerer én dag kortere ventetid enn perioden`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 6),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(1)
 
@@ -1374,7 +1426,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode på 6 dager og 2 egenmeldingsdager returnerer ventetid lik perioden med egenmeldingsdager`() {
             val melding =
-                skapSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 6),
                     sporsmals =
@@ -1418,10 +1471,11 @@ class VentetidUtregnerTest :
         @Test
         fun `Periode normalt utenfor ventetiden påvirkes ikke av 'returnerPerioderInnenforVentetid'`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 31),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(1)
 
@@ -1444,7 +1498,8 @@ class VentetidUtregnerTest :
         @Test
         fun `Siste periode av to perioder i samme sykmelding brukes når periodene ikke kan merges`() {
             val melding =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 9),
                 )
@@ -1464,7 +1519,7 @@ class VentetidUtregnerTest :
                                 ),
                         ),
                 )
-            }.also { it.publiser() }
+            }.also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 
@@ -1487,16 +1542,18 @@ class VentetidUtregnerTest :
         @Test
         fun `To perioder til sammen 16 dager returnerer ventetid lik merget periode`() {
             val melding1 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 9),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             val melding2 =
-                skapApenSykmeldingKafkaMessage(
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 10),
                     tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.publiser() }
+                ).also { it.prosesser() }
 
             verifiserAtBiterErLagret(2)
 

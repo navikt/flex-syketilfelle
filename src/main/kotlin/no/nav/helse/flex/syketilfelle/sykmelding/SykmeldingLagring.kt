@@ -21,7 +21,7 @@ class SykmeldingLagring(
 ) {
     val log = logger()
 
-    fun handterSykmelding(
+    fun prosesserSykmelding(
         key: String,
         sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
         topic: String,
@@ -85,7 +85,7 @@ class SykmeldingLagring(
         mottattSykmeldingKafkaMessage: MottattSykmeldingKafkaMessage?,
         topic: String,
     ) {
-        handterSykmelding(
+        prosesserSykmelding(
             key,
             mottattSykmeldingKafkaMessage?.let {
                 SykmeldingKafkaMessage(

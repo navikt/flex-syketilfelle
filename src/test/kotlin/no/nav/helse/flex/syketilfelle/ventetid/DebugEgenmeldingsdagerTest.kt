@@ -1,7 +1,8 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
@@ -15,12 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
-class DebugEgenmeldingsdagerTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
+class DebugEgenmeldingsdagerTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
@@ -30,12 +26,13 @@ class DebugEgenmeldingsdagerTest :
         syketilfellebitRepository.deleteAll()
     }
 
-    final override val fnr = "11111111111"
+    private val fnr = "11111111111"
 
     @Test
     fun `Egenmeldingsdag uten opphold til sykmeldingsperioden tas med i ventetiden`() {
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                 tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
                 sporsmals =
@@ -55,26 +52,29 @@ class DebugEgenmeldingsdagerTest :
                     ),
             )
 
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).`should be true`()
+        ventetidUtregner
+            .erUtenforVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).`should be true`()
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 31)
-            it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 15)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 31)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 15)
+            }
     }
 
     @Test
     fun `Egenmeldingsdag med helg mellom sykmeldingsperioden tas med i ventetiden`() {
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                 tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
                 sporsmals =
@@ -94,26 +94,29 @@ class DebugEgenmeldingsdagerTest :
                     ),
             )
 
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).`should be true`()
+        ventetidUtregner
+            .erUtenforVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).`should be true`()
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 29)
-            it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 13)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 29)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 13)
+            }
     }
 
     @Test
     fun `Egenmeldingsdag med ukedag mellom sykmeldingsperioden tas ikke med i ventetiden`() {
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
                 tom = LocalDate.of(2025, Month.SEPTEMBER, 23),
                 sporsmals =
@@ -133,36 +136,38 @@ class DebugEgenmeldingsdagerTest :
                     ),
             )
 
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).`should be true`()
+        ventetidUtregner
+            .erUtenforVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).`should be true`()
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 3)
-            it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 18)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 3)
+                it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 18)
+            }
     }
 
     @Test
     fun `Egenmeldingsdager mellom to perioder som tilleggsopplysninger tas ikke med i ventetiden`() {
-        skapApenSykmeldingKafkaMessage(
+        lagMottattSykmeldingKafkaMessage(
+            fnr = fnr,
             fom = LocalDate.of(2025, Month.JULY, 9),
             tom = LocalDate.of(2025, Month.JULY, 25),
-        ).also { it.publiser() }
+        ).also { it.prosesser() }
 
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2025, Month.AUGUST, 14),
                 tom = LocalDate.of(2025, Month.AUGUST, 21),
-            ).also { it.publiser() }
-
-        verifiserAtBiterErLagret(2)
+            ).also { it.prosesser() }
 
         val tilleggsopplysninger =
             Tilleggsopplysninger(
@@ -175,37 +180,41 @@ class DebugEgenmeldingsdagerTest :
                     ),
             )
 
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            erUtenforVentetidRequest =
-                ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
-        ).`should be false`()
+        ventetidUtregner
+            .erUtenforVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                erUtenforVentetidRequest =
+                    ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
+            ).`should be false`()
 
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            ventetidRequest =
-                VentetidRequest(
-                    tilleggsopplysninger = tilleggsopplysninger,
-                    sykmeldingKafkaMessage = sykmeldingKafkaMessage,
-                    returnerPerioderInnenforVentetid = true,
-                ),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
-            it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                ventetidRequest =
+                    VentetidRequest(
+                        tilleggsopplysninger = tilleggsopplysninger,
+                        sykmeldingKafkaMessage = sykmeldingKafkaMessage,
+                        returnerPerioderInnenforVentetid = true,
+                    ),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
+                it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
+            }
     }
 
     @Test
     fun `Egenmeldingsdager mellom to perioder som svar tas ikke med i ventetiden`() {
-        skapApenSykmeldingKafkaMessage(
+        lagMottattSykmeldingKafkaMessage(
+            fnr = fnr,
             fom = LocalDate.of(2025, Month.JULY, 9),
             tom = LocalDate.of(2025, Month.JULY, 25),
-        ).also { it.publiser() }
+        ).also { it.prosesser() }
 
         val sykmeldingKafkaMessage =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2025, Month.AUGUST, 14),
                 tom = LocalDate.of(2025, Month.AUGUST, 21),
                 sporsmals =
@@ -223,51 +232,26 @@ class DebugEgenmeldingsdagerTest :
                             svartype = SvartypeDTO.PERIODER,
                         ),
                     ),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
-        verifiserAtBiterErLagret(3)
+        ventetidUtregner
+            .erUtenforVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
+            ).`should be false`()
 
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = sykmeldingKafkaMessage),
-        ).`should be false`()
-
-        hentVentetid(
-            listOf(fnr),
-            sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-            ventetidRequest =
-                VentetidRequest(
-                    returnerPerioderInnenforVentetid = true,
-                ),
-        ).ventetid.also {
-            it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
-            it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
-        }
+        ventetidUtregner
+            .beregnVentetid(
+                sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
+                listOf(fnr),
+                ventetidRequest =
+                    VentetidRequest(
+                        returnerPerioderInnenforVentetid = true,
+                    ),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
+                it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
+            }
     }
-
-    private fun erUtenforVentetid(
-        identer: List<String>,
-        sykmeldingId: String,
-        erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean =
-        ventetidUtregner.erUtenforVentetid(
-            sykmeldingId = sykmeldingId,
-            identer = identer,
-            erUtenforVentetidRequest = erUtenforVentetidRequest,
-        )
-
-    private fun hentVentetid(
-        identer: List<String>,
-        sykmeldingId: String,
-        ventetidRequest: VentetidRequest,
-    ): VentetidResponse =
-        VentetidResponse(
-            ventetid =
-                ventetidUtregner.beregnVentetid(
-                    sykmeldingId = sykmeldingId,
-                    identer = identer,
-                    ventetidRequest = ventetidRequest,
-                ),
-        )
 }
