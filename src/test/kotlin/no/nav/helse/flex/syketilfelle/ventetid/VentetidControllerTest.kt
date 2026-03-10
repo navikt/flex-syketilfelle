@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
@@ -8,7 +9,9 @@ import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagSyketilfelleBit
 import no.nav.helse.flex.syketilfelle.objectMapper
+import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.tokenxToken
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
@@ -23,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.time.LocalDate
 import java.time.Month
+import java.time.OffsetDateTime
 import java.util.*
 
 class VentetidControllerTest : FellesTestOppsett() {
@@ -272,5 +276,89 @@ class VentetidControllerTest : FellesTestOppsett() {
                         "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}",
                     ).contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
+    fun `Kall til flex-internal ventetid-API feiler hvis token mangler`() {
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/v1/flex/ventetid/$sykmeldingId")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til flex-internal ventetid-API feiler hvis subject er feil`() {
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get("/api/v1/flex/ventetid/$sykmeldingId")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Kall til flex-internal ventetid-API returnerer korrekt resultat`() {
+        val tid = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z")
+        val syketilfelleBit =
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmeldingId,
+                fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                opprettet = tid,
+            ).also { syketilfellebitRepository.save(it) }
+
+        val json =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders
+                        .get("/api/v1/flex/ventetid/$sykmeldingId")
+                        .header(
+                            "Authorization",
+                            "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
+                        ).contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        val respons: VentetidInternalResponse = objectMapper.readValue(json)
+
+        val forventetResponse =
+            VentetidInternalResponse(
+                erUtenforVentetid = true,
+                ventetid =
+                    FomTomPeriode(
+                        LocalDate.of(2025, 9, 1),
+                        LocalDate.of(2025, 9, 16),
+                    ),
+                sykmeldingsperiode =
+                    FomTomPeriode(
+                        LocalDate.of(2025, 9, 1),
+                        LocalDate.of(2025, 9, 18),
+                    ),
+                syketilfellebiter =
+                    listOf(
+                        SyketilfellebitInternal(
+                            syketilfellebitId = syketilfelleBit.syketilfellebitId,
+                            fnr = fnr,
+                            opprettet = tid,
+                            inntruffet = tid,
+                            orgnummer = null,
+                            tags = "SYKMELDING,BEKREFTET,PERIODE,INGEN_AKTIVITET",
+                            ressursId = sykmeldingId,
+                            korrigererSendtSoknad = null,
+                            fom = LocalDate.of(2025, 9, 1),
+                            tom = LocalDate.of(2025, 9, 18),
+                            publisert = true,
+                            slettet = null,
+                            tombstonePublisert = null,
+                        ),
+                    ),
+            )
+        respons `should be equal to` forventetResponse
     }
 }
