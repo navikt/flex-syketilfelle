@@ -6,8 +6,9 @@ import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.objectMapper
-import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.tokenxToken
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
@@ -15,7 +16,6 @@ import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -25,14 +25,9 @@ import java.time.LocalDate
 import java.time.Month
 import java.util.*
 
-class VentetidControllerTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
-    final override val fnr = "11111111111"
+class VentetidControllerTest : FellesTestOppsett() {
     private val sykmeldingId = UUID.randomUUID().toString()
+    private val fnr = "11111111111"
 
     @BeforeEach
     @AfterEach
@@ -98,12 +93,11 @@ class VentetidControllerTest :
     @Test
     fun `Periode på 17 dager er utenfor ventetiden`() {
         val melding =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.publiser() }
-
-        verifiserAtBiterErLagret(1)
+            ).also { it.prosesser() }
 
         erUtenforVentetid(
             listOf(fnr),
@@ -115,12 +109,11 @@ class VentetidControllerTest :
     @Test
     fun `Periode på 16 dager er innefor ventetiden som bruker`() {
         val melding =
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.publiser() }
-
-        verifiserAtBiterErLagret(1)
+            ).also { it.prosesser() }
 
         erUtenforVentetidSomBruker(
             fnr,
@@ -139,12 +132,11 @@ class VentetidControllerTest :
     @Test
     fun `Periode på 17 dager er utenfor ventetiden som bruker`() {
         val melding =
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.publiser() }
-
-        verifiserAtBiterErLagret(1)
+            ).also { it.prosesser() }
 
         erUtenforVentetidSomBruker(
             fnr,
@@ -214,10 +206,11 @@ class VentetidControllerTest :
     @Test
     fun `Kall til perioderMedSammeVentetid som bruker returnerer riktig periode`() {
         val melding =
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
         verifiserAtBiterErLagret(1)
 
@@ -238,10 +231,11 @@ class VentetidControllerTest :
     @Test
     fun `Kall til perioderMedSammeVentetid returnerer riktig periode`() {
         val melding =
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
         verifiserAtBiterErLagret(1)
 
@@ -262,10 +256,11 @@ class VentetidControllerTest :
     @Test
     fun `Kall til perioderMedSammeVentetid feiler hvis fnr ikke matcher biter`() {
         val melding =
-            skapApenSykmeldingKafkaMessage(
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.publiser() }
+            ).also { it.prosesser() }
 
         verifiserAtBiterErLagret(1)
 

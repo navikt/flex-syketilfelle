@@ -1,23 +1,33 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
-import no.nav.helse.flex.sykepengesoknad.kafka.*
+import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.FravarDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.PeriodeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
+import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.KafkaProduseringJob
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.TombsstoneProduseringJob
-import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.tilJuridiskVurdering
 import no.nav.helse.flex.syketilfelle.ventPåRecords
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.model.sykmeldingstatus.*
+import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
+import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be null`
 import org.amshove.kluent.shouldHaveSize
@@ -919,7 +929,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
 
     @Test
     fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden og sletter tidligere biter`() {
-        val sykmelding = skapArbeidsgiverSykmelding()
+        val sykmelding = lagArbeidsgiverSykmelding()
 
         val kafkaMetadata =
             KafkaMetadataDTO(
@@ -971,7 +981,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
                             ),
                     ),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }
@@ -1018,7 +1028,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
                     ),
             )
 
-        producerPåSendtBekreftetTopic(kafkaMessage2)
+        sendBekreftetSykmelding(kafkaMessage2)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 5
         }
@@ -1048,7 +1058,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
 
     @Test
     fun `egenmeldingsdager fra sykmeldingen i request erstatter tidligere biter uten å slette de`() {
-        val sykmelding = skapArbeidsgiverSykmelding()
+        val sykmelding = lagArbeidsgiverSykmelding()
 
         val kafkaMetadata =
             KafkaMetadataDTO(
@@ -1100,7 +1110,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
                             ),
                     ),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }

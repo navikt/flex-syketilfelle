@@ -65,7 +65,7 @@ class InntektsmeldingMottakTest : FellesTestOppsett() {
 
     @Test
     fun `tar imot inntektsmelding`() {
-        producerPåInntektsmeldingTopic(inntektsmelding)
+        sendInntektsmelding(inntektsmelding)
 
         await().until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
@@ -84,7 +84,7 @@ class InntektsmeldingMottakTest : FellesTestOppsett() {
     fun `tar ikke imot mangelfull inntektsmelding`() {
         val inntektsmelding = inntektsmelding.copy(status = Status.MANGELFULL)
 
-        producerPåInntektsmeldingTopic(inntektsmelding)
+        sendInntektsmelding(inntektsmelding)
 
         await().during(3, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).isEmpty()
@@ -95,7 +95,7 @@ class InntektsmeldingMottakTest : FellesTestOppsett() {
     fun `tar ikke imot privat inntektsmelding`() {
         val inntektsmelding = inntektsmelding.copy(arbeidsgivertype = Arbeidsgivertype.PRIVAT)
 
-        producerPåInntektsmeldingTopic(inntektsmelding)
+        sendInntektsmelding(inntektsmelding)
 
         await().during(3, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).isEmpty()

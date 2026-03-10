@@ -1,23 +1,30 @@
 package no.nav.helse.flex.syketilfelle
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.inntektsmelding.INNTEKTSMELDING_TOPIC
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.juridiskVurderingTopic
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
+import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGSENDT_TOPIC
+import no.nav.helse.flex.syketilfelle.sykmelding.SykmeldingLagring
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
+import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
 import okhttp3.mockwebserver.MockWebServer
 import org.amshove.kluent.shouldBeEmpty
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.header.Headers
 import org.apache.kafka.common.header.internals.RecordHeaders
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -28,6 +35,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
+import java.util.concurrent.TimeUnit
 
 private class PostgreSQLContainer14 : PostgreSQLContainer("postgres:14-alpine")
 
@@ -48,6 +56,9 @@ abstract class FellesTestOppsett {
     @Autowired
     lateinit var syketilfellebitRepository: SyketilfellebitRepository
 
+    @Autowired
+    lateinit var sykmeldingLagring: SykmeldingLagring
+
     companion object {
         init {
 
@@ -63,13 +74,12 @@ abstract class FellesTestOppsett {
                 System.setProperty("spring.datasource.username", username)
                 System.setProperty("spring.datasource.password", password)
             }
-        }
 
-        val pdlMockWebserver =
             MockWebServer().apply {
                 System.setProperty("PDL_BASE_URL", "http://localhost:$port")
                 dispatcher = PdlMockDispatcher
             }
+        }
     }
 
     @Autowired
@@ -79,59 +89,95 @@ abstract class FellesTestOppsett {
     lateinit var juridiskVurderingKafkaConsumer: Consumer<String, String>
 
     @AfterAll
-    fun `Vi tømmer databasen`() {
+    fun `Slett alt innhold i databasen`() {
         syketilfellebitRepository.deleteAll()
     }
+
+    @BeforeAll
+    fun `Verifiser at Kafka-topics før tester`() {
+        syketilfelleBitConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
+        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
+        juridiskVurderingKafkaConsumer.subscribeHvisIkkeSubscribed(juridiskVurderingTopic)
+        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
+
+    @AfterAll
+    fun `Verifiser at Kafka-topics etter tester`() {
+        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
+        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    }
+
+    fun opprettMottattSykmelding(
+        sykmelding: ArbeidsgiverSykmelding,
+        fnr: String,
+    ): String {
+        sendMottattSykmelding(lagMottattSykmeldingKafkaMessage(fnr, sykmelding))
+        return sykmelding.id
+    }
+
+    fun opprettSendtSykmelding(
+        sykmelding: ArbeidsgiverSykmelding,
+        fnr: String,
+        orgnummer: String? = null,
+    ): String {
+        sendSendtSykmelding(lagSendtSykmeldingKafkaMessage(fnr, sykmelding, orgnummer))
+        return sykmelding.id
+    }
+
+    fun opprettBekreftetSykmelding(
+        sykmelding: ArbeidsgiverSykmelding,
+        fnr: String,
+    ): String {
+        sendBekreftetSykmelding(lagBekreftetSykmeldingKafkaMessage(opprettMottattSykmelding(sykmelding, fnr)))
+        return sykmelding.id
+    }
+
+    fun sendMottattSykmelding(sykmelding: MottattSykmeldingKafkaMessage) =
+        sendKafkaMelding(
+            sykmelding.sykmelding.id,
+            sykmelding.serialisertTilString(),
+            SYKMELDINGMOTTATT_TOPIC,
+        )
+
+    fun sendBekreftetSykmelding(sykmelding: SykmeldingKafkaMessage) =
+        sendKafkaMelding(
+            sykmelding.sykmelding.id,
+            sykmelding.serialisertTilString(),
+            SYKMELDINGBEKREFTET_TOPIC,
+        )
+
+    fun sendSendtSykmelding(sykmelding: SykmeldingKafkaMessage) =
+        sendKafkaMelding(
+            sykmelding.sykmelding.id,
+            sykmelding.serialisertTilString(),
+            SYKMELDINGSENDT_TOPIC,
+        )
+
+    fun sendInntektsmelding(inntektsmelding: Inntektsmelding) =
+        sendKafkaMelding(inntektsmelding.arbeidstakerFnr, inntektsmelding.serialisertTilString(), INNTEKTSMELDING_TOPIC)
 
     fun sendKafkaMelding(
         key: String,
         value: String?,
         topic: String,
         headers: Headers = RecordHeaders(),
-    ) {
-        kafkaProducer
-            .send(
-                ProducerRecord(
-                    topic,
-                    null,
-                    null,
-                    key,
-                    value,
-                    headers,
-                ),
-            ).get()
+    ): RecordMetadata? = kafkaProducer.send(ProducerRecord(topic, null, null, key, value, headers)).get()
+
+    fun MottattSykmeldingKafkaMessage.prosesser() {
+        sykmeldingLagring.handterMottattSykmelding("key", this, SYKMELDINGMOTTATT_TOPIC)
     }
 
-    fun producerPåInntektsmeldingTopic(inntektsmelding: Inntektsmelding) =
-        sendKafkaMelding(inntektsmelding.arbeidstakerFnr, inntektsmelding.serialisertTilString(), INNTEKTSMELDING_TOPIC)
-
-    fun producerPåSendtBekreftetTopic(sykmeldingSendtBekreftet: SykmeldingKafkaMessage) =
-        sendKafkaMelding(sykmeldingSendtBekreftet.sykmelding.id, sykmeldingSendtBekreftet.serialisertTilString(), SYKMELDINGBEKREFTET_TOPIC)
-
-    fun producerPåMottattTopic(sykmeldingMottatt: MottattSykmeldingKafkaMessage) =
-        sendKafkaMelding(sykmeldingMottatt.sykmelding.id, sykmeldingMottatt.serialisertTilString(), SYKMELDINGMOTTATT_TOPIC)
-
-    @BeforeAll
-    fun `Vi leser kafka topicet og feiler om noe eksisterer`() {
-        syketilfelleBitConsumer.subscribeHvisIkkeSubscribed(SYKETILFELLEBIT_TOPIC)
-        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
+    fun SykmeldingKafkaMessage.prosesser() {
+        sykmeldingLagring.prosesserSykmelding("key", this, SYKMELDINGSENDT_TOPIC)
     }
 
-    @AfterAll
-    fun `Vi leser topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
-        syketilfelleBitConsumer.hentProduserteRecords().shouldBeEmpty()
-    }
-
-    @AfterAll
-    fun `Vi leser juridisk vurdering topicet og feiler hvis noe finnes og slik at subklassetestene leser alt`() {
-        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
-    }
-
-    @BeforeAll
-    fun `Vi leser juridiskvurdering kafka topicet og feiler om noe eksisterer`() {
-        juridiskVurderingKafkaConsumer.subscribeHvisIkkeSubscribed(juridiskVurderingTopic)
-        juridiskVurderingKafkaConsumer.hentProduserteRecords().shouldBeEmpty()
+    fun verifiserAtBiterErLagret(forventetAntallBiter: Int) {
+        await().atMost(5, TimeUnit.SECONDS).until {
+            syketilfellebitRepository.count().toInt() == forventetAntallBiter
+        }
     }
 }
 
 fun Any.serialisertTilString(): String = objectMapper.writeValueAsString(this)
+
+fun String.tilSyketilfellebitDbRecord(): List<SyketilfellebitDbRecord> = objectMapper.readValue(this)

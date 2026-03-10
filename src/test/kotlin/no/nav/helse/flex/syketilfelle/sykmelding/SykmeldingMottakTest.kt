@@ -1,6 +1,7 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -8,9 +9,14 @@ import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.GradertDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.model.sykmeldingstatus.*
+import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
+import no.nav.syfo.model.sykmeldingstatus.KafkaMetadataDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldContainAll
 import org.amshove.kluent.shouldHaveSize
@@ -33,7 +39,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
         syketilfellebitRepository.deleteAll()
     }
 
-    final val sykmelding = skapArbeidsgiverSykmelding()
+    final val sykmelding = lagArbeidsgiverSykmelding()
 
     final val kafkaMetadata =
         KafkaMetadataDTO(
@@ -76,7 +82,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                 event = event.copy(timestamp = OffsetDateTime.of(2020, 6, 20, 6, 34, 4, 0, ZoneOffset.UTC)),
             )
 
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
 
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
@@ -125,7 +131,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                 kafkaMetadata = kafkaMetadata,
                 event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
         }
@@ -181,7 +187,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                 kafkaMetadata = kafkaMetadata,
                 event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 3
         }
@@ -249,7 +255,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                             ),
                     ),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 2
         }
@@ -291,7 +297,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                 kafkaMetadata = kafkaMetadata,
                 event = event.copy(arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer = "12344", orgNavn = "Kiwi")),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 1
         }
@@ -348,7 +354,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
                             ),
                     ),
             )
-        producerPåSendtBekreftetTopic(kafkaMessage)
+        sendBekreftetSykmelding(kafkaMessage)
         await().atMost(10, TimeUnit.SECONDS).until {
             syketilfellebitRepository.findByFnr(fnr).size == 4
         }

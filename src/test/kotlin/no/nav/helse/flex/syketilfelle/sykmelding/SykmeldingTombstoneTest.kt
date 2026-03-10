@@ -1,8 +1,11 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
-import no.nav.helse.flex.syketilfelle.*
+import no.nav.helse.flex.syketilfelle.FellesTestOppsett
+import no.nav.helse.flex.syketilfelle.hentSykeforloep
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.sykeforloep.SimpleSykmelding
-import no.nav.helse.flex.syketilfelle.ventetid.VentetidFellesOppsett
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
@@ -12,29 +15,24 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
 import java.util.concurrent.TimeUnit
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class SykmeldingTombstoneTest :
-    FellesTestOppsett(),
-    VentetidFellesOppsett {
-    override val fnr = "12345432123"
+class SykmeldingTombstoneTest : FellesTestOppsett() {
+    val fnr = "12345432123"
     final val fom = LocalDate.of(2024, 1, 1)
     final val tom = LocalDate.of(2024, 1, 8)
     final val tidligDato = LocalDate.of(2000, 1, 1)
     lateinit var sykmeldingId: String
 
-    @Autowired
-    override lateinit var sykmeldingLagring: SykmeldingLagring
-
     @Test
     @Order(1)
     fun `Mottar bekreftet sykmelding med fravær i år 2000`() {
         val sykmeldingKafka =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = fom,
                 tom = tom,
                 sporsmals =
@@ -84,7 +82,8 @@ class SykmeldingTombstoneTest :
     @Order(3)
     fun `Sykmeldingen bekreftes uten spørsmål`() {
         val sykmeldingKafka =
-            skapSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
                 fom = fom,
                 tom = tom,
             ).run {
@@ -138,7 +137,7 @@ class SykmeldingTombstoneTest :
     @Test
     @Order(5)
     fun `Sykmeldingen gjenåpnes som arbeidstaker sykmelding og oppfolgingsdato er lik fom`() {
-        val sykmelding = skapArbeidsgiverSykmelding(fom, tom, sykmeldingId)
+        val sykmelding = lagArbeidsgiverSykmelding(fom, tom, sykmeldingId)
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettSendtSykmelding(sykmelding, fnr)
