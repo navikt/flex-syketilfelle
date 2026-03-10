@@ -156,14 +156,15 @@ fun lagSyketilfelleBit(
     fom: LocalDate,
     tom: LocalDate,
     tags: List<Tag>,
+    opprettet: OffsetDateTime = OffsetDateTime.now(),
 ): SyketilfellebitDbRecord {
     val now = OffsetDateTime.now()
     return SyketilfellebitDbRecord(
         syketilfellebitId = UUID.randomUUID().toString(),
         fnr = fnr,
         orgnummer = null,
-        opprettet = now,
-        inntruffet = now,
+        opprettet = opprettet,
+        inntruffet = opprettet,
         tags = tags.joinToString(separator = ",") { it.name },
         ressursId = ressursId,
         fom = fom,
