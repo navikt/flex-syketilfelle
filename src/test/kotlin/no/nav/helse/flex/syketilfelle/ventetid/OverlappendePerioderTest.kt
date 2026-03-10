@@ -18,7 +18,7 @@ import java.time.Month
  * Helgedager på slutten av en ventetidsperiode tas ikke med. Hvis en periode slutter på en lørdag eller søndag,
  * vil fredag bli brukt som 'tom'.
  */
-class VentetidOverlappTest : FellesTestOppsett() {
+class OverlappendePerioderTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner
 
