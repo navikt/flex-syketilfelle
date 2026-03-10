@@ -3,6 +3,8 @@ package no.nav.helse.flex.syketilfelle.ventetid
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagSyketilfelleBit
+import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
 import no.nav.syfo.model.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
+import java.util.UUID
 
 class VentetidUtregnerTest : FellesTestOppsett() {
     @Autowired
@@ -1586,6 +1589,48 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                 it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
                 it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
+        }
+    }
+
+    @Nested
+    inner class RedusertVenteperiode {
+        @Test
+        fun `Redusert Venteperiode langt tilbake i tid påvirker ikke beregning av ventetid`() {
+            val sykmeldingId = UUID.randomUUID().toString()
+
+            listOf(
+                lagSyketilfelleBit(
+                    fnr = fnr,
+                    ressursId = UUID.randomUUID().toString(),
+                    fom = LocalDate.of(2022, Month.JANUARY, 2),
+                    tom = LocalDate.of(2022, Month.JANUARY, 30),
+                    tags =
+                        listOf(
+                            Tag.SYKMELDING,
+                            Tag.NY,
+                            Tag.PERIODE,
+                            Tag.INGEN_AKTIVITET,
+                            Tag.REDUSERT_ARBEIDSGIVERPERIODE,
+                        ),
+                ),
+                lagSyketilfelleBit(
+                    fnr = fnr,
+                    ressursId = sykmeldingId,
+                    fom = LocalDate.of(2025, Month.SEPTEMBER, 10),
+                    tom = LocalDate.of(2025, Month.OCTOBER, 13),
+                    tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                ),
+            ).also { syketilfellebitRepository.saveAll(it) }
+
+            ventetidUtregner
+                .beregnVentetid(
+                    sykmeldingId = sykmeldingId,
+                    listOf(fnr),
+                    ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+                ).also {
+                    it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 10)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 25)
+                }
         }
     }
 
