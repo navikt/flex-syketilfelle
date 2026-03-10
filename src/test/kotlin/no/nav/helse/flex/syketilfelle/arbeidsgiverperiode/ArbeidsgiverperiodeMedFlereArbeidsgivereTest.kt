@@ -5,7 +5,6 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.kallArbeidsgiverperiodeApi
 import no.nav.helse.flex.syketilfelle.opprettMottattSykmelding
 import no.nav.helse.flex.syketilfelle.opprettSendtSykmelding
 import no.nav.helse.flex.syketilfelle.sykmelding.skapArbeidsgiverSykmelding
