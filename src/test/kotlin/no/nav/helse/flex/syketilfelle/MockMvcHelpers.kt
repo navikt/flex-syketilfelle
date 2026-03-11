@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.sykeforloep.Sykeforloep
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
+import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidTokenXResponse
 import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
@@ -84,10 +85,33 @@ fun FellesTestOppsett.erUtenforVentetid(
     return objectMapper.readValue(json)
 }
 
+fun FellesTestOppsett.erUtenforVentetidV2(
+    fnr: List<String>,
+    hentAndreIdenter: Boolean = true,
+    sykmeldingId: String,
+    erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
+): ErUtenforVentetidResponse {
+    val json =
+        mockMvc
+            .perform(
+                post("/api/v2/ventetid/$sykmeldingId/erUtenforVentetid")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .content(objectMapper.writeValueAsString(erUtenforVentetidRequest))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
 fun FellesTestOppsett.erUtenforVentetidSomBruker(
     fnr: String,
     sykmeldingId: String,
-): ErUtenforVentetidResponse {
+): ErUtenforVentetidTokenXResponse {
     val json =
         mockMvc
             .perform(

@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
 import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
+import no.nav.helse.flex.syketilfelle.erUtenforVentetidV2
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
@@ -15,6 +16,7 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.tokenxToken
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -360,5 +362,53 @@ class VentetidControllerTest : FellesTestOppsett() {
                     ),
             )
         respons `should be equal to` forventetResponse
+    }
+
+    @Test
+    fun `Kall til erUtenforVentetid V2 returnerer ventetidsperiode når perioden er innenfor ventetid`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 8),
+            ).also { it.prosesser() }
+
+        val response =
+            erUtenforVentetidV2(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            )
+
+        response.erUtenforVentetid.`should be false`()
+        response.ventetid `should be equal to`
+            FomTomPeriode(
+                LocalDate.of(2024, Month.JULY, 1),
+                LocalDate.of(2024, Month.JULY, 8),
+            )
+    }
+
+    @Test
+    fun `Kall til erUtenforVentetid V2 returnerer ventetidsperiode når perioden er utenfor ventetid`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            ).also { it.prosesser() }
+
+        val response =
+            erUtenforVentetidV2(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            )
+
+        response.erUtenforVentetid.`should be true`()
+        response.ventetid `should be equal to`
+            FomTomPeriode(
+                LocalDate.of(2024, Month.JULY, 1),
+                LocalDate.of(2024, Month.JULY, 16),
+            )
     }
 }

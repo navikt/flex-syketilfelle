@@ -21,10 +21,14 @@ fun SammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid: Bo
         returnerPerioderInnenforVentetid = returnerPerioderInnenforVentetid,
     )
 
-// Brukes i TokenX-response.
-data class ErUtenforVentetidResponse(
+data class ErUtenforVentetidTokenXResponse(
     val erUtenforVentetid: Boolean,
     val oppfolgingsdato: LocalDate?,
+    val ventetid: FomTomPeriode? = null,
+)
+
+data class ErUtenforVentetidResponse(
+    val erUtenforVentetid: Boolean,
     val ventetid: FomTomPeriode? = null,
 )
 
