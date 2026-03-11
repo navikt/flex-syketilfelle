@@ -42,7 +42,7 @@ class VentetidController(
     @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
     fun erUtenforVentetid(
         @PathVariable sykmeldingId: String,
-    ): ErUtenforVentetidResponse {
+    ): ErUtenforVentetidTokenXResponse {
         val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
         val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
 
@@ -60,7 +60,7 @@ class VentetidController(
                 .find { it.sykmeldinger.any { sm -> sm.id == sanitertSykmeldingId } }
                 ?.oppfolgingsdato
 
-        return ErUtenforVentetidResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
+        return ErUtenforVentetidTokenXResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
     }
 
     @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
@@ -85,6 +85,39 @@ class VentetidController(
             identer = identer,
             erUtenforVentetidRequest = erUtenforVentetidRequest,
         )
+    }
+
+    @PostMapping(value = ["/api/v2/ventetid/{sykmeldingId}/erUtenforVentetid"])
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
+    fun erUtenforVentetidV2(
+        @RequestHeader fnr: String,
+        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @PathVariable sykmeldingId: String,
+        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
+    ): ErUtenforVentetidResponse {
+        clientIdValidation.validateClientId(
+            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
+        )
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
+        validerVentetidRequest(erUtenforVentetidRequest, sanitertSykmeldingId)
+        val identer = hentIdenter(fnr, hentAndreIdenter)
+
+        val erUtenforVentetid =
+            ventetidUtregner.erUtenforVentetid(
+                sykmeldingId = sanitertSykmeldingId,
+                identer = identer,
+                erUtenforVentetidRequest = erUtenforVentetidRequest,
+            )
+        val ventetid =
+            ventetidUtregner.beregnVentetid(
+                sykmeldingId = sanitertSykmeldingId,
+                identer = identer,
+                ventetidRequest = erUtenforVentetidRequest.tilVentetidRequest().copy(returnerPerioderInnenforVentetid = true),
+            )
+
+        return ErUtenforVentetidResponse(erUtenforVentetid, ventetid)
     }
 
     @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/perioderMedSammeVentetid")
