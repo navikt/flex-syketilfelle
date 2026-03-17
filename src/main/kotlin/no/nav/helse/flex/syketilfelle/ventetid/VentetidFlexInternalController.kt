@@ -10,6 +10,8 @@ import no.nav.security.token.support.core.api.ProtectedWithClaims
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.ResponseBody
 import java.time.LocalDate
 
@@ -57,6 +59,21 @@ class VentetidFlexInternalController(
                 .firstOrNull()
                 ?.let { FomTomPeriode(it.fom, it.tom) }
 
+        return VentetidInternalResponse(
+            erUtenforVentetid = erUtenforVentetid,
+            ventetid = ventetid!!,
+            sykmeldingsperiode = sykmeldingsperiode,
+        )
+    }
+
+    @PostMapping(value = ["/api/v1/flex/syketilfellebiter"])
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
+    fun hentSyketilfellebiter(
+        @RequestHeader fnr: String,
+    ): SyketilfellebitResponse {
+        clientIdValidation.validateClientId(NamespaceAndApp(namespace = "flex", app = "flex-internal-frontend"))
+        val identer = hentIdenter(fnr, true)
         val syketilfellebiter =
             syketilfellebitRepository
                 .findByFnrIn(identer)
@@ -79,10 +96,7 @@ class VentetidFlexInternalController(
                     )
                 }
 
-        return VentetidInternalResponse(
-            erUtenforVentetid = erUtenforVentetid,
-            ventetid = ventetid!!,
-            sykmeldingsperiode = sykmeldingsperiode,
+        return SyketilfellebitResponse(
             syketilfellebiter = syketilfellebiter,
         )
     }
@@ -92,6 +106,9 @@ data class VentetidInternalResponse(
     var erUtenforVentetid: Boolean,
     val ventetid: FomTomPeriode,
     var sykmeldingsperiode: FomTomPeriode?,
+)
+
+data class SyketilfellebitResponse(
     val syketilfellebiter: List<SyketilfellebitInternal> = emptyList(),
 )
 

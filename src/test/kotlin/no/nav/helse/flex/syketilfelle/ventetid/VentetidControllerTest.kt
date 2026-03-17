@@ -300,17 +300,16 @@ class VentetidControllerTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Kall til flex-internal ventetid-API returnerer korrekt resultat`() {
+    fun `Kall til flex-internal ventetid-API returnerer korrekt ventetid`() {
         val tid = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z")
-        val syketilfelleBit =
-            lagSyketilfelleBit(
-                fnr = fnr,
-                ressursId = sykmeldingId,
-                fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
-                tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
-                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
-                opprettet = tid,
-            ).also { syketilfellebitRepository.save(it) }
+        lagSyketilfelleBit(
+            fnr = fnr,
+            ressursId = sykmeldingId,
+            fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+            tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
+            tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+            opprettet = tid,
+        ).also { syketilfellebitRepository.save(it) }
 
         val json =
             mockMvc
@@ -340,6 +339,41 @@ class VentetidControllerTest : FellesTestOppsett() {
                         LocalDate.of(2025, 9, 1),
                         LocalDate.of(2025, 9, 18),
                     ),
+            )
+        respons `should be equal to` forventetResponse
+    }
+
+    @Test
+    fun `Kall til flex-internal syketilfellebit-API returnerer korrekt resultat`() {
+        val tid = OffsetDateTime.parse("2025-09-01T00:00:00.000000Z")
+        val syketilfelleBit =
+            lagSyketilfelleBit(
+                fnr = fnr,
+                ressursId = sykmeldingId,
+                fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
+                tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
+                tags = listOf(Tag.SYKMELDING, Tag.BEKREFTET, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                opprettet = tid,
+            ).also { syketilfellebitRepository.save(it) }
+
+        val json =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders
+                        .post("/api/v1/flex/syketilfellebiter")
+                        .header(
+                            "Authorization",
+                            "Bearer ${server.azureToken(subject = "flex-internal-frontend-client-id")}",
+                        ).header("fnr", fnr)
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+                .response.contentAsString
+
+        val respons: SyketilfellebitResponse = objectMapper.readValue(json)
+
+        val forventetResponse =
+            SyketilfellebitResponse(
                 syketilfellebiter =
                     listOf(
                         SyketilfellebitInternal(
