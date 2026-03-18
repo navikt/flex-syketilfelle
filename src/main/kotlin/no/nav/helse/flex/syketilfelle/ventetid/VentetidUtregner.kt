@@ -112,12 +112,19 @@ class VentetidUtregner(
         identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): FomTomPeriode? {
+        if (sykmeldingId == "d8494b47-81dc-48bd-b56b-83df25e9b1d1") {
+            log.info("Bruker ${identer.size} identer ved beregning av ventetid.")
+        }
         val biter =
             syketilfellebitRepository
                 .findByFnrIn(identer)
                 .filter { it.slettet == null }
                 .map { it.tilSyketilfellebit() }
                 .utenKorrigerteSoknader()
+
+        if (sykmeldingId == "d8494b47-81dc-48bd-b56b-83df25e9b1d1") {
+            log.info("Fant ${biter.size} biter ved beregning av ventetid")
+        }
 
         val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, ventetidRequest)
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
