@@ -9,17 +9,12 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.utenKorrigerteSoknader
 import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import org.springframework.stereotype.Component
 import java.time.DayOfWeek.FRIDAY
-import java.time.DayOfWeek.MONDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.DAYS
-import java.time.temporal.TemporalAdjusters.next
-import java.time.temporal.TemporalAdjusters.nextOrSame
 import java.time.temporal.TemporalAdjusters.previous
-import kotlin.collections.any
-import kotlin.collections.map
 
 const val SEKSTEN_DAGER = 16L
 
@@ -136,7 +131,6 @@ class VentetidUtregner(
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
                 .map { it.tilPeriode() }
-                .flatMap { it.splittPeriodeMedBehandlingsdagerTilMandager() }
                 .filter { it.fom <= sykmeldingSenesteTom }
                 .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSenesteTom) }
                 .toList()
@@ -240,17 +234,6 @@ class VentetidUtregner(
         } else {
             this
         }
-
-    private fun Periode.splittPeriodeMedBehandlingsdagerTilMandager(): List<Periode> {
-        if (!this.behandlingsdager) {
-            return listOf(this)
-        }
-
-        // Lazy: evaluerer så lenge neste mandag er før periodens tom.
-        return generateSequence(this.fom.with(nextOrSame(MONDAY))) { aktuellMandag ->
-            aktuellMandag.with(next(MONDAY)).takeIf { !it.isAfter(this.tom) }
-        }.map { mandag -> this.copy(fom = mandag, tom = mandag) }.toList()
-    }
 
     private fun List<Periode>.mergePerioder(foretrukketRessursId: String): List<Periode> {
         if (size <= 1) return this

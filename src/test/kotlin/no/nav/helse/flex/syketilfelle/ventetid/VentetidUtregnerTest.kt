@@ -1172,63 +1172,61 @@ class VentetidUtregnerTest : FellesTestOppsett() {
     @Nested
     inner class Behandlingsdager {
         @Test
-        fun `Lang periode med behandlingsdager er innenfor ventetiden`() {
+        fun `Periode på 17 dager med behandlingsdager er utenfor ventetiden`() {
             val melding =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 31),
+                    tom = LocalDate.of(2024, Month.JULY, 17),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.prosesser() }
-
-            verifiserAtBiterErLagret(1)
+                )
 
             erUtenforVentetid(
                 listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding),
+            ).`should be true`()
+
+            hentVentetid(
+                listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(sykmeldingKafkaMessage = melding),
+            ).ventetid.also {
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
+            }
+        }
+
+        @Test
+        fun `Periode med behandlingsdager før tas med i beregningen`() {
+            val melding1 =
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2024, Month.JULY, 1),
+                    tom = LocalDate.of(2024, Month.JULY, 8),
+                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
+                ).also { it.prosesser() }
+
+            val melding2 =
+                lagMottattSykmeldingKafkaMessage(
+                    fnr = fnr,
+                    fom = LocalDate.of(2024, Month.JULY, 9),
+                    tom = LocalDate.of(2024, Month.JULY, 17),
+                ).also { it.prosesser() }
+
+            verifiserAtBiterErLagret(2)
+
+            erUtenforVentetid(
+                listOf(fnr),
+                sykmeldingId = melding1.sykmelding.id,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be false`()
 
             hentVentetid(
                 listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
+                sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).ventetid `should be` null
-        }
-
-        @Test
-        fun `Kort periode med behandlingsdager etter sammenhengende lang periode utenfor ventetiden`() {
-            val melding1 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JUNE, 1),
-                    tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.prosesser() }
-
-            val melding2 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 2),
-                    tom = LocalDate.of(2024, Month.JULY, 10),
-                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.prosesser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
-            }
 
             erUtenforVentetid(
                 listOf(fnr),
@@ -1241,108 +1239,48 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
 
         @Test
-        fun `Lang periode med behandlingsdager etter sammenhengende lang periode utenfor ventetiden`() {
-            val melding1 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JUNE, 1),
-                    tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.prosesser() }
+        fun `Periode med behandlinsdag etter tas med i beregningen`() {
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 8),
+            ).also { it.prosesser() }
 
-            val melding2 =
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 9),
+                tom = LocalDate.of(2024, Month.JULY, 16),
+            ).also { it.prosesser() }
+
+            val melding =
                 lagMottattSykmeldingKafkaMessage(
                     fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 31),
+                    fom = LocalDate.of(2024, Month.JULY, 17),
+                    tom = LocalDate.of(2024, Month.JULY, 22),
                     type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.prosesser() }
 
-            verifiserAtBiterErLagret(2)
+            verifiserAtBiterErLagret(3)
 
             erUtenforVentetid(
                 listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
+                sykmeldingId = melding.sykmelding.id,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
             ).`should be true`()
 
             hentVentetid(
                 listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
+                sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
-            }
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
-            }
-        }
-
-        @Test
-        fun `Lang periode med behandlingsdager med en dag mellomrom til forrige lange periodeer utenfor ventetiden`() {
-            val melding1 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JUNE, 1),
-                    tom = LocalDate.of(2024, Month.JUNE, 30),
-                ).also { it.prosesser() }
-
-            val melding2 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 2),
-                    tom = LocalDate.of(2024, Month.JULY, 31),
-                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
-                ).also { it.prosesser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
-            }
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JUNE, 16)
+                it!!.fom `should be equal to` LocalDate.of(2024, Month.JULY, 1)
+                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 16)
             }
         }
     }
@@ -1401,50 +1339,6 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                     fom = LocalDate.of(2024, Month.JULY, 1),
                     tom = LocalDate.of(2024, Month.JULY, 17),
                     type = PeriodetypeDTO.REISETILSKUDD,
-                ).also { it.prosesser() }
-
-            val melding2 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 18),
-                    tom = LocalDate.of(2024, Month.JULY, 30),
-                ).also { it.prosesser() }
-
-            verifiserAtBiterErLagret(2)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding1.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid `should be` null
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ).`should be false`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding2.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).ventetid `should be` null
-        }
-
-        @Test
-        fun `Lang sykmelding med Behandlingsdager påvirker ikke ventetiden`() {
-            val melding1 =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 17),
-                    type = PeriodetypeDTO.BEHANDLINGSDAGER,
                 ).also { it.prosesser() }
 
             val melding2 =
