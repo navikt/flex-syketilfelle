@@ -11,6 +11,7 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import org.amshove.kluent.`should be`
+import org.amshove.kluent.`should be empty`
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be false`
 import org.amshove.kluent.`should be true`
@@ -2253,6 +2254,36 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                 // 14. og 15. februar er lørdag og søndag og tas derfor ikke med.
                 it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.JANUARY, 27)
             }
+        }
+
+        @Test
+        fun `Sykmelding med reisetilskudd returnerer tom liste`() {
+            val sykmelding1 = UUID.randomUUID().toString()
+            val sykmeldingReisetilskudd = UUID.randomUUID().toString()
+
+            listOf(
+                lagSyketilfelleBit(
+                    fnr = fnr,
+                    ressursId = sykmelding1,
+                    fom = LocalDate.of(2026, Month.MARCH, 24),
+                    tom = LocalDate.of(2026, Month.APRIL, 7),
+                    tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                ),
+                lagSyketilfelleBit(
+                    fnr = fnr,
+                    ressursId = sykmeldingReisetilskudd,
+                    fom = LocalDate.of(2026, Month.APRIL, 7),
+                    tom = LocalDate.of(2026, Month.MAY, 5),
+                    tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.REISETILSKUDD, Tag.UKJENT_AKTIVITET),
+                ),
+            ).also { syketilfellebitRepository.saveAll(it) }
+
+            ventetidUtregner
+                .finnPerioderMedSammeVentetid(
+                    sykmeldingReisetilskudd,
+                    listOf(fnr),
+                    SammeVentetidRequest(),
+                ).`should be empty`()
         }
     }
 
