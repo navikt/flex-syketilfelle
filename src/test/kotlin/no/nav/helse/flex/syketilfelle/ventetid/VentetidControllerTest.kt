@@ -258,7 +258,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Kall til perioderMedSammeVentetid feiler hvis fnr ikke matcher biter`() {
+    fun `Kall til perioderMedSammeVentetid returnerer tom liste hvis fnr ikke matcher biter`() {
         val melding =
             lagMottattSykmeldingKafkaMessage(
                 fnr = fnr,
@@ -275,7 +275,8 @@ class VentetidControllerTest : FellesTestOppsett() {
                         "Authorization",
                         "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}",
                     ).contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.ventetidPerioder").isEmpty)
     }
 
     @Test

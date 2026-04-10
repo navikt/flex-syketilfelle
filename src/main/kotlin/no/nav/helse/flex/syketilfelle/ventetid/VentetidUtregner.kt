@@ -66,7 +66,7 @@ class VentetidUtregner(
                 sykmeldingId = sykmeldingId,
                 identer = identer,
                 ventetidRequest = ventetidRequest,
-            )!!
+            ) ?: return emptyList()
 
         val biterFraRequest = sammeVentetidRequest.sykmeldingKafkaMessage?.mapTilBiter() ?: emptyList()
 
@@ -93,7 +93,7 @@ class VentetidUtregner(
                     // Sender med samme VentetidRequest fra request på hvert kall for sikre riktig beregning av
                     // ventetid selv om Kafka-meldingen ikke er lagret enda.
                     ventetidRequest = ventetidRequest,
-                )!!
+                ) ?: return@mapNotNull null
             if (ventetid.fom == sykmeldingVentetid.fom) {
                 SammeVentetidPeriode(ressursId = it, ventetid = ventetid)
             } else {
