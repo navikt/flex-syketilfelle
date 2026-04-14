@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("org.springframework.boot") version "3.5.12"
+    id("org.springframework.boot") version "3.5.13"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     kotlin("plugin.spring") version "2.3.20"
@@ -31,6 +31,9 @@ val sykepengesoknadKafkaVersion = "2025.11.18-10.40-9be5a4bd"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "2.0.1"
 val inntektsmeldingKontrakt = "2025.04.04-01-56-365d3"
+val jacksonVersion = "2.20.2"
+
+extra["jackson.version"] = jacksonVersion
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))

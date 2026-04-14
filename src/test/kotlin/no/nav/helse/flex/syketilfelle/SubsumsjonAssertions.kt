@@ -13,10 +13,9 @@ internal object SubsumsjonAssertions {
 
     private val schema: Schema by lazy {
         val schemaRegistry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_7)
+        val url = URI("https://raw.githubusercontent.com/navikt/helse/main/subsumsjon/json-schema-1.0.0.json").toURL()
         schemaRegistry.getSchema(
-            objectMapper.readTree(
-                URI("https://raw.githubusercontent.com/navikt/helse/main/subsumsjon/json-schema-1.0.0.json").toURL(),
-            ),
+            url.openStream().use { objectMapper.readTree(it) },
         )
     }
 
