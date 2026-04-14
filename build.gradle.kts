@@ -6,7 +6,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     kotlin("plugin.spring") version "2.3.20"
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.20"
 }
 
 group = "no.nav.helse.flex"
@@ -61,10 +61,6 @@ dependencies {
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("com.networknt:json-schema-validator:$jsonSchemaValidatorVersion")
-}
-
-ktlint {
-    version.set("1.5.0")
 }
 
 kotlin {
