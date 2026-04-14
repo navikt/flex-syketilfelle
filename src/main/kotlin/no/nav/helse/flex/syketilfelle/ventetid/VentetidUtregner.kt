@@ -31,11 +31,12 @@ class VentetidUtregner(
                 Tag.INGEN_AKTIVITET,
                 Tag.BEHANDLINGSDAGER,
                 Tag.ANNET_FRAVAR,
+                // Sykmelding med Periodetype.REISETILSKUDD får UKJENT_AKTIVITET.
+                Tag.UKJENT_AKTIVITET,
             )
 
         private val EKSKLUDERTE_TAGS =
             setOf(
-                Tag.REISETILSKUDD,
                 Tag.AVVENTENDE,
             )
 
