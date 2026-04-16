@@ -30,7 +30,7 @@ val kluentVersion = "1.73"
 val sykepengesoknadKafkaVersion = "2025.11.18-10.40-9be5a4bd"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "2.0.1"
-val inntektsmeldingKontrakt = "2025.04.04-01-56-365d3"
+val inntektsmeldingKontrakt = "2026.04.15-10-22-eb2ae"
 val jacksonVersion = "2.20.2"
 
 extra["jackson.version"] = jacksonVersion
