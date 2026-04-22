@@ -9,6 +9,7 @@ import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sanitizeForLog
 import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
+import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
@@ -77,7 +78,7 @@ class VentetidController(
         )
         val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
 
-        validerVentetidRequest(erUtenforVentetidRequest, sanitertSykmeldingId)
+        validerSykmeldingKafkaMessage(erUtenforVentetidRequest.sykmeldingKafkaMessage, sanitertSykmeldingId)
         val identer = hentIdenter(fnr, hentAndreIdenter)
 
         return ventetidUtregner.erUtenforVentetid(
@@ -120,6 +121,8 @@ class VentetidController(
         )
         val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
 
+        validerSykmeldingKafkaMessage(sammeVentetidRequest.sykmeldingKafkaMessage, sanitertSykmeldingId)
+
         return SammeVentetidResponse(
             ventetidPerioder =
                 ventetidUtregner.finnPerioderMedSammeVentetid(
@@ -130,15 +133,12 @@ class VentetidController(
         )
     }
 
-    // TODO: ValiderSYkmeldingKafkaMessage sånn at metoden kan gjenbrukes
-    private fun validerVentetidRequest(
-        ventetidRequest: ErUtenforVentetidRequest,
+    private fun validerSykmeldingKafkaMessage(
+        sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
         sykmeldingId: String,
     ) {
-        with(ventetidRequest) {
-            if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
-                throw IllegalArgumentException("Forskjellig sykmeldingId i path og requestBody")
-            }
+        if (sykmeldingKafkaMessage != null && sykmeldingKafkaMessage.sykmelding.id != sykmeldingId) {
+            throw IllegalArgumentException("Forskjellig sykmeldingId i path og requestBody")
         }
     }
 
