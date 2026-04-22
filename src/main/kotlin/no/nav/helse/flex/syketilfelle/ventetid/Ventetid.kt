@@ -6,12 +6,14 @@ import java.time.LocalDate
 data class ErUtenforVentetidRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+    val kunSendtBekreftet: Boolean = false,
 )
 
 fun ErUtenforVentetidRequest.tilVentetidRequest(): VentetidRequest =
     VentetidRequest(
         tilleggsopplysninger = tilleggsopplysninger,
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
+        kunSendtBekreftet = kunSendtBekreftet,
     )
 
 fun SammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid: Boolean): VentetidRequest =
@@ -19,6 +21,7 @@ fun SammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid: Bo
         tilleggsopplysninger = tilleggsopplysninger,
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
         returnerPerioderInnenforVentetid = returnerPerioderInnenforVentetid,
+        kunSendtBekreftet = kunSendtBekreftet,
     )
 
 // Brukes i TokenX-response.
@@ -36,6 +39,7 @@ data class VentetidRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
     val returnerPerioderInnenforVentetid: Boolean = false,
+    val kunSendtBekreftet: Boolean = false,
 )
 
 data class VentetidResponse(
@@ -50,6 +54,7 @@ data class FomTomPeriode(
 data class SammeVentetidRequest(
     val tilleggsopplysninger: Tilleggsopplysninger? = null,
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+    val kunSendtBekreftet: Boolean = false,
 )
 
 data class SammeVentetidPeriode(

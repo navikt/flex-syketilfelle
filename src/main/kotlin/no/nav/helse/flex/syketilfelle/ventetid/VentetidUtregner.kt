@@ -82,6 +82,7 @@ class VentetidUtregner(
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+                .run { if (ventetidRequest.kunSendtBekreftet) filterNot { it.tags.contains(Tag.NY) } else this }
                 .map { it.ressursId }
                 .distinct()
                 .toList()
@@ -194,14 +195,18 @@ class VentetidUtregner(
         identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): List<Syketilfellebit> =
-        eksisterendeBiter.toMutableList().apply {
-            ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
-                addAll(sykmeldingMessage.mapTilBiter())
+        eksisterendeBiter
+            .toMutableList()
+            .apply {
+                ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
+                    addAll(sykmeldingMessage.mapTilBiter())
+                }
+                ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
+                    addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, identer.first()))
+                }
+            }.let { biter ->
+                if (ventetidRequest.kunSendtBekreftet) biter.filterNot { it.tags.contains(Tag.NY) } else biter
             }
-            ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
-                addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, identer.first()))
-            }
-        }
 
     private fun Tilleggsopplysninger.mapTilBiter(
         ressursId: String,
