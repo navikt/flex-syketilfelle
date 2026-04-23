@@ -396,4 +396,34 @@ class VentetidControllerTest : FellesTestOppsett() {
             )
         respons `should be equal to` forventetResponse
     }
+
+    @Test
+    fun `Kall til erUtenforVentetifeiler hvis sykmeldingId i path ikke er liksykmeldingId i Kafka-melding`() {
+        val sykmeldingIdIPathen = UUID.randomUUID().toString()
+        val melding = lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
+
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingIdIPathen/erUtenforVentetid")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding))),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
+    fun `Kall til perioderMedSammeVentetid feiler hvis sykmeldingId i path ikke er lik sykmeldingId i Kafka-melding`() {
+        val sykmeldingIdIPathen = UUID.randomUUID().toString()
+        val melding = lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
+
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingIdIPathen/perioderMedSammeVentetid")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                    .header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(SammeVentetidRequest(sykmeldingKafkaMessage = melding))),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
 }
