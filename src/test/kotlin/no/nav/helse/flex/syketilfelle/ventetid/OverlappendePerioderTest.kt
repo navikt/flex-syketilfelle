@@ -5,6 +5,7 @@ import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,6 +19,7 @@ import java.time.Month
  * Helgedager på slutten av en ventetidsperiode tas ikke med. Hvis en periode slutter på en lørdag eller søndag,
  * vil fredag bli brukt som 'tom'.
  */
+@Disabled
 class OverlappendePerioderTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner

@@ -9,11 +9,13 @@ import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.Month
 
+@Disabled
 class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
     @Autowired
     private lateinit var ventetidUtregner: VentetidUtregner

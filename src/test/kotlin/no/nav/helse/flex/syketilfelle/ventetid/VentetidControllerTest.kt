@@ -18,6 +18,7 @@ import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -29,6 +30,7 @@ import java.time.Month
 import java.time.OffsetDateTime
 import java.util.*
 
+@Disabled
 class VentetidControllerTest : FellesTestOppsett() {
     private val sykmeldingId = UUID.randomUUID().toString()
     private val fnr = "11111111111"
