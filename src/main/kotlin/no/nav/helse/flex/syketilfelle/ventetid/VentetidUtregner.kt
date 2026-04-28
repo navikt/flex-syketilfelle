@@ -124,19 +124,29 @@ class VentetidUtregner(
             return null
         }
 
-        val sykmeldingSenesteTom = aktuellSykmeldingBiter.maxOf { it.tom }
-
-        val perioder =
+        // Slår sammen alle relevante biter til perioder uten først å avgrense på den aktuelle sykmeldingens
+        // egen 'tom'. Slik blir både tilbakedaterte og fremoverliggende sammenhengende perioder slått sammen
+        // med periodene til den aktuelle sykmeldingen, og bidrar dermed til samme ventetidsberegning.
+        val mergedePerioder =
             sykmeldingBiter
                 .asSequence()
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
                 .map { it.tilPeriode() }
-                .filter { it.fom <= sykmeldingSenesteTom }
-                .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSenesteTom) }
                 .toList()
                 .mergePerioder(sykmeldingId)
+
+        // Den sammenslåtte perioden som inneholder den aktuelle sykmeldingen definerer den effektive 'tom' for
+        // ventetidsberegningen. Sammenslåing med foretrukketRessursId = sykmeldingId sikrer at denne perioden
+        // alltid er identifiserbar via ressursId.
+        val gjeldendePeriode =
+            mergedePerioder.firstOrNull { it.ressursId == sykmeldingId }
+                ?: return null
+
+        val perioder =
+            mergedePerioder
+                .filter { it.fom <= gjeldendePeriode.tom }
                 .fjernHelgFraSluttenAvPerioden(sykmeldingId)
 
         perioder.beregnVentetid()?.let { ventetid ->
@@ -233,13 +243,6 @@ class VentetidUtregner(
             ressursId = this.ressursId,
             erAnnetFravaer = this.tags.contains(Tag.ANNET_FRAVAR),
         )
-
-    private fun Periode.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom: LocalDate): Periode =
-        if (this.tom.isAfter(sykmeldingSisteTom)) {
-            this.copy(tom = sykmeldingSisteTom)
-        } else {
-            this
-        }
 
     private fun List<Periode>.mergePerioder(foretrukketRessursId: String): List<Periode> {
         if (size <= 1) return this
