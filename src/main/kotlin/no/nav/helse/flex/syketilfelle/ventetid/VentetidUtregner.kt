@@ -109,6 +109,10 @@ class VentetidUtregner(
         identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): FomTomPeriode? {
+        if (ventetidRequest.tilleggsopplysninger != null) {
+            log.info("Bruker tilleggsopplysninger i beregning av ventetid.")
+        }
+
         val biter =
             syketilfellebitRepository
                 .findByFnrIn(identer)
