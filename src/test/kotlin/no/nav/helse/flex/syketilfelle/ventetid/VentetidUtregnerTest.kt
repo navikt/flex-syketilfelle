@@ -1086,44 +1086,6 @@ class VentetidUtregnerTest : FellesTestOppsett() {
         }
 
         @Test
-        fun `Egenmeldingsdag som tilleggsopplysning uten opphold til sykmeldingsperioden tas med i ventetiden`() {
-            val melding =
-                lagMottattSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2024, Month.JULY, 1),
-                    tom = LocalDate.of(2024, Month.JULY, 16),
-                ).also { it.prosesser() }
-
-            val tilleggsopplysninger =
-                Tilleggsopplysninger(
-                    egenmeldingsperioder =
-                        listOf(
-                            FomTomPeriode(
-                                fom = LocalDate.of(2024, Month.JUNE, 30),
-                                tom = LocalDate.of(2024, Month.JUNE, 30),
-                            ),
-                        ),
-                )
-
-            verifiserAtBiterErLagret(1)
-
-            erUtenforVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
-            ).`should be true`()
-
-            hentVentetid(
-                listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
-            ).ventetid.also {
-                it!!.fom `should be equal to` LocalDate.of(2024, Month.JUNE, 30)
-                it.tom `should be equal to` LocalDate.of(2024, Month.JULY, 15)
-            }
-        }
-
-        @Test
         fun `Egenmeldingsdag med helg mellom sykmeldingsperioden tas med i ventetiden`() {
             val sykmeldingKafkaMessage =
                 lagBekreftetSykmeldingKafkaMessage(
@@ -1204,56 +1166,6 @@ class VentetidUtregnerTest : FellesTestOppsett() {
                 ).also {
                     it!!.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 3)
                     it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 18)
-                }
-        }
-
-        @Test
-        fun `Egenmeldingsdager mellom to perioder som tilleggsopplysninger tas ikke med i ventetiden`() {
-            lagMottattSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2025, Month.JULY, 9),
-                tom = LocalDate.of(2025, Month.JULY, 25),
-            ).also { it.prosesser() }
-
-            val sykmeldingKafkaMessage =
-                lagBekreftetSykmeldingKafkaMessage(
-                    fnr = fnr,
-                    fom = LocalDate.of(2025, Month.AUGUST, 14),
-                    tom = LocalDate.of(2025, Month.AUGUST, 21),
-                ).also { it.prosesser() }
-
-            val tilleggsopplysninger =
-                Tilleggsopplysninger(
-                    egenmeldingsperioder =
-                        listOf(
-                            FomTomPeriode(
-                                fom = LocalDate.of(2025, Month.AUGUST, 7),
-                                tom = LocalDate.of(2025, Month.AUGUST, 10),
-                            ),
-                        ),
-                )
-
-            ventetidUtregner
-                .erUtenforVentetid(
-                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-                    listOf(fnr),
-                    erUtenforVentetidRequest =
-                        ErUtenforVentetidRequest(tilleggsopplysninger = tilleggsopplysninger),
-                ).`should be false`()
-
-            ventetidUtregner
-                .beregnVentetid(
-                    sykmeldingId = sykmeldingKafkaMessage.sykmelding.id,
-                    listOf(fnr),
-                    ventetidRequest =
-                        VentetidRequest(
-                            tilleggsopplysninger = tilleggsopplysninger,
-                            sykmeldingKafkaMessage = sykmeldingKafkaMessage,
-                            returnerPerioderInnenforVentetid = true,
-                        ),
-                ).also {
-                    it!!.fom `should be equal to` LocalDate.of(2025, Month.AUGUST, 14)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.AUGUST, 21)
                 }
         }
 

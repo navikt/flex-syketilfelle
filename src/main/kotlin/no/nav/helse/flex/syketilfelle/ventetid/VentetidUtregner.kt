@@ -12,7 +12,6 @@ import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.DAYS
 import java.time.temporal.TemporalAdjusters.previous
 
@@ -59,7 +58,7 @@ class VentetidUtregner(
         identer: List<String>,
         sammeVentetidRequest: SammeVentetidRequest,
     ): List<SammeVentetidPeriode> {
-        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest(returnerPerioderInnenforVentetid = true)
+        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest()
 
         // Sender med VentetidRequest i tilfelle Kafka-meldingen ikke er lagret enda.
         val sykmeldingVentetid =
@@ -109,10 +108,6 @@ class VentetidUtregner(
         identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): FomTomPeriode? {
-        if (ventetidRequest.tilleggsopplysninger != null) {
-            log.info("Bruker tilleggsopplysninger i beregning av ventetid.")
-        }
-
         val biter =
             syketilfellebitRepository
                 .findByFnrIn(identer)
@@ -205,29 +200,9 @@ class VentetidUtregner(
                 ventetidRequest.sykmeldingKafkaMessage?.let { sykmeldingMessage ->
                     addAll(sykmeldingMessage.mapTilBiter())
                 }
-                ventetidRequest.tilleggsopplysninger?.let { tilleggsopplysninger ->
-                    addAll(tilleggsopplysninger.mapTilBiter(sykmeldingId, identer.first()))
-                }
             }.let { biter ->
                 if (ventetidRequest.kunSendtBekreftet) biter.filterNot { it.tags.contains(Tag.NY) } else biter
             }
-
-    private fun Tilleggsopplysninger.mapTilBiter(
-        ressursId: String,
-        fnr: String,
-    ): List<Syketilfellebit> =
-        this.egenmeldingsperioder?.map {
-            Syketilfellebit(
-                fom = it.fom,
-                tom = it.tom,
-                inntruffet = OffsetDateTime.now(),
-                opprettet = OffsetDateTime.now(),
-                tags = EGENMELDING_TAGS,
-                ressursId = ressursId,
-                fnr = fnr,
-                orgnummer = null,
-            )
-        } ?: emptyList()
 
     private fun Syketilfellebit.tilPeriode(): Periode =
         Periode(
