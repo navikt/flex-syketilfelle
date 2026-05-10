@@ -107,7 +107,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 12)
                 }
 
             ventetidUtregner
@@ -208,7 +208,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 4)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
                 }
         }
 
@@ -253,7 +253,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 5)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
                 }
         }
 
@@ -287,7 +287,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 5)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
                 }
 
             ventetidUtregner
@@ -332,7 +332,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 4)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
                 }
 
             ventetidUtregner
@@ -433,7 +433,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 12)
                 }
         }
     }
@@ -571,7 +571,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 16)
                 }
         }
 
@@ -616,7 +616,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 12)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 16)
                 }
         }
 
@@ -650,7 +650,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 12)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 16)
                 }
 
             ventetidUtregner
@@ -695,7 +695,7 @@ class OverlappendePerioderTest : FellesTestOppsett() {
                 )!!
                 .also {
                     it.fom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 1)
-                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 8)
+                    it.tom `should be equal to` LocalDate.of(2025, Month.SEPTEMBER, 16)
                 }
 
             ventetidUtregner

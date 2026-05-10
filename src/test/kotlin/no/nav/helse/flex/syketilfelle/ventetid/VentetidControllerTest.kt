@@ -124,12 +124,6 @@ class VentetidControllerTest : FellesTestOppsett() {
             sykmeldingId = melding.sykmelding.id,
         ).also {
             it.erUtenforVentetid `should be` false
-            it.oppfolgingsdato `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-            it.ventetid `should be equal to`
-                FomTomPeriode(
-                    LocalDate.of(2024, Month.JULY, 1),
-                    LocalDate.of(2024, Month.JULY, 16),
-                )
         }
     }
 
@@ -147,12 +141,6 @@ class VentetidControllerTest : FellesTestOppsett() {
             sykmeldingId = melding.sykmelding.id,
         ).also {
             it.erUtenforVentetid `should be` true
-            it.oppfolgingsdato `should be equal to` LocalDate.of(2024, Month.JULY, 1)
-            it.ventetid `should be equal to`
-                FomTomPeriode(
-                    LocalDate.of(2024, Month.JULY, 1),
-                    LocalDate.of(2024, Month.JULY, 16),
-                )
         }
     }
 

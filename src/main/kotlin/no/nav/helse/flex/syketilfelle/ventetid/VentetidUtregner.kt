@@ -51,7 +51,8 @@ class VentetidUtregner(
         sykmeldingId: String,
         identer: List<String>,
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
+        beregnForAktuellSykmelding: Boolean = false,
+    ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding)) != null
 
     fun finnPerioderMedSammeVentetid(
         sykmeldingId: String,
@@ -123,19 +124,24 @@ class VentetidUtregner(
             return null
         }
 
-        val sykmeldingSenesteTom = aktuellSykmeldingBiter.maxOf { it.tom }
-
-        val perioder =
+        // Slår sammen relevante biter til perioder uten å avgrense til den aktuelle sykmeldingens `tom` sånn at også
+        // tilbakedaterte sammenhengende perioder slått sammen med periodene til den aktuelle sykmeldingen.
+        val mergedePerioder =
             sykmeldingBiter
                 .asSequence()
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
                 .map { it.tilPeriode() }
-                .filter { it.fom <= sykmeldingSenesteTom }
-                .map { it.kuttBitSomErLengreEnnAktuellTom(sykmeldingSenesteTom) }
                 .toList()
                 .mergePerioder(sykmeldingId)
+
+        // Den sammenslåtte perioden som inneholder den aktuelle sykmeldingen definerer 'tom' for ventetidsberegningen.
+        val gjeldendePeriode = mergedePerioder.firstOrNull { it.ressursId == sykmeldingId } ?: return null
+
+        val perioder =
+            mergedePerioder
+                .filter { it.fom <= gjeldendePeriode.tom }
                 .fjernHelgFraSluttenAvPerioden(sykmeldingId)
 
         perioder.beregnVentetid()?.let { ventetid ->
@@ -201,7 +207,14 @@ class VentetidUtregner(
                     addAll(sykmeldingMessage.mapTilBiter())
                 }
             }.let { biter ->
-                if (ventetidRequest.kunSendtBekreftet) biter.filterNot { it.tags.contains(Tag.NY) } else biter
+                // Hvis beregnForAktuellSykmelding er true, beholdes biter med status NY kun for den aktuelle sykmeldingen.
+                // Nødvendig for å beregne ventetid riktig i flex-sykepengesoknad-backend.
+                when {
+                    !ventetidRequest.kunSendtBekreftet -> biter
+                    ventetidRequest.beregnForAktuellSykmelding ->
+                        biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
+                    else -> biter.filterNot { it.tags.contains(Tag.NY) }
+                }
             }
 
     private fun Syketilfellebit.tilPeriode(): Periode =
@@ -212,13 +225,6 @@ class VentetidUtregner(
             ressursId = this.ressursId,
             erAnnetFravaer = this.tags.contains(Tag.ANNET_FRAVAR),
         )
-
-    private fun Periode.kuttBitSomErLengreEnnAktuellTom(sykmeldingSisteTom: LocalDate): Periode =
-        if (this.tom.isAfter(sykmeldingSisteTom)) {
-            this.copy(tom = sykmeldingSisteTom)
-        } else {
-            this
-        }
 
     private fun List<Periode>.mergePerioder(foretrukketRessursId: String): List<Periode> {
         if (size <= 1) return this

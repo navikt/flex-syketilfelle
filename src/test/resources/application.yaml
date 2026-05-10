@@ -1,4 +1,5 @@
 spring:
+  main.banner-mode: 'off'
   profiles:
     active: test,testdatareset
   flyway:
@@ -10,8 +11,9 @@ spring:
 
 management:
   endpoint:
-    prometheus.enabled: true
     health.probes.enabled: true
+    prometheus:
+      access: read_only
   endpoints.web:
     base-path: /internal
     exposure.include: health, prometheus

@@ -8,10 +8,11 @@ data class ErUtenforVentetidRequest(
     val kunSendtBekreftet: Boolean = false,
 )
 
-fun ErUtenforVentetidRequest.tilVentetidRequest(): VentetidRequest =
+fun ErUtenforVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding: Boolean = false): VentetidRequest =
     VentetidRequest(
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
         kunSendtBekreftet = kunSendtBekreftet,
+        beregnForAktuellSykmelding = beregnForAktuellSykmelding,
     )
 
 data class SammeVentetidRequest(
@@ -30,6 +31,7 @@ data class VentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
     val returnerPerioderInnenforVentetid: Boolean = false,
     val kunSendtBekreftet: Boolean = false,
+    val beregnForAktuellSykmelding: Boolean = false,
 )
 
 data class VentetidResponse(
@@ -53,6 +55,4 @@ data class SammeVentetidPeriode(
 // Brukes i TokenX-response fra flex-sykmeldinger-backend.
 data class ErUtenforVentetidResponse(
     val erUtenforVentetid: Boolean,
-    val oppfolgingsdato: LocalDate?,
-    val ventetid: FomTomPeriode? = null,
 )
