@@ -51,8 +51,7 @@ class VentetidUtregner(
         sykmeldingId: String,
         identer: List<String>,
         erUtenforVentetidRequest: ErUtenforVentetidRequest,
-        beregnForAktuellSykmelding: Boolean = false,
-    ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding)) != null
+    ): Boolean = beregnVentetid(sykmeldingId, identer, erUtenforVentetidRequest.tilVentetidRequest()) != null
 
     fun finnPerioderMedSammeVentetid(
         sykmeldingId: String,
@@ -83,7 +82,7 @@ class VentetidUtregner(
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
-                .filterNot { it.tags.contains(Tag.NY) }
+                .filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
                 .map { it.ressursId }
                 .distinct()
                 .toList()
@@ -192,9 +191,9 @@ class VentetidUtregner(
 
     private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
-    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen og eventuelle tilleggsopplysninger (som
-    // egenmeldinger) fra forespørselen. Det kan resulterer i duplikate biter hvis den aktuelle sykmeldignen både er
-    // lagret i databasen og sendt med i sykmeldingKafkaMessage. Duplikate biter blir slått sammen i mergePerioder().
+    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen og eventuelle egenmeldingsdager fra request.
+    // Det kan resulterer i duplikate biter hvis den aktuelle sykmeldingen både er lagret i databasen og sendt med i
+    // sykmeldingKafkaMessage. Duplikate biter blir slått sammen i mergePerioder().
     private fun lagSykmeldingBiter(
         eksisterendeBiter: List<Syketilfellebit>,
         sykmeldingId: String,
@@ -208,13 +207,7 @@ class VentetidUtregner(
                     addAll(sykmeldingMessage.mapTilBiter())
                 }
             }.let { biter ->
-                // Hvis beregnForAktuellSykmelding er true, tas biter fra den aktuelle sykmeldingen med selv
-                // om den har status NY.
-                if (ventetidRequest.beregnForAktuellSykmelding) {
-                    biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
-                } else {
-                    biter.filterNot { it.tags.contains(Tag.NY) }
-                }
+                biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
             }
 
     private fun Syketilfellebit.tilPeriode(): Periode =

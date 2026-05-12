@@ -7,10 +7,9 @@ data class ErUtenforVentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
 )
 
-fun ErUtenforVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding: Boolean = false): VentetidRequest =
+fun ErUtenforVentetidRequest.tilVentetidRequest(): VentetidRequest =
     VentetidRequest(
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
-        beregnForAktuellSykmelding = beregnForAktuellSykmelding,
     )
 
 data class SammeVentetidRequest(
@@ -27,7 +26,6 @@ fun SammeVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding: Boolean)
 data class VentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
     val returnerPerioderInnenforVentetid: Boolean = false,
-    val beregnForAktuellSykmelding: Boolean = false,
 )
 
 data class VentetidResponse(

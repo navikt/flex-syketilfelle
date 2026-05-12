@@ -157,30 +157,6 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Ny sykmelding tas med i ventetidsberegningen når beregnForAktuellSykmelding er true selv om kunSendtBekreftet er true`() {
-        val melding =
-            lagMottattSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 1),
-                tom = LocalDate.of(2026, Month.JUNE, 17),
-            ).also { it.prosesser() }
-
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` false
-
-        // Beholder bitene til den aktuelle sykmeldingen slik at ventetid beregnes i isolasjon.
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            beregnForAktuellSykmelding = true,
-        ) `should be` true
-    }
-
-    @Test
     fun `Tilbakedatert bekreftet periode er utenfor ventetiden når det finnes en senere bekreftet periode`() {
         lagBekreftetSykmeldingKafkaMessage(
             fnr = fnr,
