@@ -93,6 +93,7 @@ class VentetidController(
                     sanitertSykmeldingId,
                     identer,
                     SammeVentetidRequest(),
+                    true,
                 ),
         )
     }

@@ -17,10 +17,11 @@ data class SammeVentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
 )
 
-fun SammeVentetidRequest.tilVentetidRequest(): VentetidRequest =
+fun SammeVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding: Boolean): VentetidRequest =
     VentetidRequest(
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
         returnerPerioderInnenforVentetid = true,
+        beregnForAktuellSykmelding = beregnForAktuellSykmelding,
     )
 
 data class VentetidRequest(

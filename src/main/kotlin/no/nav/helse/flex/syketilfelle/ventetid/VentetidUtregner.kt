@@ -58,8 +58,9 @@ class VentetidUtregner(
         sykmeldingId: String,
         identer: List<String>,
         sammeVentetidRequest: SammeVentetidRequest,
+        beregnForAktuellSykmelding: Boolean = false,
     ): List<SammeVentetidPeriode> {
-        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest()
+        val ventetidRequest = sammeVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding)
 
         // Sender med VentetidRequest i tilfelle Kafka-meldingen ikke er lagret enda.
         val sykmeldingVentetid =
