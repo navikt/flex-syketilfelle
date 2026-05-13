@@ -27,14 +27,14 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
     @Test
     fun `To perioder til sammen 16 dager har samme ventetid`() {
         val melding1 =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.JUNE, 1),
                 tom = LocalDate.of(2026, Month.JUNE, 8),
             ).also { it.prosesser() }
 
         val melding2 =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.JUNE, 9),
                 tom = LocalDate.of(2026, Month.JUNE, 16),
@@ -78,14 +78,14 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
     @Test
     fun `Begge perioder på til sammen 17 dager er utenfor ventetiden`() {
         val melding1 =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.JUNE, 1),
                 tom = LocalDate.of(2026, Month.JUNE, 8),
             ).also { it.prosesser() }
 
         val melding2 =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.JUNE, 9),
                 tom = LocalDate.of(2026, Month.JUNE, 17),
@@ -125,8 +125,64 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
     }
 
     @Test
-    fun `Tilbakedatert bekreftet periode er utenfor ventetiden når alle periode tas med i beregningen`() {
+    fun `Tilbakedatert bekreftet periode er innenfor ventetiden når kun bekreftet periode tas med i beregningen`() {
         lagMottattSykmeldingKafkaMessage(
+            fnr = fnr,
+            fom = LocalDate.of(2026, Month.JUNE, 9),
+            tom = LocalDate.of(2026, Month.JUNE, 17),
+        ).also { it.prosesser() }
+
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2026, Month.JUNE, 1),
+                tom = LocalDate.of(2026, Month.JUNE, 8),
+            ).also { it.prosesser() }
+
+        ventetidUtregner.erUtenforVentetid(
+            identer = listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+        ) `should be` false
+
+        ventetidUtregner
+            .beregnVentetid(
+                identer = listOf(fnr),
+                sykmeldingId = melding.sykmelding.id,
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+            ).also {
+                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
+                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 8)
+            }
+    }
+
+    @Test
+    fun `Ny sykmelding tas med i ventetidsberegningen når beregnForAktuellSykmelding er true selv om kunSendtBekreftet er true`() {
+        val melding =
+            lagMottattSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2026, Month.JUNE, 1),
+                tom = LocalDate.of(2026, Month.JUNE, 17),
+            ).also { it.prosesser() }
+
+        ventetidUtregner.erUtenforVentetid(
+            identer = listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+        ) `should be` false
+
+        // Beholder bitene til den aktuelle sykmeldingen slik at ventetid beregnes i isolasjon.
+        ventetidUtregner.erUtenforVentetid(
+            identer = listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
+            beregnForAktuellSykmelding = true,
+        ) `should be` true
+    }
+
+    @Test
+    fun `Tilbakedatert bekreftet periode er utenfor ventetiden når det finnes en senere bekreftet periode`() {
+        lagBekreftetSykmeldingKafkaMessage(
             fnr = fnr,
             fom = LocalDate.of(2026, Month.JUNE, 9),
             tom = LocalDate.of(2026, Month.JUNE, 17),
@@ -150,94 +206,6 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 identer = listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
-            ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
-            }
-    }
-
-    @Test
-    fun `Tilbakedatert bekreftet periode er innenfor ventetiden når kun bekreftet periode tas med i beregningen`() {
-        lagMottattSykmeldingKafkaMessage(
-            fnr = fnr,
-            fom = LocalDate.of(2026, Month.JUNE, 9),
-            tom = LocalDate.of(2026, Month.JUNE, 17),
-        ).also { it.prosesser() }
-
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 1),
-                tom = LocalDate.of(2026, Month.JUNE, 8),
-            ).also { it.prosesser() }
-
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
-        ) `should be` false
-
-        ventetidUtregner
-            .beregnVentetid(
-                identer = listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(kunSendtBekreftet = true, returnerPerioderInnenforVentetid = true),
-            ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 8)
-            }
-    }
-
-    @Test
-    fun `Ny sykmelding tas med i ventetidsberegningen når beregnForAktuellSykmelding er true selv om kunSendtBekreftet er true`() {
-        val melding =
-            lagMottattSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 1),
-                tom = LocalDate.of(2026, Month.JUNE, 17),
-            ).also { it.prosesser() }
-
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
-        ) `should be` false
-
-        // Beholder bitene til den aktuelle sykmeldingen slik at ventetid beregnes i isolasjon.
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
-            beregnForAktuellSykmelding = true,
-        ) `should be` true
-    }
-
-    @Test
-    fun `Tilbakedatert bekreftet periode er utenfor ventetiden når det finnes en senere bekreftet periode`() {
-        lagBekreftetSykmeldingKafkaMessage(
-            fnr = fnr,
-            fom = LocalDate.of(2026, Month.JUNE, 9),
-            tom = LocalDate.of(2026, Month.JUNE, 17),
-        ).also { it.prosesser() }
-
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 1),
-                tom = LocalDate.of(2026, Month.JUNE, 8),
-            ).also { it.prosesser() }
-
-        ventetidUtregner.erUtenforVentetid(
-            identer = listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
-        ) `should be` true
-
-        ventetidUtregner
-            .beregnVentetid(
-                identer = listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(kunSendtBekreftet = true),
             ).also {
                 it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
                 it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)

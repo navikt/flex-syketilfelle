@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
+import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -39,14 +39,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Første og siste periode starter og slutter samtidig`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -84,14 +84,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 12),
@@ -129,14 +129,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -174,14 +174,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 4),
@@ -219,14 +219,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 6),
@@ -264,14 +264,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 6),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -309,14 +309,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 4),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -354,14 +354,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -399,14 +399,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 12),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -447,14 +447,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 15),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -492,14 +492,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 11),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -537,14 +537,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
@@ -582,14 +582,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 6),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 13),
@@ -627,14 +627,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 6),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 13),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -672,14 +672,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 8),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -717,14 +717,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 11),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -762,14 +762,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 15),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -810,14 +810,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Første og siste periode starter og slutter samtidig`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
@@ -855,14 +855,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 11),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 28),
@@ -900,14 +900,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -945,14 +945,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -990,14 +990,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter etter og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
@@ -1035,14 +1035,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 3),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 20),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -1080,14 +1080,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter samtidig og slutter etter første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -1125,14 +1125,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter samtidig med første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 5),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 22),
@@ -1170,14 +1170,14 @@ class OverlappendePerioderTest : FellesTestOppsett() {
         @Test
         fun `Siste periode starter før og slutter før første periode`() {
             val melding1 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 11),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 28),
                 ).also { it.prosesser() }
 
             val melding2 =
-                lagMottattSykmeldingKafkaMessage(
+                lagBekreftetSykmeldingKafkaMessage(
                     fnr = fnr,
                     fom = LocalDate.of(2025, Month.SEPTEMBER, 1),
                     tom = LocalDate.of(2025, Month.SEPTEMBER, 18),

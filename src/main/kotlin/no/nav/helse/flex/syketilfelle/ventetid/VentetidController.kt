@@ -48,7 +48,7 @@ class VentetidController(
             ventetidUtregner.erUtenforVentetid(
                 sykmeldingId = sykmeldingId.sanitizeForLog(),
                 identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX()),
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
                 beregnForAktuellSykmelding = true,
             )
         return ErUtenforVentetidResponse(erUtenforVentetid)
