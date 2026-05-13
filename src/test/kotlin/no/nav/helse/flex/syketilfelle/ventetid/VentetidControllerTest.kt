@@ -8,7 +8,6 @@ import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
 import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagSyketilfelleBit
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
@@ -113,7 +112,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Periode på 16 dager er innefor ventetiden som bruker`() {
         val melding =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 16),
@@ -130,7 +129,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Periode på 17 dager er utenfor ventetiden som bruker`() {
         val melding =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2024, Month.JULY, 1),
                 tom = LocalDate.of(2024, Month.JULY, 17),
@@ -198,7 +197,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Kall til perioderMedSammeVentetid som bruker returnerer riktig periode`() {
         val melding =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),
@@ -223,7 +222,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Kall til perioderMedSammeVentetid returnerer riktig periode`() {
         val melding =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),
@@ -248,7 +247,7 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Kall til perioderMedSammeVentetid returnerer tom liste hvis fnr ikke matcher biter`() {
         val melding =
-            lagMottattSykmeldingKafkaMessage(
+            lagBekreftetSykmeldingKafkaMessage(
                 fnr = fnr,
                 fom = LocalDate.of(2026, Month.FEBRUARY, 2),
                 tom = LocalDate.of(2026, Month.FEBRUARY, 17),

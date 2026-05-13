@@ -5,32 +5,27 @@ import java.time.LocalDate
 
 data class ErUtenforVentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
-    val kunSendtBekreftet: Boolean = false,
 )
 
 fun ErUtenforVentetidRequest.tilVentetidRequest(beregnForAktuellSykmelding: Boolean = false): VentetidRequest =
     VentetidRequest(
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
-        kunSendtBekreftet = kunSendtBekreftet,
         beregnForAktuellSykmelding = beregnForAktuellSykmelding,
     )
 
 data class SammeVentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
-    val kunSendtBekreftet: Boolean = false,
 )
 
 fun SammeVentetidRequest.tilVentetidRequest(): VentetidRequest =
     VentetidRequest(
         sykmeldingKafkaMessage = sykmeldingKafkaMessage,
         returnerPerioderInnenforVentetid = true,
-        kunSendtBekreftet = kunSendtBekreftet,
     )
 
 data class VentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
     val returnerPerioderInnenforVentetid: Boolean = false,
-    val kunSendtBekreftet: Boolean = false,
     val beregnForAktuellSykmelding: Boolean = false,
 )
 

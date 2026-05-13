@@ -27,64 +27,6 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
     private val fnr = "11111111111"
 
     @Test
-    fun `Beregn ventetid for alle sykmeldinger`() {
-        val mottattSykmelding =
-            lagMottattSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 1),
-                tom = LocalDate.of(2026, Month.JUNE, 7),
-            ).also { it.prosesser() }
-
-        val bekreftetSykmelding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.JUNE, 8),
-                tom = LocalDate.of(2026, Month.JUNE, 14),
-            ).also { it.prosesser() }
-
-        val sendtSykmelding =
-            lagSendtSykmeldingKafkaMessage(
-                fnr,
-                lagArbeidsgiverSykmelding(
-                    fom = LocalDate.of(2026, Month.JUNE, 15),
-                    tom = LocalDate.of(2026, Month.JUNE, 21),
-                ),
-            ).also { it.prosesser() }
-
-        ventetidUtregner.erUtenforVentetid(
-            sykmeldingId = sendtSykmelding.sykmelding.id,
-            identer = listOf(fnr),
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` true
-
-        ventetidUtregner
-            .beregnVentetid(
-                identer = listOf(fnr),
-                sykmeldingId = sendtSykmelding.sykmelding.id,
-                ventetidRequest = VentetidRequest(),
-            ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
-            }
-
-        ventetidUtregner
-            .finnPerioderMedSammeVentetid(
-                identer = listOf(fnr),
-                sykmeldingId = sendtSykmelding.sykmelding.id,
-                sammeVentetidRequest = SammeVentetidRequest(),
-            ).also { response ->
-                response.size `should be` 3
-                response.map { it.ressursId }.containsAll(
-                    listOf(
-                        mottattSykmelding.sykmelding.id,
-                        bekreftetSykmelding.sykmelding.id,
-                        sendtSykmelding.sykmelding.id,
-                    ),
-                )
-            }
-    }
-
-    @Test
     fun `Beregn ventetid for perioder kun sendt eller bekreftet`() {
         lagMottattSykmeldingKafkaMessage(
             fnr = fnr,
@@ -111,14 +53,14 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
         ventetidUtregner.erUtenforVentetid(
             sykmeldingId = sendtSykmelding.sykmelding.id,
             identer = listOf(fnr),
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
         ) `should be` false
 
         ventetidUtregner
             .beregnVentetid(
                 identer = listOf(fnr),
                 sykmeldingId = sendtSykmelding.sykmelding.id,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true, kunSendtBekreftet = true),
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
                 it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 8)
                 it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 19)
@@ -128,7 +70,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
             .finnPerioderMedSammeVentetid(
                 identer = listOf(fnr),
                 sykmeldingId = sendtSykmelding.sykmelding.id,
-                sammeVentetidRequest = SammeVentetidRequest(kunSendtBekreftet = true),
+                sammeVentetidRequest = SammeVentetidRequest(),
             ).also { response ->
                 response.size `should be` 2
                 response.map { it.ressursId }.containsAll(
@@ -164,14 +106,14 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
         ventetidUtregner.erUtenforVentetid(
             sykmeldingId = melding.sykmelding.id,
             identer = listOf(fnr),
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
+            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
         ) `should be` false
 
         ventetidUtregner
             .beregnVentetid(
                 identer = listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true, kunSendtBekreftet = true),
+                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
                 it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 11)
                 it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 19)
@@ -181,7 +123,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
             .finnPerioderMedSammeVentetid(
                 identer = listOf(fnr),
                 sykmeldingId = melding.sykmelding.id,
-                sammeVentetidRequest = SammeVentetidRequest(kunSendtBekreftet = true),
+                sammeVentetidRequest = SammeVentetidRequest(),
             ).also { response ->
                 response.size `should be` 1
                 response.map { it.ressursId }.containsAll(

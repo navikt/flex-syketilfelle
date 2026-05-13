@@ -82,7 +82,7 @@ class VentetidUtregner(
                 .filter { it.tags.contains(Tag.SYKMELDING) }
                 .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
                 .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
-                .run { if (ventetidRequest.kunSendtBekreftet) filterNot { it.tags.contains(Tag.NY) } else this }
+                .filterNot { it.tags.contains(Tag.NY) }
                 .map { it.ressursId }
                 .distinct()
                 .toList()
@@ -207,13 +207,12 @@ class VentetidUtregner(
                     addAll(sykmeldingMessage.mapTilBiter())
                 }
             }.let { biter ->
-                // Hvis beregnForAktuellSykmelding er true, beholdes biter med status NY kun for den aktuelle sykmeldingen.
-                // Nødvendig for å beregne ventetid riktig i flex-sykepengesoknad-backend.
-                when {
-                    !ventetidRequest.kunSendtBekreftet -> biter
-                    ventetidRequest.beregnForAktuellSykmelding ->
-                        biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
-                    else -> biter.filterNot { it.tags.contains(Tag.NY) }
+                // Hvis beregnForAktuellSykmelding er true, tas biter fra den aktuelle sykmeldingen med selv
+                // om den har status NY.
+                if (ventetidRequest.beregnForAktuellSykmelding) {
+                    biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
+                } else {
+                    biter.filterNot { it.tags.contains(Tag.NY) }
                 }
             }
 
