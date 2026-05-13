@@ -44,24 +44,14 @@ class VentetidController(
     fun erUtenforVentetid(
         @PathVariable sykmeldingId: String,
     ): ErUtenforVentetidResponse {
-        val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
-        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
-
-        val erUtenforVentetid = ventetidUtregner.erUtenforVentetid(sanitertSykmeldingId, identer, ErUtenforVentetidRequest())
-        val ventetid =
-            ventetidUtregner.beregnVentetid(
-                sykmeldingId = sanitertSykmeldingId,
-                identer = identer,
-                ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
+        val erUtenforVentetid =
+            ventetidUtregner.erUtenforVentetid(
+                sykmeldingId = sykmeldingId.sanitizeForLog(),
+                identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX()),
+                erUtenforVentetidRequest = ErUtenforVentetidRequest(kunSendtBekreftet = true),
+                beregnForAktuellSykmelding = true,
             )
-
-        val sykeforloep = sykeforloepUtregner.hentSykeforloep(identer, inkluderPapirsykmelding = false)
-        val oppfolgingsdato =
-            sykeforloep
-                .find { it.sykmeldinger.any { sm -> sm.id == sanitertSykmeldingId } }
-                ?.oppfolgingsdato
-
-        return ErUtenforVentetidResponse(erUtenforVentetid, oppfolgingsdato, ventetid)
+        return ErUtenforVentetidResponse(erUtenforVentetid)
     }
 
     @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
