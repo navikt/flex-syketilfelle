@@ -49,7 +49,6 @@ class VentetidController(
                 sykmeldingId = sykmeldingId.sanitizeForLog(),
                 identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX()),
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-                beregnForAktuellSykmelding = true,
             )
         return ErUtenforVentetidResponse(erUtenforVentetid)
     }
