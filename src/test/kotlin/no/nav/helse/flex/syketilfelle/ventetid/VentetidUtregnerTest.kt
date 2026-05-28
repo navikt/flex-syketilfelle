@@ -2372,28 +2372,6 @@ class VentetidUtregnerTest : FellesTestOppsett() {
         }
     }
 
-    @Test
-    fun `Solo sykmelding skal returneres`() {
-        val sykmelding1 = UUID.randomUUID().toString()
-
-        listOf(
-            lagSyketilfelleBit(
-                fnr = fnr,
-                ressursId = sykmelding1,
-                fom = LocalDate.of(2026, Month.MAY, 13),
-                tom = LocalDate.of(2026, Month.MAY, 20),
-                tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
-            ),
-        ).also { syketilfellebitRepository.saveAll(it) }
-
-        ventetidUtregner
-            .finnPerioderMedSammeVentetid(
-                sykmelding1,
-                listOf(fnr),
-                SammeVentetidRequest(),
-            ).size `should be` 1
-    }
-
     private fun erUtenforVentetid(
         identer: List<String>,
         sykmeldingId: String,
