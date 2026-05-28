@@ -1721,6 +1721,32 @@ class VentetidUtregnerTest : FellesTestOppsett() {
     @Nested
     inner class PerioderMedSammeVentetid {
         @Test
+        fun `Aktuell sykmelding returneres selv om den er NY`() {
+            val sykmelding1 = UUID.randomUUID().toString()
+
+            listOf(
+                lagSyketilfelleBit(
+                    fnr = fnr,
+                    ressursId = sykmelding1,
+                    fom = LocalDate.of(2026, Month.MAY, 13),
+                    tom = LocalDate.of(2026, Month.MAY, 20),
+                    tags = listOf(Tag.SYKMELDING, Tag.NY, Tag.PERIODE, Tag.INGEN_AKTIVITET),
+                ),
+            ).also { syketilfellebitRepository.saveAll(it) }
+
+            val ventetidperioder: List<SammeVentetidPeriode> =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmelding1,
+                    listOf(fnr),
+                    SammeVentetidRequest(),
+                )
+
+            ventetidperioder.shouldHaveSize(1).also { venteperiode ->
+                venteperiode.map { it.ressursId }.containsAll(listOf(sykmelding1)) `should be` true
+            }
+        }
+
+        @Test
         fun `Sykmelding som ikke er SENDT eller BEKREFTET tas med i beregningen`() {
             val sykmelding1 = UUID.randomUUID().toString()
             val sykmelding2 = UUID.randomUUID().toString()
