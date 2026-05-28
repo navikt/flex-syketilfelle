@@ -71,17 +71,10 @@ class VentetidUtregner(
         val biterFraRequest = sammeVentetidRequest.sykmeldingKafkaMessage?.mapTilBiter() ?: emptyList()
 
         val kandidatRessurser =
-            (
-                syketilfellebitRepository
-                    .findByFnrIn(identer)
-                    .filter { it.slettet == null }
-                    .map { it.tilSyketilfellebit() }
-                    .utenKorrigerteSoknader() + biterFraRequest
-            ).asSequence()
-                .filter { it.tags.contains(Tag.SYKMELDING) }
-                .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
-                .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
-                .filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
+            (finnAktiveBiter(identer) + biterFraRequest)
+                .asSequence()
+                .filtrerSykmeldingMedAktivitet()
+                .filtrerBortNyForAndreSykmeldinger(sykmeldingId)
                 .map { it.ressursId }
                 .distinct()
                 .toList()
@@ -108,14 +101,7 @@ class VentetidUtregner(
         identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): FomTomPeriode? {
-        val biter =
-            syketilfellebitRepository
-                .findByFnrIn(identer)
-                .filter { it.slettet == null }
-                .map { it.tilSyketilfellebit() }
-                .utenKorrigerteSoknader()
-
-        val sykmeldingBiter = lagSykmeldingBiter(biter, sykmeldingId, identer, ventetidRequest)
+        val sykmeldingBiter = lagSykmeldingBiter(finnAktiveBiter(identer), sykmeldingId, ventetidRequest)
         val aktuellSykmeldingBiter = sykmeldingBiter.filter { it.ressursId == sykmeldingId }
 
         if (aktuellSykmeldingBiter.isEmpty()) {
@@ -128,9 +114,7 @@ class VentetidUtregner(
         val mergedePerioder =
             sykmeldingBiter
                 .asSequence()
-                .filter { it.tags.contains(Tag.SYKMELDING) }
-                .filter { bit -> bit.tags.any { tag -> tag in AKTIVITET_TAGS } }
-                .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+                .filtrerSykmeldingMedAktivitet()
                 .map { it.tilPeriode() }
                 .toList()
                 .mergePerioder(sykmeldingId)
@@ -190,13 +174,11 @@ class VentetidUtregner(
 
     private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
 
-    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen og eventuelle egenmeldingsdager fra request.
-    // Det kan resulterer i duplikate biter hvis den aktuelle sykmeldingen både er lagret i databasen og sendt med i
-    // sykmeldingKafkaMessage. Duplikate biter blir slått sammen i mergePerioder().
+    // Kombinerer eksisterende syketilfellebiter med nye biter fra sykmeldingen. Duplikate biter blir slått sammen i
+    // mergePerioder().
     private fun lagSykmeldingBiter(
         eksisterendeBiter: List<Syketilfellebit>,
         sykmeldingId: String,
-        identer: List<String>,
         ventetidRequest: VentetidRequest,
     ): List<Syketilfellebit> =
         eksisterendeBiter
@@ -206,8 +188,24 @@ class VentetidUtregner(
                     addAll(sykmeldingMessage.mapTilBiter())
                 }
             }.let { biter ->
-                biter.filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
+                // Biter for den aktuelle sykmeldingen beholdes uansett status.
+                biter.asSequence().filtrerBortNyForAndreSykmeldinger(sykmeldingId).toList()
             }
+
+    private fun finnAktiveBiter(identer: List<String>): List<Syketilfellebit> =
+        syketilfellebitRepository
+            .findByFnrIn(identer)
+            .filter { it.slettet == null }
+            .map { it.tilSyketilfellebit() }
+            .utenKorrigerteSoknader()
+
+    private fun Sequence<Syketilfellebit>.filtrerSykmeldingMedAktivitet(): Sequence<Syketilfellebit> =
+        filter { it.tags.contains(Tag.SYKMELDING) }
+            .filter { bit -> bit.tags.any { it in AKTIVITET_TAGS } }
+            .filterNot { bit -> bit.tags.any { it in EKSKLUDERTE_TAGS } }
+
+    private fun Sequence<Syketilfellebit>.filtrerBortNyForAndreSykmeldinger(sykmeldingId: String): Sequence<Syketilfellebit> =
+        filterNot { it.tags.contains(Tag.NY) && it.ressursId != sykmeldingId }
 
     private fun Syketilfellebit.tilPeriode(): Periode =
         Periode(
