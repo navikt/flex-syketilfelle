@@ -67,6 +67,11 @@ spec:
         maintenance:
           day: 2
           hour: 2
+        flags:
+        {{#each db_flags}}
+          - name: {{@key}}
+            value: "{{this}}"
+        {{/each}}
   env:
   {{#each env}}
      - name: {{@key}}
