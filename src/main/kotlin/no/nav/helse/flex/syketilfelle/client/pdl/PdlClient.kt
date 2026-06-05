@@ -1,14 +1,18 @@
 package no.nav.helse.flex.syketilfelle.client.pdl
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.objectMapper
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.*
-import org.springframework.retry.annotation.Retryable
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.resilience.annotation.Retryable
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.util.*
 
 private const val TEMA = "Tema"
@@ -33,7 +37,7 @@ class PdlClient(
         }
         """.trimIndent()
 
-    @Retryable(exclude = [FunctionalPdlError::class])
+    @Retryable(excludes = [FunctionalPdlError::class])
     fun hentFolkeregisterIdenter(ident: String): List<String> {
         val graphQLRequest =
             GraphQLRequest(

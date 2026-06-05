@@ -1,10 +1,8 @@
 package no.nav.helse.flex.syketilfelle
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.inntektsmelding.INNTEKTSMELDING_TOPIC
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.juridiskVurderingTopic
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.SYKETILFELLEBIT_TOPIC
-import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGBEKREFTET_TOPIC
 import no.nav.helse.flex.syketilfelle.sykmelding.SYKMELDINGMOTTATT_TOPIC
@@ -29,8 +27,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
@@ -60,6 +58,8 @@ abstract class FellesTestOppsett {
     lateinit var sykmeldingLagring: SykmeldingLagring
 
     companion object {
+        var pdlMockWebServer: MockWebServer
+
         init {
 
             KafkaContainer(DockerImageName.parse("apache/kafka-native:3.9.1")).also {
@@ -75,10 +75,11 @@ abstract class FellesTestOppsett {
                 System.setProperty("spring.datasource.password", password)
             }
 
-            MockWebServer().apply {
-                System.setProperty("PDL_BASE_URL", "http://localhost:$port")
-                dispatcher = PdlMockDispatcher
-            }
+            pdlMockWebServer =
+                MockWebServer().apply {
+                    System.setProperty("PDL_BASE_URL", "http://localhost:$port")
+                    dispatcher = PdlMockDispatcher
+                }
         }
     }
 
@@ -179,5 +180,3 @@ abstract class FellesTestOppsett {
 }
 
 fun Any.serialisertTilString(): String = objectMapper.writeValueAsString(this)
-
-fun String.tilSyketilfellebitDbRecord(): List<SyketilfellebitDbRecord> = objectMapper.readValue(this)

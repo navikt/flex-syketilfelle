@@ -4,12 +4,13 @@ import no.nav.security.token.support.client.core.ClientProperties
 import no.nav.security.token.support.client.core.oauth2.OAuth2AccessTokenService
 import no.nav.security.token.support.client.spring.ClientConfigurationProperties
 import no.nav.security.token.support.client.spring.oauth2.EnableOAuth2Client
+import org.apache.hc.client5.http.config.ConnectionConfig
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
+import org.apache.hc.client5.http.impl.classic.HttpClients
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager
 import org.apache.hc.core5.http.io.SocketConfig
 import org.apache.hc.core5.util.Timeout
-import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.boot.restclient.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpRequest
@@ -17,8 +18,6 @@ import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
-import java.time.Duration
-import java.util.function.Supplier
 
 const val PDL_REST_TEMPLATE_CONNECT_TIMEOUT = 5L
 const val PDL_REST_TEMPLATE_READ_TIMEOUT = 15L
@@ -28,18 +27,27 @@ const val PDL_REST_TEMPLATE_READ_TIMEOUT = 15L
 class AadRestTemplateConfiguration {
     @Bean
     fun httpClient(): CloseableHttpClient {
-        val connectionManager = PoolingHttpClientConnectionManager()
-        connectionManager.defaultMaxPerRoute = 50
-        connectionManager.maxTotal = 50
-        // Erstatter deprecated HttpComponentsClientHttpRequestFactory.setReadTimeout()
-        connectionManager.defaultSocketConfig =
-            SocketConfig
-                .custom()
-                .setSoTimeout(Timeout.of(PDL_REST_TEMPLATE_READ_TIMEOUT, java.util.concurrent.TimeUnit.SECONDS))
-                .build()
+        val connectionManager =
+            PoolingHttpClientConnectionManager().apply {
+                defaultMaxPerRoute = 50
+                maxTotal = 50
 
-        return HttpClientBuilder
-            .create()
+                defaultSocketConfig =
+                    SocketConfig
+                        .custom()
+                        .setSoTimeout(Timeout.ofSeconds(PDL_REST_TEMPLATE_READ_TIMEOUT))
+                        .build()
+
+                setDefaultConnectionConfig(
+                    ConnectionConfig
+                        .custom()
+                        .setConnectTimeout(Timeout.ofSeconds(PDL_REST_TEMPLATE_CONNECT_TIMEOUT))
+                        .build(),
+                )
+            }
+
+        return HttpClients
+            .custom()
             .setConnectionManager(connectionManager)
             .build()
     }
@@ -57,10 +65,8 @@ class AadRestTemplateConfiguration {
                 ?: throw RuntimeException("Fant ikke config for $registrationName.")
 
         return restTemplateBuilder
-            // https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions
-            .requestFactory(Supplier { HttpComponentsClientHttpRequestFactory(httpClient) })
+            .requestFactory { HttpComponentsClientHttpRequestFactory(httpClient) }
             .additionalInterceptors(bearerTokenInterceptor(clientProperties, oAuth2AccessTokenService))
-            .connectTimeout(Duration.ofSeconds(PDL_REST_TEMPLATE_CONNECT_TIMEOUT))
             .build()
     }
 
