@@ -5,6 +5,8 @@ build/
 .gradle/
 .kotlin/
 .DS_Store
-.claude
-CLAUDE.md
 
+.junie/
+.claude/
+CLAUDE.md
+AGENTS.md
