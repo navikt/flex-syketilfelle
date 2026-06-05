@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.kafkaprodusering
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
@@ -16,6 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.module.kotlin.readValue
 import java.time.Duration
 import java.time.LocalDate
 import java.time.OffsetDateTime
