@@ -1,11 +1,11 @@
 package no.nav.helse.flex.syketilfelle
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.SubsumsjonAssertions.assertSubsumsjonsmelding
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.JuridiskVurderingKafkaDto
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.awaitility.Awaitility.await
+import tools.jackson.module.kotlin.readValue
 import java.time.Duration
 
 fun <K, V> Consumer<K, V>.subscribeHvisIkkeSubscribed(vararg topics: String) {

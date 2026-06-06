@@ -1,11 +1,11 @@
 package no.nav.helse.flex.syketilfelle
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.networknt.schema.Schema
 import com.networknt.schema.SchemaRegistry
 import com.networknt.schema.SpecificationVersion
 import org.junit.jupiter.api.Assertions.assertEquals
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 
 internal object SubsumsjonAssertions {
