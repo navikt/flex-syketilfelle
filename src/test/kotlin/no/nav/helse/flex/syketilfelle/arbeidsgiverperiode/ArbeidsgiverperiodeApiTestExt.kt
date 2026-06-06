@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.arbeidsgiverperiode.domain.Arbeidsgiverperiode
@@ -10,6 +9,7 @@ import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import tools.jackson.module.kotlin.readValue
 
 fun FellesTestOppsett.kallArbeidsgiverperiodeApi(
     soknad: SykepengesoknadDTO,

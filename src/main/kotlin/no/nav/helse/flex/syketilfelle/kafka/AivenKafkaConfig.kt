@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
+import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.beans.factory.annotation.Value
@@ -48,75 +49,52 @@ class AivenKafkaConfig(
             SslConfigs.SSL_KEY_PASSWORD_CONFIG to kafkaCredstorePassword,
         )
 
-    @Bean
-    fun aivenKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val config =
-            mapOf(
-                ConsumerConfig.GROUP_ID_CONFIG to "flex-syketilfelle",
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to kafkaAutoOffsetReset,
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-                ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG to "600000",
-            ) + commonConfig()
-        val consumerFactory = DefaultKafkaConsumerFactory<String, String>(config)
+    private fun consumerConfig(groupId: String) =
+        mapOf(
+            ConsumerConfig.GROUP_ID_CONFIG to groupId,
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to kafkaAutoOffsetReset,
+            ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
+            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG to "600000",
+        ) + commonConfig()
 
-        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory
-        factory.setCommonErrorHandler(kafkaErrorHandler)
-        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
-        return factory
-    }
+    private fun producerConfig() =
+        mapOf(
+            ProducerConfig.ACKS_CONFIG to "all",
+            ProducerConfig.RETRIES_CONFIG to 10,
+            ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
+        ) + commonConfig()
+
+    private fun <T> kafkaProducer(valueSerializer: Serializer<T>) = KafkaProducer(producerConfig(), StringSerializer(), valueSerializer)
+
+    @Bean
+    fun aivenKafkaListenerContainerFactory(kafkaErrorHandler: KafkaErrorHandler): ConcurrentKafkaListenerContainerFactory<String, String> =
+        lagListenerContainerFactory("flex-syketilfelle", kafkaErrorHandler)
 
     @Bean
     fun syketilfelleKafkaListenerContainerFactory(
         kafkaErrorHandler: KafkaErrorHandler,
     ): ConcurrentKafkaListenerContainerFactory<String, String> {
-        val config =
-            mapOf(
-                // Overtar consumer group fra syfosyketilfelle.
-                ConsumerConfig.GROUP_ID_CONFIG to "syfosyketilfelle-consumer",
-                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to kafkaAutoOffsetReset,
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
-                ConsumerConfig.MAX_POLL_RECORDS_CONFIG to "1",
-                ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG to "600000",
-            ) + commonConfig()
-        val consumerFactory = DefaultKafkaConsumerFactory<String, String>(config)
+        // Overtar consumer group fra syfosyketilfelle.
+        return lagListenerContainerFactory("syfosyketilfelle-consumer", kafkaErrorHandler)
+    }
 
+    @Bean
+    fun producer(): KafkaProducer<String, KafkaSyketilfellebit?> = kafkaProducer(JacksonKafkaSerializer())
+
+    @Bean
+    fun juridiskVurderingProducer(): KafkaProducer<String, JuridiskVurderingKafkaDto> = kafkaProducer(JacksonKafkaSerializer())
+
+    private fun lagListenerContainerFactory(
+        groupId: String,
+        kafkaErrorHandler: KafkaErrorHandler,
+    ): ConcurrentKafkaListenerContainerFactory<String, String> {
         val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
-        factory.consumerFactory = consumerFactory
+        factory.setConsumerFactory(DefaultKafkaConsumerFactory(consumerConfig(groupId)))
         factory.setCommonErrorHandler(kafkaErrorHandler)
         factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
         return factory
-    }
-
-    @Bean
-    fun producer(): KafkaProducer<String, KafkaSyketilfellebit?> {
-        val kafkaConfig =
-            mapOf(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonKafkaSerializer::class.java,
-                ProducerConfig.ACKS_CONFIG to "all",
-                ProducerConfig.RETRIES_CONFIG to 10,
-                ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-            ) + commonConfig()
-        return KafkaProducer<String, KafkaSyketilfellebit?>(kafkaConfig)
-    }
-
-    @Bean
-    fun juridiskVurderingProducer(): KafkaProducer<String, JuridiskVurderingKafkaDto> {
-        val kafkaConfig =
-            mapOf(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonKafkaSerializer::class.java,
-                ProducerConfig.ACKS_CONFIG to "all",
-                ProducerConfig.RETRIES_CONFIG to 10,
-                ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-            ) + commonConfig()
-
-        return KafkaProducer<String, JuridiskVurderingKafkaDto>(kafkaConfig)
     }
 }
