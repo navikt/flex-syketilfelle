@@ -1,12 +1,15 @@
 package no.nav.helse.flex.syketilfelle.juridiskvurdering
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.flex.syketilfelle.logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.Future
 
 @Component
 class JuridiskVurderingKafkaProducer(
@@ -18,23 +21,18 @@ class JuridiskVurderingKafkaProducer(
 ) {
     val log = logger()
 
-    fun produserMelding(juridiskVurdering: JuridiskVurdering) {
+    // Sender meldingen asynkront og returnerer en Future slik at kalleren kan vente på bekreftelse
+    // fra broker etter at alle meldinger er sendt.
+    @WithSpan
+    fun sendMelding(juridiskVurdering: JuridiskVurdering): Future<RecordMetadata> {
         val dto = juridiskVurdering.tilDto()
-        try {
-            producer
-                .send(
-                    ProducerRecord(
-                        juridiskVurderingTopic,
-                        dto.fodselsnummer,
-                        dto,
-                    ),
-                ).get()
-        } catch (e: Throwable) {
-            log.warn(
-                "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
-                e,
-            )
-            throw e
+        return producer.send(ProducerRecord(juridiskVurderingTopic, dto.fodselsnummer, dto)) { _, e ->
+            if (e != null) {
+                log.warn(
+                    "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
+                    e,
+                )
+            }
         }
     }
 

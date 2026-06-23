@@ -31,6 +31,8 @@ val sykepengesoknadKafkaVersion = "2026.05.13-10.24-d6649054"
 val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "2.0.1"
 val inntektsmeldingKontrakt = "2026.04.15-10-22-eb2ae"
+val opentelemetryApiVersion = "1.63.0"
+val opentelemetryInstrumentationVersion = "2.28.1"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -52,6 +54,8 @@ dependencies {
     implementation("no.nav.helse.flex:sykepengesoknad-kafka:$sykepengesoknadKafkaVersion")
     implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$inntektsmeldingKontrakt")
     implementation("no.nav.helse:syfosm-common-models:$syfoSmCommon")
+    implementation("io.opentelemetry:opentelemetry-api:$opentelemetryApiVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryInstrumentationVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:testcontainers:$testContainersVersion")

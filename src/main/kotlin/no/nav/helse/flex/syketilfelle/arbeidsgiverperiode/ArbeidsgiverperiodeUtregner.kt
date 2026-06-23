@@ -9,6 +9,7 @@ import no.nav.helse.flex.syketilfelle.juridiskvurdering.SporingType
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.SporingType.ORGANISASJONSNUMMER
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.SporingType.SYKMELDING
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
+import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.soknad.mapSoknadTilBiter
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitRepository
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -17,17 +18,20 @@ import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.mapTilBiter
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import kotlin.system.measureTimeMillis
 
 @Component
 class ArbeidsgiverperiodeUtregner(
     private val syketilfellebitRepository: SyketilfellebitRepository,
     private val juridiskVurderingKafkaProducer: JuridiskVurderingKafkaProducer,
 ) {
+    private val log = logger()
+
     fun beregnArbeidsgiverperiode(
         fnrs: List<String>,
+        forelopig: Boolean,
         andreKorrigerteRessurser: List<String>,
         soknad: SykepengesoknadDTO,
-        forelopig: Boolean,
         sykmelding: SykmeldingKafkaMessage?,
     ): Arbeidsgiverperiode? {
         val biter =
@@ -57,30 +61,33 @@ class ArbeidsgiverperiodeUtregner(
             )
         }?.also { arbeidsgiverperiode ->
             if (!forelopig) {
-                listOf(
-                    skapJuridiskVurdering(
-                        fnr = fnrs.first(),
-                        soknad = soknad,
-                        arbeidsgiverperiode = arbeidsgiverperiode,
-                        ledd = 2,
-                    ),
-                    skapJuridiskVurdering(
-                        fnr = fnrs.first(),
-                        soknad = soknad,
-                        arbeidsgiverperiode = arbeidsgiverperiode,
-                        ledd = 3,
-                    ),
-                    skapJuridiskVurdering(
-                        fnr = fnrs.first(),
-                        soknad = soknad,
-                        arbeidsgiverperiode = arbeidsgiverperiode,
-                        ledd = 4,
-                    ),
-                ).forEach {
-                    juridiskVurderingKafkaProducer.produserMelding(
-                        it,
-                    )
-                }
+                val publiseringstid =
+                    measureTimeMillis {
+                        listOf(
+                            skapJuridiskVurdering(
+                                fnr = fnrs.first(),
+                                soknad = soknad,
+                                arbeidsgiverperiode = arbeidsgiverperiode,
+                                ledd = 2,
+                            ),
+                            skapJuridiskVurdering(
+                                fnr = fnrs.first(),
+                                soknad = soknad,
+                                arbeidsgiverperiode = arbeidsgiverperiode,
+                                ledd = 3,
+                            ),
+                            skapJuridiskVurdering(
+                                fnr = fnrs.first(),
+                                soknad = soknad,
+                                arbeidsgiverperiode = arbeidsgiverperiode,
+                                ledd = 4,
+                            ),
+                        ).map {
+                            juridiskVurderingKafkaProducer.sendMelding(it)
+                        }.forEach { it.get() }
+                    }
+                val melding = "Brukte $publiseringstid millisekunder på å publisere til juridiskVurderingTopic."
+                if (publiseringstid > 1000L) log.warn(melding) else log.info(melding)
             }
         }
     }
