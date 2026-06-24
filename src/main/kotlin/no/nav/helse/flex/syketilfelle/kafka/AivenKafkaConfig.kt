@@ -102,9 +102,6 @@ class AivenKafkaConfig(
                 ProducerConfig.ACKS_CONFIG to "all",
                 ProducerConfig.RETRIES_CONFIG to 10,
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
-                // Sikrer at meldinger ikke dupliseres ved retry, og at rekkefølgen bevares med flere
-                // samtidige forespørsler in-flight (max.in.flight.requests.per.connection settes automatisk til 5).
-                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
             ) + commonConfig()
         return KafkaProducer<String, KafkaSyketilfellebit?>(kafkaConfig)
     }
@@ -118,6 +115,13 @@ class AivenKafkaConfig(
                 ProducerConfig.ACKS_CONFIG to "all",
                 ProducerConfig.RETRIES_CONFIG to 10,
                 ProducerConfig.RETRY_BACKOFF_MS_CONFIG to 100,
+                // Sikrer at meldinger ikke dupliseres ved retry, og at rekkefølgen bevares med flere
+                // samtidige forespørsler in-flight (max.in.flight.requests.per.connection settes automatisk til 5).
+                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+                // Batcher opp meldinger som sendes rett etter hverandre.
+                ProducerConfig.LINGER_MS_CONFIG to 20,
+                // Sikrer at det er nok plass til at ms.linger har effekt.
+                ProducerConfig.BATCH_SIZE_CONFIG to 32000,
             ) + commonConfig()
 
         return KafkaProducer<String, JuridiskVurderingKafkaDto>(kafkaConfig)
