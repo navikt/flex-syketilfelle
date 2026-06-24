@@ -13,7 +13,7 @@ import java.util.concurrent.Future
 
 @Component
 class JuridiskVurderingKafkaProducer(
-    private val producer: KafkaProducer<String, JuridiskVurderingKafkaDto>,
+    private val juridiskVurderingProducer: KafkaProducer<String, JuridiskVurderingKafkaDto>,
     @param:Value("\${nais.app.name}")
     private val naisAppName: String,
     @param:Value("\${nais.app.image}")
@@ -26,7 +26,7 @@ class JuridiskVurderingKafkaProducer(
     @WithSpan
     fun sendMelding(juridiskVurdering: JuridiskVurdering): Future<RecordMetadata> {
         val dto = juridiskVurdering.tilDto()
-        return producer.send(ProducerRecord(juridiskVurderingTopic, dto.fodselsnummer, dto)) { _, e ->
+        return juridiskVurderingProducer.send(ProducerRecord(juridiskVurderingTopic, dto.fodselsnummer, dto)) { _, e ->
             if (e != null) {
                 log.warn(
                     "Uventet exception ved publisering av juridiskvurdering ${dto.id} på topic $juridiskVurderingTopic",
