@@ -119,7 +119,7 @@ class AivenKafkaConfig(
                 // samtidige forespørsler in-flight (max.in.flight.requests.per.connection settes automatisk til 5).
                 ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
                 // Batcher opp meldinger som sendes rett etter hverandre.
-                ProducerConfig.LINGER_MS_CONFIG to 20,
+                ProducerConfig.LINGER_MS_CONFIG to 10,
                 // Sikrer at det er nok plass til at ms.linger har effekt.
                 ProducerConfig.BATCH_SIZE_CONFIG to 32000,
             ) + commonConfig()
