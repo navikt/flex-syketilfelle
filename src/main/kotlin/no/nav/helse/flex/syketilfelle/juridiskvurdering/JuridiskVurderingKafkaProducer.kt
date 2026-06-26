@@ -21,8 +21,6 @@ class JuridiskVurderingKafkaProducer(
 ) {
     val log = logger()
 
-    // Sender meldingen asynkront og returnerer en Future slik at kalleren kan vente på bekreftelse
-    // fra broker etter at alle meldinger er sendt.
     @WithSpan
     fun sendMelding(juridiskVurdering: JuridiskVurdering): Future<RecordMetadata> {
         val dto = juridiskVurdering.tilDto()
