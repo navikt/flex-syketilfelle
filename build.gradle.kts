@@ -32,7 +32,7 @@ val syfoSmCommon = "2.0.8"
 val jsonSchemaValidatorVersion = "2.0.1"
 val inntektsmeldingKontrakt = "2026.04.15-10-22-eb2ae"
 val opentelemetryApiVersion = "1.64.0"
-val opentelemetryInstrumentationVersion = "2.29.0"
+val opentelemetryInstrumentationVersion = "2.30.0"
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
