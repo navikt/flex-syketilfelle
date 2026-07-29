@@ -2,7 +2,7 @@ package no.nav.helse.flex.syketilfelle.sykmelding
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
-import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.serialisertTilString
 import no.nav.helse.flex.syketilfelle.sykeforloep.SimpleSykmelding
@@ -137,7 +137,7 @@ class SykmeldingTombstoneTest : FellesTestOppsett() {
     @Test
     @Order(5)
     fun `Sykmeldingen gjenåpnes som arbeidstaker sykmelding og oppfolgingsdato er lik fom`() {
-        val sykmelding = lagArbeidsgiverSykmelding(fom, tom, sykmeldingId)
+        val sykmelding = lagArbeidsgiverSykmeldingDTO(fom, tom, sykmeldingId)
 
         opprettMottattSykmelding(sykmelding, fnr)
         opprettSendtSykmelding(sykmelding, fnr)

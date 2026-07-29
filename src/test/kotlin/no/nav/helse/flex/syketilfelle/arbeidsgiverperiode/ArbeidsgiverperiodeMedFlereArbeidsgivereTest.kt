@@ -5,7 +5,7 @@ import no.nav.helse.flex.sykepengesoknad.kafka.SoknadsstatusDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SoknadstypeDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.SykepengesoknadDTO
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.ventPåRecords
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -29,8 +29,8 @@ class ArbeidsgiverperiodeMedFlereArbeidsgivereTest : FellesTestOppsett() {
 
     @Test
     fun `Arbeidsgiverperioden regnes ut per arbeidsgiver`() {
-        val sykmelding1 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(12), tom = basisDato)
-        val sykmelding2 = lagArbeidsgiverSykmelding(fom = basisDato.minusDays(24), tom = basisDato)
+        val sykmelding1 = lagArbeidsgiverSykmeldingDTO(fom = basisDato.minusDays(12), tom = basisDato)
+        val sykmelding2 = lagArbeidsgiverSykmeldingDTO(fom = basisDato.minusDays(24), tom = basisDato)
 
         opprettMottattSykmelding(sykmelding = sykmelding1, fnr = fnr)
         opprettMottattSykmelding(sykmelding = sykmelding2, fnr = fnr)

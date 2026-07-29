@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagSendtSykmeldingKafkaMessage
@@ -44,7 +44,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
         val sendtSykmelding =
             lagSendtSykmeldingKafkaMessage(
                 fnr,
-                lagArbeidsgiverSykmelding(
+                lagArbeidsgiverSykmeldingDTO(
                     fom = LocalDate.of(2026, Month.JUNE, 15),
                     tom = LocalDate.of(2026, Month.JUNE, 21),
                 ),
