@@ -5,7 +5,7 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.MottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverAGDTO
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmeldingDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.BehandlerAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.KontaktMedPasientAGDTO
 import no.nav.syfo.model.sykmelding.arbeidsgiver.SykmeldingsperiodeAGDTO
@@ -29,12 +29,12 @@ fun lagMottattSykmeldingKafkaMessage(
     sykmeldingId: String = UUID.randomUUID().toString(),
 ) = lagMottattSykmeldingKafkaMessage(
     fnr = fnr,
-    sykmelding = lagArbeidsgiverSykmelding(fom = fom, tom = tom, sykmeldingId = sykmeldingId, type = type),
+    sykmelding = lagArbeidsgiverSykmeldingDTO(fom = fom, tom = tom, sykmeldingId = sykmeldingId, type = type),
 )
 
 fun lagMottattSykmeldingKafkaMessage(
     fnr: String,
-    sykmelding: ArbeidsgiverSykmelding,
+    sykmelding: ArbeidsgiverSykmeldingDTO,
     timestamp: OffsetDateTime = OffsetDateTime.now(),
 ) = MottattSykmeldingKafkaMessage(
     sykmelding = sykmelding,
@@ -49,7 +49,7 @@ fun lagMottattSykmeldingKafkaMessage(
 
 fun lagSendtSykmeldingKafkaMessage(
     fnr: String,
-    sykmelding: ArbeidsgiverSykmelding,
+    sykmelding: ArbeidsgiverSykmeldingDTO,
     orgnummer: String? = null,
 ) = SykmeldingKafkaMessage(
     sykmelding = sykmelding,
@@ -97,13 +97,13 @@ fun lagBekreftetSykmeldingKafkaMessage(
         ),
 )
 
-fun lagArbeidsgiverSykmelding(
+fun lagArbeidsgiverSykmeldingDTO(
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
     sykmeldingId: String = UUID.randomUUID().toString(),
     type: PeriodetypeDTO = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-): ArbeidsgiverSykmelding =
-    ArbeidsgiverSykmelding(
+): ArbeidsgiverSykmeldingDTO =
+    ArbeidsgiverSykmeldingDTO(
         id = sykmeldingId,
         mottattTidspunkt = OffsetDateTime.now(),
         arbeidsgiver = ArbeidsgiverAGDTO(null, null),
@@ -123,7 +123,6 @@ fun lagArbeidsgiverSykmelding(
         behandletTidspunkt = OffsetDateTime.now(),
         syketilfelleStartDato = null,
         egenmeldt = false,
-        harRedusertArbeidsgiverperiode = false,
         behandler =
             BehandlerAGDTO(
                 fornavn = "Lege",

@@ -15,7 +15,7 @@ import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
-import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmelding
+import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmeldingDTO
 import okhttp3.mockwebserver.MockWebServer
 import org.amshove.kluent.shouldBeEmpty
 import org.apache.kafka.clients.consumer.Consumer
@@ -108,7 +108,7 @@ abstract class FellesTestOppsett {
     }
 
     fun opprettMottattSykmelding(
-        sykmelding: ArbeidsgiverSykmelding,
+        sykmelding: ArbeidsgiverSykmeldingDTO,
         fnr: String,
     ): String {
         sendMottattSykmelding(lagMottattSykmeldingKafkaMessage(fnr, sykmelding))
@@ -116,7 +116,7 @@ abstract class FellesTestOppsett {
     }
 
     fun opprettSendtSykmelding(
-        sykmelding: ArbeidsgiverSykmelding,
+        sykmelding: ArbeidsgiverSykmeldingDTO,
         fnr: String,
         orgnummer: String? = null,
     ): String {
@@ -125,7 +125,7 @@ abstract class FellesTestOppsett {
     }
 
     fun opprettBekreftetSykmelding(
-        sykmelding: ArbeidsgiverSykmelding,
+        sykmelding: ArbeidsgiverSykmeldingDTO,
         fnr: String,
     ): String {
         sendBekreftetSykmelding(lagBekreftetSykmeldingKafkaMessage(opprettMottattSykmelding(sykmelding, fnr)))

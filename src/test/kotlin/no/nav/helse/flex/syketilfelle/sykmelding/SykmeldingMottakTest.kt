@@ -1,7 +1,7 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
@@ -39,7 +39,7 @@ class SykmeldingMottakTest : FellesTestOppsett() {
         syketilfellebitRepository.deleteAll()
     }
 
-    final val sykmelding = lagArbeidsgiverSykmelding()
+    final val sykmelding = lagArbeidsgiverSykmeldingDTO()
 
     final val kafkaMetadata =
         KafkaMetadataDTO(

@@ -12,7 +12,7 @@ import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.Utfall
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.KafkaProduseringJob
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.TombsstoneProduseringJob
-import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmelding
+import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Syketilfellebit
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
@@ -929,7 +929,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
 
     @Test
     fun `egenmeldingsdager fra sykmeldingen inkluderes i arbeidsgiverperioden og sletter tidligere biter`() {
-        val sykmelding = lagArbeidsgiverSykmelding()
+        val sykmelding = lagArbeidsgiverSykmeldingDTO()
 
         val kafkaMetadata =
             KafkaMetadataDTO(
@@ -1058,7 +1058,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
 
     @Test
     fun `egenmeldingsdager fra sykmeldingen i request erstatter tidligere biter uten å slette de`() {
-        val sykmelding = lagArbeidsgiverSykmelding()
+        val sykmelding = lagArbeidsgiverSykmeldingDTO()
 
         val kafkaMetadata =
             KafkaMetadataDTO(
