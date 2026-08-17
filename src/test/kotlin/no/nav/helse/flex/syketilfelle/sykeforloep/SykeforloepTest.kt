@@ -313,7 +313,7 @@ class SykeforloepTest : FellesTestOppsett() {
             ),
         )
 
-        // melding med egenmelding er ikke plukket opp av syketilfelle enda, men blir sendt med fra feks sykepengesoknad-backend
+        // Sykmelding med egenmeldingsdager er ikke plukket opp av syketilfelle enda, men blir sendt med i request.
         val kafkaMessageMedEgenmelding =
             kafkaMessage.copy(
                 event =
@@ -332,7 +332,11 @@ class SykeforloepTest : FellesTestOppsett() {
             )
         val sykmeldingRequest = SykmeldingRequest(kafkaMessageMedEgenmelding)
         val sykeforloepMedSykmelding =
-            hentSykeforloepMedSykmelding(listOf(nyttFnr), hentAndreIdenter = true, sykmeldingRequest = sykmeldingRequest)
+            hentSykeforloepMedSykmelding(
+                listOf(nyttFnr),
+                hentAndreIdenter = true,
+                sykmeldingRequest = sykmeldingRequest,
+            )
 
         assertThat(sykeforloepMedSykmelding).hasSize(1)
         assertThat(sykeforloepMedSykmelding[0].oppfolgingsdato).isEqualTo(basisDato.minusDays(3))
@@ -353,8 +357,10 @@ class SykeforloepTest : FellesTestOppsett() {
             mockMvc
                 .perform(
                     get("/api/v1/sykeforloep")
-                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                        .contentType(MediaType.APPLICATION_JSON),
+                        .header(
+                            "Authorization",
+                            lagAuthorizationHeader("sykepengesoknad-backend-client-id"),
+                        ).contentType(MediaType.APPLICATION_JSON),
                 ).andExpect(status().isBadRequest)
                 .andReturn()
                 .response.contentAsString
@@ -367,7 +373,7 @@ class SykeforloepTest : FellesTestOppsett() {
             mockMvc
                 .perform(
                     get("/api/v1/sykeforloep")
-                        .header("Authorization", "Bearer ${server.azureToken(subject = "slem-app-client-id")}")
+                        .header("Authorization", lagAuthorizationHeader("slem-app-client-id"))
                         .header("fnr", fnr)
                         .contentType(MediaType.APPLICATION_JSON),
                 ).andExpect(status().isForbidden)
@@ -396,7 +402,7 @@ class SykeforloepTest : FellesTestOppsett() {
             mockMvc
                 .perform(
                     get("/api/v1/sykeforloep")
-                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                        .header("Authorization", lagAuthorizationHeader("sykepengesoknad-backend-client-id"))
                         .header("fnr", "blah")
                         .contentType(MediaType.APPLICATION_JSON),
                 ).andExpect(status().isBadRequest)
@@ -411,7 +417,7 @@ class SykeforloepTest : FellesTestOppsett() {
             mockMvc
                 .perform(
                     get("/api/v1/sykeforloep")
-                        .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
+                        .header("Authorization", lagAuthorizationHeader("sykepengesoknad-backend-client-id"))
                         .header("fnr", "$fnr, $nyttFnr")
                         .queryParam("hentAndreIdenter", true.toString())
                         .contentType(MediaType.APPLICATION_JSON),
@@ -462,4 +468,6 @@ class SykeforloepTest : FellesTestOppsett() {
         assertThat(sykeforloep2[0].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 11, 10))
         assertThat(sykeforloep2[1].oppfolgingsdato).isEqualTo(LocalDate.of(2022, 12, 28))
     }
+
+    fun lagAuthorizationHeader(app: String) = "Bearer ${server.azureToken(subject = app)}"
 }

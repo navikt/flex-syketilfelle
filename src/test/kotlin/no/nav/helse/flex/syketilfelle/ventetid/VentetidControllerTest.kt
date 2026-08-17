@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.erUtenforVentetid
@@ -23,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.time.Month
 import java.time.OffsetDateTime
@@ -387,13 +387,16 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Kall til erUtenforVentetifeiler hvis sykmeldingId i path ikke er liksykmeldingId i Kafka-melding`() {
         val sykmeldingIdIPathen = UUID.randomUUID().toString()
-        val melding = lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
 
         mockMvc
             .perform(
                 post("/api/v1/ventetid/$sykmeldingIdIPathen/erUtenforVentetid")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                    .header("fnr", fnr)
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}",
+                    ).header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding))),
             ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
@@ -402,13 +405,16 @@ class VentetidControllerTest : FellesTestOppsett() {
     @Test
     fun `Kall til perioderMedSammeVentetid feiler hvis sykmeldingId i path ikke er lik sykmeldingId i Kafka-melding`() {
         val sykmeldingIdIPathen = UUID.randomUUID().toString()
-        val melding = lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
 
         mockMvc
             .perform(
                 post("/api/v1/ventetid/$sykmeldingIdIPathen/perioderMedSammeVentetid")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}")
-                    .header("fnr", fnr)
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}",
+                    ).header("fnr", fnr)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(SammeVentetidRequest(sykmeldingKafkaMessage = melding))),
             ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
