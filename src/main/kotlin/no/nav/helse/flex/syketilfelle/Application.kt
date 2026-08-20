@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.resilience.annotation.EnableResilientMethods
 import org.springframework.scheduling.annotation.EnableScheduling
+import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.kotlinModule
@@ -27,6 +28,7 @@ val objectMapper: ObjectMapper =
     JsonMapper
         .builder()
         .addModule(kotlinModule())
+        .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
         .build()
 
 // Fjerner kontroll- og formateringstegn (Cc/Cf) fra teksten for å hindre logginjeksjon.
