@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
       - name: Deploy topic syketilfellebit to dev-gcp
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/topics/syketilfellebit-topic.yaml
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
       - name: Deploy topic syketilfellebit to prod-gcp
-        uses: nais/deploy/actions/deploy@v2
+        uses: nais/deploy/actions/deploy@v3
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/topics/syketilfellebit-topic.yaml
