@@ -152,24 +152,18 @@ class VentetidUtregner(
     }
 
     private fun List<Periode>.beregnVentetid(): Periode? {
-        // Hvis det er mindre enn 17 siden forrige periode, og forrige periode var utenfor ventetiden, returneres
-        // forrige periodes ventetid.
-        if (size >= 2) {
-            val (_, forrigePeriode) = this
-            if (!erForLengeSidenForrigePeriode(0) && forrigePeriode.erLengreEnnVentetiden()) {
-                return forrigePeriode
-            }
-        }
-        // Går gjennom periodene og finner den første som kvalifiserer som ventetidsperiode.
+        // Går bakover i tid så lenge oppholdet til forrige periode er kortere enn 17 dager, og returnerer den tidligste
+        // perioden som kvalifiserer som ventetidsperiode.
+        var ventetid: Periode? = null
         for ((index, periode) in withIndex()) {
-            when {
-                periode.erLengreEnnVentetiden() -> return periode
-                // Returnerer ikke periodre korterer en antall ventetidsdager.
-                erForLengeSidenForrigePeriode(index) -> return null
+            if (periode.erLengreEnnVentetiden()) {
+                ventetid = periode
+            }
+            if (erForLengeSidenForrigePeriode(index)) {
+                break
             }
         }
-
-        return null
+        return ventetid
     }
 
     private fun Periode.erLengreEnnVentetiden(): Boolean = DAYS.between(this.fom, this.tom) >= SEKSTEN_DAGER
