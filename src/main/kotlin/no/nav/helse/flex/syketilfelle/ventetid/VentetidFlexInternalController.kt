@@ -59,10 +59,18 @@ class VentetidFlexInternalController(
                 .firstOrNull()
                 ?.let { FomTomPeriode(it.fom, it.tom) }
 
+        val perioderMedSammeVentetid =
+            ventetidUtregner.finnPerioderMedSammeVentetid(
+                sykmeldingId = sanitertSykmeldingId,
+                identer = identer,
+                sammeVentetidRequest = SammeVentetidRequest(),
+            )
+
         return VentetidInternalResponse(
             erUtenforVentetid = erUtenforVentetid,
             ventetid = ventetid!!,
             sykmeldingsperiode = sykmeldingsperiode,
+            perioderMedSammeVentetid = perioderMedSammeVentetid,
         )
     }
 
@@ -106,6 +114,7 @@ data class VentetidInternalResponse(
     var erUtenforVentetid: Boolean,
     val ventetid: FomTomPeriode,
     var sykmeldingsperiode: FomTomPeriode?,
+    val perioderMedSammeVentetid: List<SammeVentetidPeriode>,
 )
 
 data class SyketilfellebitResponse(

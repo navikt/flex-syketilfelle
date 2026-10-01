@@ -521,6 +521,17 @@ class VentetidControllerTest : FellesTestOppsett() {
                         LocalDate.of(2025, 9, 1),
                         LocalDate.of(2025, 9, 18),
                     ),
+                perioderMedSammeVentetid =
+                    listOf(
+                        SammeVentetidPeriode(
+                            ressursId = sykmeldingId,
+                            ventetid =
+                                FomTomPeriode(
+                                    LocalDate.of(2025, 9, 1),
+                                    LocalDate.of(2025, 9, 16),
+                                ),
+                        ),
+                    ),
             )
         respons `should be equal to` forventetResponse
     }
