@@ -6,6 +6,8 @@ import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.ErUtenforVentetidResponse
 import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidRequest
 import no.nav.helse.flex.syketilfelle.ventetid.SammeVentetidResponse
+import no.nav.helse.flex.syketilfelle.ventetid.VentetidForSykmeldingRequest
+import no.nav.helse.flex.syketilfelle.ventetid.VentetidForSykmeldingResponse
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.token.DefaultOAuth2TokenCallback
 import org.springframework.http.MediaType
@@ -134,6 +136,47 @@ fun FellesTestOppsett.finnPerioderMedSammeVentetid(
                     .header("fnr", fnr.joinToString(separator = ", "))
                     .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
                     .content(objectMapper.writeValueAsString(sammeVentetidRequest))
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun FellesTestOppsett.hentVentetidForSykmeldingSomBruker(
+    fnr: String,
+    sykmeldingId: String,
+    clientId: String = "frontend-client-id",
+): VentetidForSykmeldingResponse {
+    val json =
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = clientId)}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+            .response.contentAsString
+
+    return objectMapper.readValue(json)
+}
+
+fun FellesTestOppsett.hentVentetidForSykmelding(
+    fnr: List<String>,
+    sykmeldingId: String,
+    hentAndreIdenter: Boolean = true,
+    token: String = server.azureToken(subject = "sykepengesoknad-backend-client-id"),
+    ventetidRequest: VentetidForSykmeldingRequest,
+): VentetidForSykmeldingResponse {
+    val json =
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("Authorization", "Bearer $token")
+                    .header("fnr", fnr.joinToString(separator = ", "))
+                    .queryParam("hentAndreIdenter", hentAndreIdenter.toString())
+                    .content(objectMapper.writeValueAsString(ventetidRequest))
                     .contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)
             .andReturn()

@@ -1,16 +1,7 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import no.nav.helse.flex.syketilfelle.FellesTestOppsett
-import no.nav.helse.flex.syketilfelle.azureToken
-import no.nav.helse.flex.syketilfelle.erUtenforVentetid
-import no.nav.helse.flex.syketilfelle.erUtenforVentetidSomBruker
-import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetid
-import no.nav.helse.flex.syketilfelle.finnPerioderMedSammeVentetidSomBruker
-import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
-import no.nav.helse.flex.syketilfelle.lagSyketilfelleBit
-import no.nav.helse.flex.syketilfelle.objectMapper
+import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
-import no.nav.helse.flex.syketilfelle.tokenxToken
 import org.amshove.kluent.`should be`
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be true`
@@ -264,6 +255,209 @@ class VentetidControllerTest : FellesTestOppsett() {
                     ).contentType(MediaType.APPLICATION_JSON),
             ).andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.ventetidPerioder").isEmpty)
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker feiler hvis audience er feil`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker feiler hvis token mangler`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker feiler hvis clientId er feil`() {
+        mockMvc
+            .perform(
+                get("/api/bruker/v2/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Kall til ventetid feiler hvis token mangler`() {
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("fnr", fnr)
+                    .content(objectMapper.writeValueAsString(VentetidForSykmeldingRequest()))
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    fun `Kall til ventetid feiler hvis subject er feil`() {
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingId/ventetidForSykmelding")
+                    .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
+                    .header("fnr", fnr)
+                    .content(objectMapper.writeValueAsString(VentetidForSykmeldingRequest()))
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    fun `Kall til ventetid feiler hvis sykmeldingId i path ikke er lik sykmeldingId i Kafka-melding`() {
+        val sykmeldingIdIPathen = UUID.randomUUID().toString()
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
+
+        mockMvc
+            .perform(
+                post("/api/v1/ventetid/$sykmeldingIdIPathen/ventetidForSykmelding")
+                    .header(
+                        "Authorization",
+                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}",
+                    ).header("fnr", fnr)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(VentetidForSykmeldingRequest(sykmeldingKafkaMessage = melding))),
+            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker returnerer innenfor ventetid og periode med samme ventetid`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
+            ).also { it.prosesser() }
+
+        verifiserAtBiterErLagret(1)
+
+        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) `should be equal to`
+            VentetidForSykmeldingResponse(
+                erUtenforVentetid = false,
+                periodeMedSammeVentetid =
+                    listOf(
+                        SammeVentetidPeriode(
+                            ressursId = melding.sykmelding.id,
+                            ventetid =
+                                FomTomPeriode(
+                                    LocalDate.of(2026, Month.FEBRUARY, 2),
+                                    LocalDate.of(2026, Month.FEBRUARY, 17),
+                                ),
+                        ),
+                    ),
+            )
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker returnerer utenfor ventetid og periode med samme ventetid`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            ).also { it.prosesser() }
+
+        verifiserAtBiterErLagret(1)
+
+        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) `should be equal to`
+            VentetidForSykmeldingResponse(
+                erUtenforVentetid = true,
+                periodeMedSammeVentetid =
+                    listOf(
+                        SammeVentetidPeriode(
+                            ressursId = melding.sykmelding.id,
+                            ventetid =
+                                FomTomPeriode(
+                                    LocalDate.of(2024, Month.JULY, 1),
+                                    LocalDate.of(2024, Month.JULY, 16),
+                                ),
+                        ),
+                    ),
+            )
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker returnerer tomt resultat hvis fnr ikke matcher biter`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            ).also { it.prosesser() }
+
+        verifiserAtBiterErLagret(1)
+
+        hentVentetidForSykmeldingSomBruker(fnr = "99999999999", sykmeldingId = melding.sykmelding.id) `should be equal to`
+            VentetidForSykmeldingResponse(erUtenforVentetid = false, periodeMedSammeVentetid = emptyList())
+    }
+
+    @Test
+    fun `Kall til ventetid returnerer utenfor ventetid og periode med samme ventetid`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            ).also { it.prosesser() }
+
+        verifiserAtBiterErLagret(1)
+
+        hentVentetidForSykmelding(
+            fnr = listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            ventetidRequest = VentetidForSykmeldingRequest(),
+        ) `should be equal to`
+            VentetidForSykmeldingResponse(
+                erUtenforVentetid = true,
+                periodeMedSammeVentetid =
+                    listOf(
+                        SammeVentetidPeriode(
+                            ressursId = melding.sykmelding.id,
+                            ventetid =
+                                FomTomPeriode(
+                                    LocalDate.of(2024, Month.JULY, 1),
+                                    LocalDate.of(2024, Month.JULY, 16),
+                                ),
+                        ),
+                    ),
+            )
+    }
+
+    @Test
+    fun `Kall til ventetid bruker sykmelding fra request når den ikke er lagret`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2024, Month.JULY, 1),
+                tom = LocalDate.of(2024, Month.JULY, 17),
+            )
+
+        hentVentetidForSykmelding(
+            fnr = listOf(fnr),
+            sykmeldingId = melding.sykmelding.id,
+            ventetidRequest = VentetidForSykmeldingRequest(sykmeldingKafkaMessage = melding),
+        ) `should be equal to`
+            VentetidForSykmeldingResponse(
+                erUtenforVentetid = true,
+                periodeMedSammeVentetid =
+                    listOf(
+                        SammeVentetidPeriode(
+                            ressursId = melding.sykmelding.id,
+                            ventetid =
+                                FomTomPeriode(
+                                    LocalDate.of(2024, Month.JULY, 1),
+                                    LocalDate.of(2024, Month.JULY, 16),
+                                ),
+                        ),
+                    ),
+            )
     }
 
     @Test
