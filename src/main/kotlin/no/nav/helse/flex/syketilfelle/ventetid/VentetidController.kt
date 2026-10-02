@@ -122,6 +122,57 @@ class VentetidController(
         )
     }
 
+    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/ventetidForSykmelding")
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
+    fun ventetidForSykmeldingSomBruker(
+        @PathVariable sykmeldingId: String,
+    ): VentetidForSykmeldingResponse {
+        val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
+        return lagVentetidForSykmeldingResponse(sanitertSykmeldingId, identer, VentetidForSykmeldingRequest())
+    }
+
+    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/ventetidForSykmelding"])
+    @ResponseBody
+    @ProtectedWithClaims(issuer = "azureator")
+    fun ventetidForSykmelding(
+        @RequestHeader fnr: String,
+        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
+        @PathVariable sykmeldingId: String,
+        @RequestBody ventetidRequest: VentetidForSykmeldingRequest,
+    ): VentetidForSykmeldingResponse {
+        clientIdValidation.validateClientId(
+            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
+        )
+        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
+
+        validerSykmeldingKafkaMessage(ventetidRequest.sykmeldingKafkaMessage, sanitertSykmeldingId)
+
+        return lagVentetidForSykmeldingResponse(sanitertSykmeldingId, hentIdenter(fnr, hentAndreIdenter), ventetidRequest)
+    }
+
+    private fun lagVentetidForSykmeldingResponse(
+        sykmeldingId: String,
+        identer: List<String>,
+        ventetidRequest: VentetidForSykmeldingRequest,
+    ): VentetidForSykmeldingResponse =
+        VentetidForSykmeldingResponse(
+            erUtenforVentetid =
+                ventetidUtregner.erUtenforVentetid(
+                    sykmeldingId = sykmeldingId,
+                    identer = identer,
+                    erUtenforVentetidRequest = ErUtenforVentetidRequest(ventetidRequest.sykmeldingKafkaMessage),
+                ),
+            periodeMedSammeVentetid =
+                ventetidUtregner.finnPerioderMedSammeVentetid(
+                    sykmeldingId = sykmeldingId,
+                    identer = identer,
+                    sammeVentetidRequest = SammeVentetidRequest(ventetidRequest.sykmeldingKafkaMessage),
+                ),
+        )
+
     private fun validerSykmeldingKafkaMessage(
         sykmeldingKafkaMessage: SykmeldingKafkaMessage?,
         sykmeldingId: String,

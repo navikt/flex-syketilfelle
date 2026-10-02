@@ -22,6 +22,15 @@ fun SammeVentetidRequest.tilVentetidRequest(): VentetidRequest =
         returnerPerioderInnenforVentetid = true,
     )
 
+data class VentetidForSykmeldingRequest(
+    val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
+)
+
+data class VentetidForSykmeldingResponse(
+    val erUtenforVentetid: Boolean,
+    val periodeMedSammeVentetid: List<SammeVentetidPeriode>,
+)
+
 data class VentetidRequest(
     val sykmeldingKafkaMessage: SykmeldingKafkaMessage? = null,
     val returnerPerioderInnenforVentetid: Boolean = false,
