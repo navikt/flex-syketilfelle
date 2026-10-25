@@ -1,10 +1,9 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
-import org.amshove.kluent.`should be`
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should be true`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -97,7 +96,7 @@ class VentetidControllerTest : FellesTestOppsett() {
             listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ).`should be true`()
+        ).shouldBeTrue()
     }
 
     @Test
@@ -113,7 +112,7 @@ class VentetidControllerTest : FellesTestOppsett() {
             fnr,
             sykmeldingId = melding.sykmelding.id,
         ).also {
-            it.erUtenforVentetid `should be` false
+            it.erUtenforVentetid shouldBe false
         }
     }
 
@@ -130,7 +129,7 @@ class VentetidControllerTest : FellesTestOppsett() {
             fnr,
             sykmeldingId = melding.sykmelding.id,
         ).also {
-            it.erUtenforVentetid `should be` true
+            it.erUtenforVentetid shouldBe true
         }
     }
 
@@ -202,11 +201,11 @@ class VentetidControllerTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
             )
 
-        response.ventetidPerioder.size `should be equal to` 1
+        response.ventetidPerioder.size shouldBe 1
         response.ventetidPerioder.first().also {
-            it.ressursId `should be equal to` melding.sykmelding.id
-            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
-            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+            it.ressursId shouldBe melding.sykmelding.id
+            it.ventetid.fom shouldBe LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom shouldBe LocalDate.of(2026, Month.FEBRUARY, 17)
         }
     }
 
@@ -227,11 +226,11 @@ class VentetidControllerTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
             )
 
-        response.ventetidPerioder.size `should be equal to` 1
+        response.ventetidPerioder.size shouldBe 1
         response.ventetidPerioder.first().also {
-            it.ressursId `should be equal to` melding.sykmelding.id
-            it.ventetid.fom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 2)
-            it.ventetid.tom `should be equal to` LocalDate.of(2026, Month.FEBRUARY, 17)
+            it.ressursId shouldBe melding.sykmelding.id
+            it.ventetid.fom shouldBe LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom shouldBe LocalDate.of(2026, Month.FEBRUARY, 17)
         }
     }
 
@@ -338,7 +337,7 @@ class VentetidControllerTest : FellesTestOppsett() {
 
         verifiserAtBiterErLagret(1)
 
-        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) `should be equal to`
+        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) shouldBe
             VentetidForSykmeldingResponse(
                 erUtenforVentetid = false,
                 periodeMedSammeVentetid =
@@ -366,7 +365,7 @@ class VentetidControllerTest : FellesTestOppsett() {
 
         verifiserAtBiterErLagret(1)
 
-        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) `should be equal to`
+        hentVentetidForSykmeldingSomBruker(fnr = fnr, sykmeldingId = melding.sykmelding.id) shouldBe
             VentetidForSykmeldingResponse(
                 erUtenforVentetid = true,
                 periodeMedSammeVentetid =
@@ -394,7 +393,7 @@ class VentetidControllerTest : FellesTestOppsett() {
 
         verifiserAtBiterErLagret(1)
 
-        hentVentetidForSykmeldingSomBruker(fnr = "99999999999", sykmeldingId = melding.sykmelding.id) `should be equal to`
+        hentVentetidForSykmeldingSomBruker(fnr = "99999999999", sykmeldingId = melding.sykmelding.id) shouldBe
             VentetidForSykmeldingResponse(erUtenforVentetid = false, periodeMedSammeVentetid = emptyList())
     }
 
@@ -413,7 +412,7 @@ class VentetidControllerTest : FellesTestOppsett() {
             fnr = listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             ventetidRequest = VentetidForSykmeldingRequest(),
-        ) `should be equal to`
+        ) shouldBe
             VentetidForSykmeldingResponse(
                 erUtenforVentetid = true,
                 periodeMedSammeVentetid =
@@ -443,7 +442,7 @@ class VentetidControllerTest : FellesTestOppsett() {
             fnr = listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             ventetidRequest = VentetidForSykmeldingRequest(sykmeldingKafkaMessage = melding),
-        ) `should be equal to`
+        ) shouldBe
             VentetidForSykmeldingResponse(
                 erUtenforVentetid = true,
                 periodeMedSammeVentetid =
@@ -533,7 +532,7 @@ class VentetidControllerTest : FellesTestOppsett() {
                         ),
                     ),
             )
-        respons `should be equal to` forventetResponse
+        respons shouldBe forventetResponse
     }
 
     @Test
@@ -586,7 +585,7 @@ class VentetidControllerTest : FellesTestOppsett() {
                         ),
                     ),
             )
-        respons `should be equal to` forventetResponse
+        respons shouldBe forventetResponse
     }
 
     @Test

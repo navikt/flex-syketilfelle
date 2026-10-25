@@ -1,10 +1,9 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
-import org.amshove.kluent.`should be`
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,7 +44,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 identer = listOf(fnr),
                 sykmeldingId = melding1.sykmelding.id,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ) `should be` false
+            ) shouldBe false
 
         ventetidUtregner
             .beregnVentetid(
@@ -53,8 +52,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 16)
             }
 
         ventetidUtregner
@@ -62,7 +61,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 identer = listOf(fnr),
                 sykmeldingId = melding2.sykmelding.id,
                 erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            ) `should be` false
+            ) shouldBe false
 
         ventetidUtregner
             .beregnVentetid(
@@ -70,8 +69,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 16)
             }
     }
 
@@ -95,7 +94,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
             identer = listOf(fnr),
             sykmeldingId = melding1.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` true
+        ) shouldBe true
 
         ventetidUtregner
             .beregnVentetid(
@@ -103,15 +102,15 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 16)
             }
 
         ventetidUtregner.erUtenforVentetid(
             identer = listOf(fnr),
             sykmeldingId = melding2.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` true
+        ) shouldBe true
 
         ventetidUtregner
             .beregnVentetid(
@@ -119,8 +118,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 16)
             }
     }
 
@@ -143,7 +142,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
             identer = listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` false
+        ) shouldBe false
 
         ventetidUtregner
             .beregnVentetid(
@@ -151,8 +150,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 8)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 8)
             }
     }
 
@@ -175,7 +174,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
             identer = listOf(fnr),
             sykmeldingId = melding.sykmelding.id,
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` true
+        ) shouldBe true
 
         ventetidUtregner
             .beregnVentetid(
@@ -183,8 +182,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 1)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 16)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 1)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 16)
             }
     }
 
@@ -222,8 +221,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding1.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JULY, 13)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JULY, 28)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JULY, 13)
+                it.tom shouldBe LocalDate.of(2026, Month.JULY, 28)
             }
 
         ventetidUtregner
@@ -232,7 +231,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 identer = listOf(fnr),
                 sammeVentetidRequest = SammeVentetidRequest(),
             ).also {
-                it.size `should be equal to` 4
+                it.size shouldBe 4
             }
 
         ventetidUtregner
@@ -241,8 +240,8 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 sykmeldingId = melding2.sykmelding.id,
                 ventetidRequest = VentetidRequest(),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JULY, 13)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JULY, 28)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JULY, 13)
+                it.tom shouldBe LocalDate.of(2026, Month.JULY, 28)
             }
 
         ventetidUtregner
@@ -251,7 +250,7 @@ class VentetidTilbakedateringTest : FellesTestOppsett() {
                 identer = listOf(fnr),
                 sammeVentetidRequest = SammeVentetidRequest(),
             ).also {
-                it.size `should be equal to` 4
+                it.size shouldBe 4
             }
     }
 }

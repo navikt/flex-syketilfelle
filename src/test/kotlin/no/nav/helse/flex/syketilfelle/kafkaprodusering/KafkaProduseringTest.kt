@@ -1,5 +1,8 @@
 package no.nav.helse.flex.syketilfelle.kafkaprodusering
 
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.syketilfellebit.KafkaSyketilfellebit
@@ -8,9 +11,6 @@ import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SENDT
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SYKEPENGESOKNAD
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.ventPåRecords
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldHaveSize
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -86,8 +86,8 @@ class KafkaProduseringTest : FellesTestOppsett() {
 
         val records = syketilfelleBitConsumer.ventPåRecords(antall = 2).map { it.deserialisert() }
 
-        records[0].second!!.ressursId `should be equal to` "den eldste"
-        records[1].second!!.ressursId `should be equal to` "den nyeste"
+        records[0].second!!.ressursId shouldBe "den eldste"
+        records[1].second!!.ressursId shouldBe "den nyeste"
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldBeEmpty()
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(3)
 
@@ -97,7 +97,7 @@ class KafkaProduseringTest : FellesTestOppsett() {
 
     @Test
     fun `db query returnerer kun 300 om gangen`() {
-        syketilfellebitRepository.count() `should be equal to` 0L
+        syketilfellebitRepository.count() shouldBe 0L
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldBeEmpty()
 
         fun lagreBit() {
@@ -117,13 +117,13 @@ class KafkaProduseringTest : FellesTestOppsett() {
         }
 
         repeat(420) { lagreBit() }
-        syketilfellebitRepository.count() `should be equal to` 420
+        syketilfellebitRepository.count() shouldBe 420
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(300)
 
         kafkaProduseringJob.publiser()
 
         syketilfelleBitConsumer.ventPåRecords(antall = 300, duration = Duration.ofSeconds(10))
-        syketilfellebitRepository.count() `should be equal to` 420
+        syketilfellebitRepository.count() shouldBe 420
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(120)
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(300)
     }

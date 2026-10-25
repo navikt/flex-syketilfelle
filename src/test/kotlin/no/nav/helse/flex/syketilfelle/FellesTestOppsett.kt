@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle
 
+import io.kotest.matchers.collections.shouldBeEmpty
 import mockwebserver3.MockWebServer
 import no.nav.helse.flex.syketilfelle.inntektsmelding.INNTEKTSMELDING_TOPIC
 import no.nav.helse.flex.syketilfelle.juridiskvurdering.juridiskVurderingTopic
@@ -15,7 +16,6 @@ import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.token.support.spring.test.EnableMockOAuth2Server
 import no.nav.syfo.model.sykmelding.arbeidsgiver.ArbeidsgiverSykmeldingDTO
-import org.amshove.kluent.shouldBeEmpty
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord

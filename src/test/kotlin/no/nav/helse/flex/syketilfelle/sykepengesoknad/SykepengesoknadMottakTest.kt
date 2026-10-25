@@ -1,5 +1,8 @@
 package no.nav.helse.flex.syketilfelle.sykepengesoknad
 
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.sykepengesoknad.kafka.*
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.serialisertTilString
@@ -7,9 +10,6 @@ import no.nav.helse.flex.syketilfelle.soknad.SYKEPENGESOKNAD_TOPIC
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag.SYKEPENGESOKNAD
 import no.nav.helse.flex.syketilfelle.syketilfellebit.tilSyketilfellebit
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.shouldBeEmpty
-import org.amshove.kluent.shouldHaveSize
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -77,8 +77,8 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
 
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 1
-        biter.first().tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT)
-        biter.first().korrigererSendtSoknad `should be equal to` soknad.korrigerer
+        biter.first().tags shouldBe setOf(SYKEPENGESOKNAD, SENDT)
+        biter.first().korrigererSendtSoknad shouldBe soknad.korrigerer
 
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(1)
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(0)
@@ -199,20 +199,20 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
 
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 14
-        biter.first().tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT)
-        biter.first().korrigererSendtSoknad `should be equal to` soknad.korrigerer
+        biter.first().tags shouldBe setOf(SYKEPENGESOKNAD, SENDT)
+        biter.first().korrigererSendtSoknad shouldBe soknad.korrigerer
 
-        biter[0].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT)
-        biter[1].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, PERMISJON)
-        biter[2].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, OPPHOLD_UTENFOR_NORGE)
-        biter[3].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, FULLTID)
-        biter[4].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, DELTID)
-        biter[5].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, FERIE)
-        biter[7].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET)
-        biter[8].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET)
-        biter[9].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, FULL_AKTIVITET)
-        biter[10].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, BEHANDLINGSDAGER)
-        biter[12].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, FRAVAR_FOR_SYKMELDING)
+        biter[0].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT)
+        biter[1].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, PERMISJON)
+        biter[2].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, OPPHOLD_UTENFOR_NORGE)
+        biter[3].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, FULLTID)
+        biter[4].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, UTDANNING, DELTID)
+        biter[5].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, FERIE)
+        biter[7].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, INGEN_AKTIVITET)
+        biter[8].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, GRADERT_AKTIVITET)
+        biter[9].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, FULL_AKTIVITET)
+        biter[10].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, KORRIGERT_ARBEIDSTID, BEHANDLINGSDAGER)
+        biter[12].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, FRAVAR_FOR_SYKMELDING)
 
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(false).shouldHaveSize(14)
         syketilfellebitRepository.findFirst300ByPublisertOrderByOpprettetAsc(true).shouldHaveSize(0)
@@ -267,10 +267,10 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
 
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 1
-        biter.first().tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT)
-        biter.first().korrigererSendtSoknad `should be equal to` soknad.korrigerer
+        biter.first().tags shouldBe setOf(SYKEPENGESOKNAD, SENDT)
+        biter.first().korrigererSendtSoknad shouldBe soknad.korrigerer
 
-        biter[0].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT)
+        biter[0].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT)
     }
 
     @Test
@@ -367,7 +367,7 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
         }
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 1
-        biter.first().tags `should be equal to` setOf(SYKEPENGESOKNAD, BEHANDLINGSDAGER, SENDT)
+        biter.first().tags shouldBe setOf(SYKEPENGESOKNAD, BEHANDLINGSDAGER, SENDT)
     }
 
     @Test
@@ -406,15 +406,15 @@ class SykepengesoknadMottakTest : FellesTestOppsett() {
 
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 5
-        biter[0].tags `should be equal to` setOf(SYKEPENGESOKNAD, BEHANDLINGSDAGER, SENDT)
-        biter[1].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, EGENMELDING)
-        biter[2].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, PAPIRSYKMELDING)
-        biter[3].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG)
-        biter[3].fom `should be equal to` LocalDate.of(2019, 3, 9)
-        biter[3].tom `should be equal to` LocalDate.of(2019, 3, 9)
-        biter[4].tags `should be equal to` setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG)
-        biter[4].fom `should be equal to` LocalDate.of(2019, 3, 4)
-        biter[4].tom `should be equal to` LocalDate.of(2019, 3, 4)
+        biter[0].tags shouldBe setOf(SYKEPENGESOKNAD, BEHANDLINGSDAGER, SENDT)
+        biter[1].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, EGENMELDING)
+        biter[2].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, PAPIRSYKMELDING)
+        biter[3].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG)
+        biter[3].fom shouldBe LocalDate.of(2019, 3, 9)
+        biter[3].tom shouldBe LocalDate.of(2019, 3, 9)
+        biter[4].tags shouldBe setOf(SYKEPENGESOKNAD, SENDT, BEHANDLINGSDAG)
+        biter[4].fom shouldBe LocalDate.of(2019, 3, 4)
+        biter[4].tom shouldBe LocalDate.of(2019, 3, 4)
     }
 
     private fun produserPåSøknadTopic(soknad: SykepengesoknadDTO) =
