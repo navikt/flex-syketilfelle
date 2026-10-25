@@ -1,5 +1,8 @@
 package no.nav.helse.flex.syketilfelle.arbeidsgiverperiode
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.sykepengesoknad.kafka.ArbeidsgiverDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.FravarDTO
 import no.nav.helse.flex.sykepengesoknad.kafka.FravarstypeDTO
@@ -28,9 +31,6 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should be null`
-import org.amshove.kluent.shouldHaveSize
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
@@ -96,19 +96,19 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
                 .filter { it.paragraf == "8-19" }
 
         vurderinger.forEachIndexed { index, vurdering ->
-            vurdering.ledd `should be equal to` index + 2
-            vurdering.bokstav.`should be null`()
-            vurdering.punktum.`should be null`()
-            vurdering.kilde `should be equal to` "flex-syketilfelle"
-            vurdering.versjonAvKode `should be equal to` "flex-syketilfelle-12432536"
+            vurdering.ledd shouldBe index + 2
+            vurdering.bokstav.shouldBeNull()
+            vurdering.punktum.shouldBeNull()
+            vurdering.kilde shouldBe "flex-syketilfelle"
+            vurdering.versjonAvKode shouldBe "flex-syketilfelle-12432536"
 
-            vurdering.utfall `should be equal to` Utfall.VILKAR_BEREGNET
-            vurdering.input `should be equal to`
+            vurdering.utfall shouldBe Utfall.VILKAR_BEREGNET
+            vurdering.input shouldBe
                 mapOf(
                     "soknad" to soknad.id,
                     "versjon" to "2022-02-01",
                 )
-            vurdering.output `should be equal to`
+            vurdering.output shouldBe
                 mapOf(
                     "arbeidsgiverperiode" to
                         mapOf(
@@ -1053,7 +1053,7 @@ class ArbeidsgiverperiodeTest : FellesTestOppsett() {
 
         tombsstoneProduseringJob.publiser()
         val tombstones = syketilfelleBitConsumer.ventPåRecords(antall = 3)
-        slettedeBiter.map { it.syketilfellebitId }.toSet() `should be equal to` tombstones.map { it.key() }.toSet()
+        slettedeBiter.map { it.syketilfellebitId }.toSet() shouldBe tombstones.map { it.key() }.toSet()
     }
 
     @Test

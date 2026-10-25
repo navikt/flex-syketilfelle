@@ -1,5 +1,7 @@
 package no.nav.helse.flex.syketilfelle.sykeforloep
 
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.azureToken
 import no.nav.helse.flex.syketilfelle.hentSykeforloep
@@ -19,8 +21,6 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be equal to`
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
@@ -147,11 +147,11 @@ class SykeforloepTest : FellesTestOppsett() {
         assertThat(sykeforloep[1].oppfolgingsdato).isEqualTo(basisDato)
 
         val sykeforloepMaskin = hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = true)
-        sykeforloepMaskin `should be equal to` sykeforloep
+        sykeforloepMaskin shouldBe sykeforloep
 
-        sykeforloepMaskin `should not be equal to` hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = false)
-        sykeforloepMaskin `should not be equal to` hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
-        sykeforloepMaskin `should be equal to` hentSykeforloep(listOf(nyttFnr, fnr), hentAndreIdenter = false)
+        sykeforloepMaskin shouldNotBe hentSykeforloep(listOf(nyttFnr), hentAndreIdenter = false)
+        sykeforloepMaskin shouldNotBe hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
+        sykeforloepMaskin shouldBe hentSykeforloep(listOf(nyttFnr, fnr), hentAndreIdenter = false)
     }
 
     @Test
@@ -252,7 +252,7 @@ class SykeforloepTest : FellesTestOppsett() {
         assertThat(sykeforloepUtenPapirsykmedling).hasSize(1)
         assertThat(sykeforloepUtenPapirsykmedling[0].oppfolgingsdato).isEqualTo(LocalDate.of(2019, 2, 1))
 
-        sykeforloepUtenPapirsykmedling `should not be equal to` sykeforloepMedPapirsykmedling
+        sykeforloepUtenPapirsykmedling shouldNotBe sykeforloepMedPapirsykmedling
     }
 
     @Test
@@ -364,7 +364,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 ).andExpect(status().isBadRequest)
                 .andReturn()
                 .response.contentAsString
-        json `should be equal to` "{\"reason\":\"Bad Request\"}"
+        json shouldBe "{\"reason\":\"Bad Request\"}"
     }
 
     @Test
@@ -379,7 +379,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 ).andExpect(status().isForbidden)
                 .andReturn()
                 .response.contentAsString
-        json `should be equal to` "{\"reason\":\"UKJENT_CLIENT\"}"
+        json shouldBe "{\"reason\":\"UKJENT_CLIENT\"}"
     }
 
     @Test
@@ -393,7 +393,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 ).andExpect(status().isUnauthorized)
                 .andReturn()
                 .response.contentAsString
-        json `should be equal to` "{\"reason\":\"Unauthorized\"}"
+        json shouldBe "{\"reason\":\"Unauthorized\"}"
     }
 
     @Test
@@ -408,7 +408,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 ).andExpect(status().isBadRequest)
                 .andReturn()
                 .response.contentAsString
-        json `should be equal to` "{\"reason\":\"UGYLDIG_FNR\"}"
+        json shouldBe "{\"reason\":\"UGYLDIG_FNR\"}"
     }
 
     @Test
@@ -424,7 +424,7 @@ class SykeforloepTest : FellesTestOppsett() {
                 ).andExpect(status().isBadRequest)
                 .andReturn()
                 .response.contentAsString
-        json `should be equal to` "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
+        json shouldBe "{\"reason\":\"FLERE_IDENTER_OG_HENTING\"}"
     }
 
     @Test
@@ -449,7 +449,7 @@ class SykeforloepTest : FellesTestOppsett() {
         }
 
         val biterFørGjenopptatt = syketilfellebitRepository.findByFnr(fnr)
-        biterFørGjenopptatt.size `should be equal to` 6
+        biterFørGjenopptatt.size shouldBe 6
         val sykeforloep = hentSykeforloep(listOf(fnr), hentAndreIdenter = false)
 
         assertThat(sykeforloep).hasSize(1)

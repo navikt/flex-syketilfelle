@@ -1,5 +1,7 @@
 package no.nav.helse.flex.syketilfelle.inntektsmelding
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.extensions.tilOsloZone
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
@@ -10,8 +12,6 @@ import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import no.nav.inntektsmeldingkontrakt.Periode
 import no.nav.inntektsmeldingkontrakt.Refusjon
 import no.nav.inntektsmeldingkontrakt.Status
-import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.shouldHaveSize
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -73,11 +73,11 @@ class InntektsmeldingMottakTest : FellesTestOppsett() {
 
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }
         biter shouldHaveSize 1
-        biter[0].fom `should be equal to` LocalDate.now().minusDays(10)
-        biter[0].tom `should be equal to` LocalDate.now().minusDays(5)
+        biter[0].fom shouldBe LocalDate.now().minusDays(10)
+        biter[0].tom shouldBe LocalDate.now().minusDays(5)
         biter[0].inntruffet `should be equal to ignoring nano and zone` inntektsmelding.mottattDato.tilOsloZone()
-        biter[0].orgnummer `should be equal to` inntektsmelding.virksomhetsnummer
-        biter[0].tags `should be equal to` setOf(Tag.INNTEKTSMELDING, Tag.ARBEIDSGIVERPERIODE)
+        biter[0].orgnummer shouldBe inntektsmelding.virksomhetsnummer
+        biter[0].tags shouldBe setOf(Tag.INNTEKTSMELDING, Tag.ARBEIDSGIVERPERIODE)
     }
 
     @Test

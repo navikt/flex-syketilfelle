@@ -1,8 +1,9 @@
 package no.nav.helse.flex.syketilfelle.kafka
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.maps.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.kafkaprodusering.kalkulerPartisjon
-import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldHaveSize
 import org.junit.jupiter.api.Test
 
 private const val ANTALL_PARTISJONER = 10

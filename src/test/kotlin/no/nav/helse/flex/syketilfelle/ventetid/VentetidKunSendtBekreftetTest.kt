@@ -1,12 +1,11 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.lagBekreftetSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagMottattSykmeldingKafkaMessage
 import no.nav.helse.flex.syketilfelle.lagSendtSykmeldingKafkaMessage
-import org.amshove.kluent.`should be`
-import org.amshove.kluent.`should be equal to`
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,7 +53,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
             sykmeldingId = sendtSykmelding.sykmelding.id,
             identer = listOf(fnr),
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` false
+        ) shouldBe false
 
         ventetidUtregner
             .beregnVentetid(
@@ -62,8 +61,8 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
                 sykmeldingId = sendtSykmelding.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 8)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 19)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 8)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 19)
             }
 
         ventetidUtregner
@@ -72,7 +71,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
                 sykmeldingId = sendtSykmelding.sykmelding.id,
                 sammeVentetidRequest = SammeVentetidRequest(),
             ).also { response ->
-                response.size `should be` 2
+                response.size shouldBe 2
                 response.map { it.ressursId }.containsAll(
                     listOf(
                         bekreftetSykmelding.sykmelding.id,
@@ -107,7 +106,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
             sykmeldingId = melding.sykmelding.id,
             identer = listOf(fnr),
             erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ) `should be` false
+        ) shouldBe false
 
         ventetidUtregner
             .beregnVentetid(
@@ -115,8 +114,8 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
                 ventetidRequest = VentetidRequest(returnerPerioderInnenforVentetid = true),
             ).also {
-                it!!.fom `should be equal to` LocalDate.of(2026, Month.JUNE, 11)
-                it.tom `should be equal to` LocalDate.of(2026, Month.JUNE, 19)
+                it!!.fom shouldBe LocalDate.of(2026, Month.JUNE, 11)
+                it.tom shouldBe LocalDate.of(2026, Month.JUNE, 19)
             }
 
         ventetidUtregner
@@ -125,7 +124,7 @@ class VentetidKunSendtBekreftetTest : FellesTestOppsett() {
                 sykmeldingId = melding.sykmelding.id,
                 sammeVentetidRequest = SammeVentetidRequest(),
             ).also { response ->
-                response.size `should be` 1
+                response.size shouldBe 1
                 response.map { it.ressursId }.containsAll(
                     listOf(
                         melding.sykmelding.id,

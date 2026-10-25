@@ -1,5 +1,6 @@
 package no.nav.helse.flex.syketilfelle.client.pdl
 
+import io.kotest.matchers.shouldBe
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -7,7 +8,6 @@ import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.PdlMockDispatcher
 import no.nav.helse.flex.syketilfelle.objectMapper
 import no.nav.helse.flex.syketilfelle.serialisertTilString
-import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import tools.jackson.module.kotlin.readValue
@@ -44,8 +44,8 @@ class PdlClientRetryTest : FellesTestOppsett() {
             }
 
         try {
-            pdlClient.hentFolkeregisterIdenter("10000000000") shouldBeEqualTo listOf("10000000000")
-            antallKall.get() shouldBeEqualTo 2
+            pdlClient.hentFolkeregisterIdenter("10000000000") shouldBe listOf("10000000000")
+            antallKall.get() shouldBe 2
         } finally {
             pdlMockWebServer.dispatcher = PdlMockDispatcher
         }

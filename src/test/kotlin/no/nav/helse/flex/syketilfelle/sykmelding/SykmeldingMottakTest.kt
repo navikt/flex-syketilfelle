@@ -1,5 +1,8 @@
 package no.nav.helse.flex.syketilfelle.sykmelding
 
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.FellesTestOppsett
 import no.nav.helse.flex.syketilfelle.lagArbeidsgiverSykmeldingDTO
 import no.nav.helse.flex.syketilfelle.`should be equal to ignoring nano and zone`
@@ -17,9 +20,6 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldContainAll
-import org.amshove.kluent.shouldHaveSize
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
@@ -361,31 +361,31 @@ class SykmeldingMottakTest : FellesTestOppsett() {
         val biter = syketilfellebitRepository.findByFnr(fnr).map { it.tilSyketilfellebit() }.sortedBy { it.fom }
 
         biter.shouldHaveSize(4)
-        biter[0].fom.shouldBeEqualTo(LocalDate.of(2020, 3, 12))
-        biter[0].tom.shouldBeEqualTo(LocalDate.of(2020, 6, 19))
-        biter[0].ressursId.shouldBeEqualTo(sykmelding.id)
-        biter[0].orgnummer.shouldBeEqualTo("12344")
+        biter[0].fom.shouldBe(LocalDate.of(2020, 3, 12))
+        biter[0].tom.shouldBe(LocalDate.of(2020, 6, 19))
+        biter[0].ressursId.shouldBe(sykmelding.id)
+        biter[0].orgnummer.shouldBe("12344")
         biter[0].inntruffet `should be equal to ignoring nano and zone` event.timestamp
         biter[0].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.PERIODE, Tag.INGEN_AKTIVITET))
 
-        biter[1].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 1))
-        biter[1].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 1))
-        biter[1].ressursId.shouldBeEqualTo(sykmelding.id)
-        biter[1].orgnummer.shouldBeEqualTo("12344")
+        biter[1].fom.shouldBe(LocalDate.of(2023, 3, 1))
+        biter[1].tom.shouldBe(LocalDate.of(2023, 3, 1))
+        biter[1].ressursId.shouldBe(sykmelding.id)
+        biter[1].orgnummer.shouldBe("12344")
         biter[1].inntruffet `should be equal to ignoring nano and zone` event.timestamp
         biter[1].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
 
-        biter[2].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 8))
-        biter[2].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 10))
-        biter[2].ressursId.shouldBeEqualTo(sykmelding.id)
-        biter[2].orgnummer.shouldBeEqualTo("12344")
+        biter[2].fom.shouldBe(LocalDate.of(2023, 3, 8))
+        biter[2].tom.shouldBe(LocalDate.of(2023, 3, 10))
+        biter[2].ressursId.shouldBe(sykmelding.id)
+        biter[2].orgnummer.shouldBe("12344")
         biter[2].inntruffet `should be equal to ignoring nano and zone` event.timestamp
         biter[2].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
 
-        biter[3].fom.shouldBeEqualTo(LocalDate.of(2023, 3, 13))
-        biter[3].tom.shouldBeEqualTo(LocalDate.of(2023, 3, 13))
-        biter[3].ressursId.shouldBeEqualTo(sykmelding.id)
-        biter[3].orgnummer.shouldBeEqualTo("12344")
+        biter[3].fom.shouldBe(LocalDate.of(2023, 3, 13))
+        biter[3].tom.shouldBe(LocalDate.of(2023, 3, 13))
+        biter[3].ressursId.shouldBe(sykmelding.id)
+        biter[3].orgnummer.shouldBe("12344")
         biter[3].inntruffet `should be equal to ignoring nano and zone` event.timestamp
         biter[3].tags.shouldContainAll(listOf(Tag.SYKMELDING, Tag.SENDT, Tag.EGENMELDING))
     }

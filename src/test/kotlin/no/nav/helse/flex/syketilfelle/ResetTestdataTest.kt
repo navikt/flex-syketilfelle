@@ -1,8 +1,8 @@
 package no.nav.helse.flex.syketilfelle
 
+import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.syketilfellebit.SyketilfellebitDbRecord
 import no.nav.helse.flex.syketilfelle.testdata.TESTDATA_RESET_TOPIC
-import org.amshove.kluent.`should be equal to`
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class ResetTestdataTest : FellesTestOppsett() {
     @Test
     fun `Kan slette en bit`() {
-        syketilfellebitRepository.count() `should be equal to` 0
+        syketilfellebitRepository.count() shouldBe 0
 
         val fnr = "12345678987"
         val bit =
@@ -33,13 +33,13 @@ class ResetTestdataTest : FellesTestOppsett() {
             )
         syketilfellebitRepository.save(bit)
         syketilfellebitRepository.save(bit.copy(fnr = "annet", syketilfellebitId = UUID.randomUUID().toString()))
-        syketilfellebitRepository.count() `should be equal to` 2
+        syketilfellebitRepository.count() shouldBe 2
         sendKafkaMelding(UUID.randomUUID().toString(), fnr, TESTDATA_RESET_TOPIC)
         await().atMost(4, TimeUnit.SECONDS).until {
             syketilfellebitRepository.count() == 1L
         }
-        syketilfellebitRepository.count() `should be equal to` 1
-        syketilfellebitRepository.deleteByFnr(bit.fnr) `should be equal to` 0
-        syketilfellebitRepository.count() `should be equal to` 1
+        syketilfellebitRepository.count() shouldBe 1
+        syketilfellebitRepository.deleteByFnr(bit.fnr) shouldBe 0
+        syketilfellebitRepository.count() shouldBe 1
     }
 }
