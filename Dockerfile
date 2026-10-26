@@ -1,7 +1,8 @@
-FROM gcr.io/distroless/java21-debian13@sha256:26a517c7f7d69a98adab4d1e71d5a3a9f1079c85ac9c4193ce6b6bd3d73496f3
+FROM gcr.io/distroless/java25-debian13@sha256:9edcd1e8d3ee33c296ec4a2318500c5b0824f953e27007c36dfbb50b7205d7da
 
-ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=70.0 -XX:+UseParallelGC -XX:ActiveProcessorCount=2"
+ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=65.0 -XX:+UseParallelGC -XX:ActiveProcessorCount=2 -XX:+UseCompactObjectHeaders"
 
 COPY build/libs/app.jar /app/
 WORKDIR /app
 CMD ["app.jar"]
+
