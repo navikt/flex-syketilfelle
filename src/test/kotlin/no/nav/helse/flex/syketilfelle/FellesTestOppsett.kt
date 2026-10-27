@@ -35,7 +35,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.util.concurrent.TimeUnit
 
-private class PostgreSQLContainer14 : PostgreSQLContainer("postgres:14-alpine")
+private class PostgreSQLContainer18 : PostgreSQLContainer("postgres:18-alpine")
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -67,7 +67,7 @@ abstract class FellesTestOppsett {
                 System.setProperty("KAFKA_BROKERS", it.bootstrapServers)
             }
 
-            PostgreSQLContainer14().apply {
+            PostgreSQLContainer18().apply {
                 withCommand("postgres", "-c", "wal_level=logical")
                 start()
                 System.setProperty("spring.datasource.url", "$jdbcUrl&reWriteBatchedInserts=true")
