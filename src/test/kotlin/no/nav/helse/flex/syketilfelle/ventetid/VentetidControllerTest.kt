@@ -1,6 +1,5 @@
 package no.nav.helse.flex.syketilfelle.ventetid
 
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import no.nav.helse.flex.syketilfelle.*
 import no.nav.helse.flex.syketilfelle.syketilfellebit.Tag
@@ -26,234 +25,6 @@ class VentetidControllerTest : FellesTestOppsett() {
     @AfterEach
     fun setUp() {
         syketilfellebitRepository.deleteAll()
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetid som bruker feiler hvis audience er feil`() {
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
-                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetid som bruker feiler hvis token mangler`() {
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetid som bruker feiler hvis clientId er feil`() {
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .get("/api/bruker/v2/ventetid/$sykmeldingId/erUtenforVentetid")
-                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetid feiler hvis token mangler er feil`() {
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
-                    .header("fnr", fnr)
-                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest()))
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetid feiler hvis subject er feil`() {
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingId/erUtenforVentetid")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
-                    .header("fnr", fnr)
-                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest()))
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    fun `Periode på 17 dager er utenfor ventetiden`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.prosesser() }
-
-        erUtenforVentetid(
-            listOf(fnr),
-            sykmeldingId = melding.sykmelding.id,
-            erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-        ).shouldBeTrue()
-    }
-
-    @Test
-    fun `Periode på 16 dager er innefor ventetiden som bruker`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 16),
-            ).also { it.prosesser() }
-
-        erUtenforVentetidSomBruker(
-            fnr,
-            sykmeldingId = melding.sykmelding.id,
-        ).also {
-            it.erUtenforVentetid shouldBe false
-        }
-    }
-
-    @Test
-    fun `Periode på 17 dager er utenfor ventetiden som bruker`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2024, Month.JULY, 1),
-                tom = LocalDate.of(2024, Month.JULY, 17),
-            ).also { it.prosesser() }
-
-        erUtenforVentetidSomBruker(
-            fnr,
-            sykmeldingId = melding.sykmelding.id,
-        ).also {
-            it.erUtenforVentetid shouldBe true
-        }
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis audience er feil`() {
-        mockMvc
-            .perform(
-                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
-                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, audience = "facebook")}")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis token mangler`() {
-        mockMvc
-            .perform(
-                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid som bruker feiler hvis clientId er feil`() {
-        mockMvc
-            .perform(
-                get("/api/bruker/v2/ventetid/$sykmeldingId/perioderMedSammeVentetid")
-                    .header("Authorization", "Bearer ${server.tokenxToken(fnr = fnr, clientId = "facebook")}")
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid feiler hvis token mangler`() {
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
-                    .header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid feiler hvis subject er feil`() {
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingId/perioderMedSammeVentetid")
-                    .header("Authorization", "Bearer ${server.azureToken(subject = "facebook")}")
-                    .header("fnr", fnr)
-                    .content(objectMapper.writeValueAsString(SammeVentetidRequest()))
-                    .contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid som bruker returnerer riktig periode`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
-                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.prosesser() }
-
-        verifiserAtBiterErLagret(1)
-
-        val response =
-            finnPerioderMedSammeVentetidSomBruker(
-                fnr = fnr,
-                sykmeldingId = melding.sykmelding.id,
-            )
-
-        response.ventetidPerioder.size shouldBe 1
-        response.ventetidPerioder.first().also {
-            it.ressursId shouldBe melding.sykmelding.id
-            it.ventetid.fom shouldBe LocalDate.of(2026, Month.FEBRUARY, 2)
-            it.ventetid.tom shouldBe LocalDate.of(2026, Month.FEBRUARY, 17)
-        }
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid returnerer riktig periode`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
-                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.prosesser() }
-
-        verifiserAtBiterErLagret(1)
-
-        val response =
-            finnPerioderMedSammeVentetid(
-                fnr = listOf(fnr),
-                sykmeldingId = melding.sykmelding.id,
-            )
-
-        response.ventetidPerioder.size shouldBe 1
-        response.ventetidPerioder.first().also {
-            it.ressursId shouldBe melding.sykmelding.id
-            it.ventetid.fom shouldBe LocalDate.of(2026, Month.FEBRUARY, 2)
-            it.ventetid.tom shouldBe LocalDate.of(2026, Month.FEBRUARY, 17)
-        }
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid returnerer tom liste hvis fnr ikke matcher biter`() {
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(
-                fnr = fnr,
-                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
-                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
-            ).also { it.prosesser() }
-
-        verifiserAtBiterErLagret(1)
-
-        mockMvc
-            .perform(
-                get("/api/bruker/v2/ventetid/${melding.sykmelding.id}/perioderMedSammeVentetid")
-                    .header(
-                        "Authorization",
-                        "Bearer ${server.tokenxToken(fnr = "99999999999", clientId = "backend-client-id")}",
-                    ).contentType(MediaType.APPLICATION_JSON),
-            ).andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.ventetidPerioder").isEmpty)
     }
 
     @Test
@@ -352,6 +123,32 @@ class VentetidControllerTest : FellesTestOppsett() {
                         ),
                     ),
             )
+    }
+
+    @Test
+    fun `Kall til ventetid som bruker fra flex-sykmeldinger-backend returnerer riktig periode`() {
+        val melding =
+            lagBekreftetSykmeldingKafkaMessage(
+                fnr = fnr,
+                fom = LocalDate.of(2026, Month.FEBRUARY, 2),
+                tom = LocalDate.of(2026, Month.FEBRUARY, 17),
+            ).also { it.prosesser() }
+
+        verifiserAtBiterErLagret(1)
+
+        val response =
+            hentVentetidForSykmeldingSomBruker(
+                fnr = fnr,
+                sykmeldingId = melding.sykmelding.id,
+                clientId = "backend-client-id",
+            )
+
+        response.periodeMedSammeVentetid.size shouldBe 1
+        response.periodeMedSammeVentetid.first().also {
+            it.ressursId shouldBe melding.sykmelding.id
+            it.ventetid.fom shouldBe LocalDate.of(2026, Month.FEBRUARY, 2)
+            it.ventetid.tom shouldBe LocalDate.of(2026, Month.FEBRUARY, 17)
+        }
     }
 
     @Test
@@ -586,41 +383,5 @@ class VentetidControllerTest : FellesTestOppsett() {
                     ),
             )
         respons shouldBe forventetResponse
-    }
-
-    @Test
-    fun `Kall til erUtenforVentetifeiler hvis sykmeldingId i path ikke er liksykmeldingId i Kafka-melding`() {
-        val sykmeldingIdIPathen = UUID.randomUUID().toString()
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
-
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingIdIPathen/erUtenforVentetid")
-                    .header(
-                        "Authorization",
-                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}",
-                    ).header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(ErUtenforVentetidRequest(sykmeldingKafkaMessage = melding))),
-            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
-    }
-
-    @Test
-    fun `Kall til perioderMedSammeVentetid feiler hvis sykmeldingId i path ikke er lik sykmeldingId i Kafka-melding`() {
-        val sykmeldingIdIPathen = UUID.randomUUID().toString()
-        val melding =
-            lagBekreftetSykmeldingKafkaMessage(fnr = fnr, fom = LocalDate.now(), tom = LocalDate.now().plusDays(10))
-
-        mockMvc
-            .perform(
-                post("/api/v1/ventetid/$sykmeldingIdIPathen/perioderMedSammeVentetid")
-                    .header(
-                        "Authorization",
-                        "Bearer ${server.azureToken(subject = "sykepengesoknad-backend-client-id")}",
-                    ).header("fnr", fnr)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(SammeVentetidRequest(sykmeldingKafkaMessage = melding))),
-            ).andExpect(MockMvcResultMatchers.status().isInternalServerError)
     }
 }

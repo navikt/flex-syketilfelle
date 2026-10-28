@@ -8,7 +8,6 @@ import no.nav.helse.flex.syketilfelle.exceptionhandler.LogLevel
 import no.nav.helse.flex.syketilfelle.identer.MedPdlClient
 import no.nav.helse.flex.syketilfelle.logger
 import no.nav.helse.flex.syketilfelle.sanitizeForLog
-import no.nav.helse.flex.syketilfelle.sykeforloep.SykeforloepUtregner
 import no.nav.helse.flex.syketilfelle.sykmelding.domain.SykmeldingKafkaMessage
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
@@ -29,7 +28,6 @@ class VentetidController(
     private val clientIdValidation: ClientIdValidation,
     private val ventetidUtregner: VentetidUtregner,
     private val tokenValidationContextHolder: TokenValidationContextHolder,
-    private val sykeforloepUtregner: SykeforloepUtregner,
     override val pdlClient: PdlClient,
     @param:Value("\${SYKMELDINGER_FRONTEND_CLIENT_ID}")
     val sykmeldingerFrontendClientId: String,
@@ -37,90 +35,6 @@ class VentetidController(
     val flexSykmeldingerBackendClientId: String,
 ) : MedPdlClient {
     val log = logger()
-
-    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/erUtenforVentetid")
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
-    fun erUtenforVentetid(
-        @PathVariable sykmeldingId: String,
-    ): ErUtenforVentetidResponse {
-        val erUtenforVentetid =
-            ventetidUtregner.erUtenforVentetid(
-                sykmeldingId = sykmeldingId.sanitizeForLog(),
-                identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX()),
-                erUtenforVentetidRequest = ErUtenforVentetidRequest(),
-            )
-        return ErUtenforVentetidResponse(erUtenforVentetid)
-    }
-
-    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/erUtenforVentetid"])
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "azureator")
-    fun erUtenforVentetid(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @PathVariable sykmeldingId: String,
-        @RequestBody erUtenforVentetidRequest: ErUtenforVentetidRequest,
-    ): Boolean {
-        clientIdValidation.validateClientId(
-            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
-        )
-        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
-
-        validerSykmeldingKafkaMessage(erUtenforVentetidRequest.sykmeldingKafkaMessage, sanitertSykmeldingId)
-        val identer = hentIdenter(fnr, hentAndreIdenter)
-
-        return ventetidUtregner.erUtenforVentetid(
-            sykmeldingId = sanitertSykmeldingId,
-            identer = identer,
-            erUtenforVentetidRequest = erUtenforVentetidRequest,
-        )
-    }
-
-    @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/perioderMedSammeVentetid")
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "tokenx", combineWithOr = true, claimMap = ["acr=Level4", "acr=idporten-loa-high"])
-    fun perioderMedSammeVentetidSomBruker(
-        @PathVariable sykmeldingId: String,
-    ): SammeVentetidResponse {
-        val identer = hentIdenter(validerTokenXClaims().fnrFraIdportenTokenX())
-        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
-
-        return SammeVentetidResponse(
-            ventetidPerioder =
-                ventetidUtregner.finnPerioderMedSammeVentetid(
-                    sanitertSykmeldingId,
-                    identer,
-                    SammeVentetidRequest(),
-                ),
-        )
-    }
-
-    @PostMapping(value = ["/api/v1/ventetid/{sykmeldingId}/perioderMedSammeVentetid"])
-    @ResponseBody
-    @ProtectedWithClaims(issuer = "azureator")
-    fun perioderMedSammeVentetid(
-        @RequestHeader fnr: String,
-        @RequestParam(required = false) hentAndreIdenter: Boolean = true,
-        @PathVariable sykmeldingId: String,
-        @RequestBody sammeVentetidRequest: SammeVentetidRequest,
-    ): SammeVentetidResponse {
-        clientIdValidation.validateClientId(
-            listOf(NamespaceAndApp(namespace = "flex", app = "sykepengesoknad-backend")),
-        )
-        val sanitertSykmeldingId = sykmeldingId.sanitizeForLog()
-
-        validerSykmeldingKafkaMessage(sammeVentetidRequest.sykmeldingKafkaMessage, sanitertSykmeldingId)
-
-        return SammeVentetidResponse(
-            ventetidPerioder =
-                ventetidUtregner.finnPerioderMedSammeVentetid(
-                    sanitertSykmeldingId,
-                    hentIdenter(fnr, hentAndreIdenter),
-                    sammeVentetidRequest,
-                ),
-        )
-    }
 
     @GetMapping("/api/bruker/v2/ventetid/{sykmeldingId}/ventetidForSykmelding")
     @ResponseBody
