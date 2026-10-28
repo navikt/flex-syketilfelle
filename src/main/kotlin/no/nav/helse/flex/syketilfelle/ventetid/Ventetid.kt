@@ -45,16 +45,7 @@ data class FomTomPeriode(
     val tom: LocalDate,
 )
 
-data class SammeVentetidResponse(
-    val ventetidPerioder: List<SammeVentetidPeriode>,
-)
-
 data class SammeVentetidPeriode(
     val ressursId: String,
     val ventetid: FomTomPeriode,
-)
-
-// Brukes i TokenX-response fra flex-sykmeldinger-backend.
-data class ErUtenforVentetidResponse(
-    val erUtenforVentetid: Boolean,
 )
