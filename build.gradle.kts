@@ -29,7 +29,7 @@ val sykepengesoknadKafkaVersion = "2026.10.29-06.32-9ce6afeb"
 val jsonSchemaValidatorVersion = "3.0.8"
 val inntektsmeldingKontrakt = "2026.04.15-10-22-eb2ae"
 val opentelemetryApiVersion = "1.67.0"
-val opentelemetryInstrumentationVersion = "2.32.0"
+val opentelemetryInstrumentationVersion = "2.33.1"
 val mockWebServerVersion = "5.5.0"
 
 dependencies {
